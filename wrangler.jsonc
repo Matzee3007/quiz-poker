@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "quiz-poker",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-11-02",
+  "upload_source_maps": true,
+  "assets": {
+    // Unbekannte Pfade liefern index.html, die Oberfläche kümmert sich um sie.
+    "not_found_handling": "single-page-application",
+    // Nur Anfragen an /api/* erreichen den Worker, alles andere sind statische Dateien.
+    "run_worker_first": ["/api/*"],
+  },
+}
