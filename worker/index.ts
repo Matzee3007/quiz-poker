@@ -1,3 +1,5 @@
+export { Spielraum } from "./spielraum";
+
 // Einstieg des Servers: Cloudflare ruft fetch für alle Anfragen an /api/* auf (siehe wrangler.jsonc).
 export default {
   async fetch(anfrage: Request): Promise<Response> {

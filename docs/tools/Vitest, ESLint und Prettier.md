@@ -16,6 +16,16 @@ prüft zusätzlich die Typen in `.svelte`-Dateien.
 - `vitest.config.ts` ist getrennt von `vite.config.ts`, damit Tests bisher ohne Cloudflare-Laufzeit laufen.
 - ESLint mit `typescript-eslint` und `eslint-plugin-svelte`, Prettier mit `prettier-plugin-svelte`.
 
+## Tests in der Cloudflare-Laufzeit
+
+Seit Phase 2 laufen alle Tests mit `@cloudflare/vitest-plugin` in `workerd`, damit sich Durable Objects und WebSockets testen lassen.
+
+- `exports.default.fetch(...)` aus `cloudflare:workers` ruft den Worker auf, `env.SPIELRAUM` erreicht das Durable Object.
+- `evictDurableObject(stub)` aus `cloudflare:test` leert den Arbeitsspeicher wie beim Einschlafen, der Speicher und die WebSockets bleiben.
+- `maxWorkers: 1` und `isolate: false` sind nötig: WebSockets mit Durable Objects gehen laut Cloudflare nicht mit einem eigenen Speicher je
+  Testdatei. Deshalb nutzt jeder Test einen eigenen Raum.
+- `@cloudflare/vitest-plugin/types` in `tsconfig.worker.json` liefert die Typen für `cloudflare:test`.
+
 ## Befehle
 
 ```bash

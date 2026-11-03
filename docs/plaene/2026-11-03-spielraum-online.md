@@ -65,12 +65,12 @@ Schließcodes: 4001 unbekanntes Token, 4002 Raum geschlossen, 4003 ersetzt oder 
 
 - Liefert: Bindung `env.SPIELRAUM`, Klasse `Spielraum extends DurableObject` in `worker/spielraum.ts`, Export aus `worker/index.ts`
 
-- [ ] **Schritt 1: Plugin installieren**: `npm install -D @cloudflare/vitest-plugin`, `allowScripts` bleibt.
-- [ ] **Schritt 2: `vitest.config.ts`**: `cloudflareTest({ wrangler: { configPath: "./wrangler.jsonc" } })`, `maxWorkers: 1`, `isolate: false`.
-- [ ] **Schritt 3: Test anpassen und ergänzen, muss rot sein**: Die vorhandenen Tests rufen über `exports.default.fetch` auf. Neu: Test „der Spielraum nimmt eine WebSocket-Verbindung an und antwortet nach dem Schlafen“: `env.SPIELRAUM.getByName("TEST")`, WebSocket öffnen, `evictDurableObject(stub)`, Nachricht senden, Antwort kommt an.
-- [ ] **Schritt 4: `wrangler.jsonc`**: `durable_objects.bindings` mit `SPIELRAUM` und Migration `new_sqlite_classes: ["Spielraum"]`. `tsconfig.worker.json` bekommt `src/regeln/**/*.ts` und `src/protokoll.ts` im `include`. `Spielraum` nimmt mit `ctx.acceptWebSocket` an und antwortet vorläufig mit `{ typ: "fehler", code: "ungueltige-nachricht" }`.
-- [ ] **Schritt 5: `npm test`, alles grün, auch `src/regeln`.** Scheitert `isolate: false` oder das Einschlafen im Test, anhalten und den Fund in die Notiz schreiben statt ihn zu umgehen.
-- [ ] **Schritt 6: Vorgemerktes Tool aus `docs/Tools für später.md` austragen und in den Notizen dokumentieren, `npm run check`, committen:** „Set up durable object testing“
+- [x] **Schritt 1: Plugin installieren**: `npm install -D @cloudflare/vitest-plugin`, `allowScripts` bleibt.
+- [x] **Schritt 2: `vitest.config.ts`**: `cloudflareTest({ wrangler: { configPath: "./wrangler.jsonc" } })`, `maxWorkers: 1`, `isolate: false`.
+- [x] **Schritt 3: Test anpassen und ergänzen, muss rot sein**: Die vorhandenen Tests rufen über `exports.default.fetch` auf. Neu: Test „der Spielraum nimmt eine WebSocket-Verbindung an und antwortet nach dem Schlafen“: `env.SPIELRAUM.getByName("TEST")`, WebSocket öffnen, `evictDurableObject(stub)`, Nachricht senden, Antwort kommt an.
+- [x] **Schritt 4: `wrangler.jsonc`**: `durable_objects.bindings` mit `SPIELRAUM` und Migration `new_sqlite_classes: ["Spielraum"]`. `tsconfig.worker.json` bekommt `src/regeln/**/*.ts` und `src/protokoll.ts` im `include`. `Spielraum` nimmt mit `ctx.acceptWebSocket` an und antwortet vorläufig mit `{ typ: "fehler", code: "ungueltige-nachricht" }`.
+- [x] **Schritt 5: `npm test`, alles grün, auch `src/regeln`.** Scheitert `isolate: false` oder das Einschlafen im Test, anhalten und den Fund in die Notiz schreiben statt ihn zu umgehen.
+- [x] **Schritt 6: Vorgemerktes Tool aus `docs/Tools für später.md` austragen und in den Notizen dokumentieren, `npm run check`, committen:** „Set up durable object testing“
 
 ### Aufgabe 2: Raumcode und Eingabegrenzen
 

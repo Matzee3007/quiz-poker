@@ -12,8 +12,8 @@ mit eigenem Zustand, hier später genau eines je Spielraum. **`wrangler`** ist d
 
 ## Wofür wir es nutzen
 
-Für den Server, die Echtzeit-Verbindungen und das Hosting. Durable Objects kommen erst in Phase 2 dazu, bisher gibt es nur
-den Worker mit `/api/health`.
+Für den Server, die Echtzeit-Verbindungen und das Hosting. Jeder Spielraum ist ein Durable Object der Klasse `Spielraum`
+(`worker/spielraum.ts`), siehe [[projects/quiz-poker/docs/adr/0004-spielstand-und-hibernation|ADR 0004]].
 
 ## Wie wir es eingerichtet haben
 
@@ -25,6 +25,7 @@ npm install -D @cloudflare/vite-plugin wrangler
   `not_found_handling` liefert bei unbekannten Pfaden `index.html`.
 - `vite.config.ts`: Das Plugin `cloudflare()` führt den Worker bei `npm run dev` lokal in `workerd` aus.
 - `npm install-scripts deny esbuild workerd`: Installationsskripte abgelehnt, der lokale Start lief trotzdem.
+- `wrangler.jsonc`: Bindung `SPIELRAUM` und Migration `new_sqlite_classes`, im kostenlosen Tarif gibt es nur SQLite-Speicher.
 - `wrangler types` erzeugt `worker-configuration.d.ts`. Die Datei steht in `.gitignore`, `npm run typecheck` erzeugt sie neu.
 
 ## Kostenloser Tarif

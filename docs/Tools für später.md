@@ -22,13 +22,6 @@ Aufbau je Eintrag:
 - **Wann prüfen:** <Phase oder Anlass>
 ```
 
-## @cloudflare/vitest-plugin
-
-- **Link:** https://developers.cloudflare.com/workers/testing/vitest-integration/get-started/, Lizenz vor dem Einsatz prüfen
-- **Was:** Führt Vitest-Tests in der Cloudflare-Laufzeit aus, damit sich Durable Objects und WebSockets testen lassen.
-- **Warum noch nicht:** Bisher gibt es kein Durable Object. Der Worker lässt sich direkt aufrufen.
-- **Wann prüfen:** Start von Phase 2. Dann auch prüfen, ob es Vitest 5 unterstützt.
-
 ## Cloudflare D1
 
 - **Link:** https://developers.cloudflare.com/d1/, Dienst von Cloudflare
