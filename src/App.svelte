@@ -1,5 +1,9 @@
 <script lang="ts">
   import { untrack } from "svelte";
+  import Aufloesung from "./ansichten/Aufloesung.svelte";
+  import Ende from "./ansichten/Ende.svelte";
+  import QuizMasterRunde from "./ansichten/QuizMasterRunde.svelte";
+  import SpielerRunde from "./ansichten/SpielerRunde.svelte";
   import Start from "./ansichten/Start.svelte";
   import Warten from "./ansichten/Warten.svelte";
   import { meldungFuer } from "./meldungen";
@@ -133,8 +137,41 @@
       {raumcode}
       senden={(aktion) => verbindung?.senden(aktion)}
     />
+  {:else if verbindung.ansicht.phase === "beendet"}
+    <Ende ansicht={verbindung.ansicht} />
+  {:else if verbindung.ansicht.phase === "aufgeloest"}
+    <Aufloesung
+      ansicht={verbindung.ansicht}
+      senden={(aktion) => verbindung?.senden(aktion)}
+    />
+  {:else if verbindung.ansicht.rolle === "quiz-master"}
+    <QuizMasterRunde
+      ansicht={verbindung.ansicht}
+      senden={(aktion) => verbindung?.senden(aktion)}
+    />
   {:else}
-    <main class="seite"><p class="matt">Die Partie läuft.</p></main>
+    {#key `${verbindung.ansicht.kategorie}-${verbindung.ansicht.rundeInKategorie}`}
+      <SpielerRunde
+        ansicht={verbindung.ansicht}
+        senden={(aktion) => verbindung?.senden(aktion)}
+      />
+    {/key}
+  {/if}
+  {#if verbindung.ansicht.rolle === "quiz-master"}
+    <div class="seite" style="padding-top: 0">
+      <button
+        class="text"
+        onclick={() => {
+          if (
+            confirm("Spielraum wirklich schließen? Die Partie endet damit.")
+          ) {
+            verbindung?.senden({ typ: "raum-schliessen" });
+          }
+        }}
+      >
+        Spielraum schließen
+      </button>
+    </div>
   {/if}
 {:else}
   <main class="seite"><p class="matt">Verbinden …</p></main>
