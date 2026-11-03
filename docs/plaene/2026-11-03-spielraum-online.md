@@ -257,7 +257,7 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 **Dateien:** Ändern `CLAUDE.md`, `docs/tools/Svelte und Vite.md`
 
 - [x] **Schritt 1: Doku ergänzen, `npm run check`, committen, pushen, PR öffnen:** „Add game room interface“
-- [ ] **Schritt 2: `/code-review`, `plan-pruefer`, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
+- [x] **Schritt 2: `/code-review`, `plan-pruefer`, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
 
 ### Aufgabe 11: Veröffentlichung und Abschluss
 

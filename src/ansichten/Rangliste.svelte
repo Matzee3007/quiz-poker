@@ -19,6 +19,7 @@
     <div class="rangliste-zeile" class:ich={zeile.id === ichId}>
       <span>
         <span class="punkt" class:an={zeile.verbunden}></span>{zeile.name}
+        {#if zeile.id === ichId}<span class="matt">(du)</span>{/if}
       </span>
       <span>{zeile.chips}</span>
     </div>
