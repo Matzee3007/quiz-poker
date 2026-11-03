@@ -56,6 +56,24 @@ Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
   Spieler per Name neu zu. Er kann Spieler auch entfernen.
 - Ein Spielraum endet, wenn der Quiz-Master ihn schließt oder er längere Zeit ungenutzt ist.
 
+## Spielraum online (Phase 2)
+
+- **Oberfläche:** vollständig spielbar im Browser am PC. Das Handy ist vorerst nicht nötig, es folgt beim Feinschliff in Phase 4.
+- **Aussehen:** Stil C, dunkles modernes Casino, aus dem [[projects/quiz-poker/docs/mocks/2026-11-03-spielraum.html|Mock]]: feste Rangliste, große Einsatzzahl in Gold, Tabelle für die Auswertung.
+- **Eröffnen und beitreten:** Jeder kann ohne Passwort einen Spielraum eröffnen und ist dann dessen Quiz-Master. Der Raumcode besteht aus
+  4 Großbuchstaben ohne verwechselbare wie O und I, der Link `/raum/ABCD` führt direkt dorthin.
+- **Nachrichten:** Das Gerät schickt nur Aktionen, der Server antwortet allen mit ihrer kompletten Ansicht.
+- **Ansicht je Rolle:** Spieler sehen die Frage ab der Antwortphase, Musterlösung sowie fremde Einsätze und Antworten ab der Auflösung,
+  vorher nur „hat gesetzt“ oder „bereit“. Der Quiz-Master sieht immer alles. Später Einsteigende sehen dasselbe wie Spieler, ohne
+  Eingabefelder. Das regelt eine getestete reine Funktion in `src/regeln/`.
+- **Gerät verloren:** Ein Spieler gibt am neuen Gerät Raumcode und Namen ein, der Quiz-Master bestätigt, danach gilt nur noch das neue
+  Gerät. Die erste Anfrage gilt, solange ihr Gerät verbunden ist, und der Quiz-Master sieht nur Anfragen verbundener Geräte. Verliert der Quiz-Master sein Gerät, ist die Partie in Phase 2 verloren.
+- **Ende:** Ein Raum wird gelöscht, wenn der Quiz-Master ihn schließt oder 24 Stunden lang keine Aktion stattfand.
+- **Grenzen:** Namen höchstens 20, Antworten höchstens 200 Zeichen. Höchstens 30 neue Spielräume pro Stunde, damit ein Skript nicht das
+  Tageslimit aufbraucht. Laufende Partien sind davon nicht betroffen. Beitritte und Aktionen in einem Raum sind nicht begrenzt.
+- **Beispiel-Quiz:** 3 Kategorien mit je 3 Runden, selbst formulierte Fragen.
+- **Veröffentlichen:** per Hand mit `npm run deploy` auf der Adresse `quiz-poker.<name>.workers.dev`.
+
 ## Quiz-Sammlung
 
 - Quizze gehören dem Konto ihres Erstellers ([[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]]) und
@@ -107,6 +125,7 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 4. **Stack:** [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001]].
 5. **Quiz-Sammlung in D1:** [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]].
 6. **Konten nur für Quiz-Master:** [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]].
+7. **Spielstand und Hibernation:** [[projects/quiz-poker/docs/adr/0004-spielstand-und-hibernation|ADR 0004]].
 
 ## Roadmap
 

@@ -4,6 +4,19 @@
   "main": "./worker/index.ts",
   "compatibility_date": "2026-11-02",
   "upload_source_maps": true,
+  "durable_objects": {
+    "bindings": [
+      { "name": "SPIELRAUM", "class_name": "Spielraum" },
+      { "name": "RAUMZAEHLER", "class_name": "Raumzaehler" },
+    ],
+  },
+  // Im kostenlosen Tarif gibt es nur Durable Objects mit SQLite-Speicher.
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Spielraum"] },
+    { "tag": "v2", "new_sqlite_classes": ["Raumzaehler"] },
+  ],
+  // Schützt das Tageslimit des kostenlosen Tarifs vor Skripten, siehe Projektvision.
+  "vars": { "RAEUME_PRO_STUNDE": "30" },
   "assets": {
     // Unbekannte Pfade liefern index.html, die Oberfläche kümmert sich um sie.
     "not_found_handling": "single-page-application",

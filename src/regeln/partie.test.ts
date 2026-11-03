@@ -14,6 +14,7 @@ import {
   sieger,
   spielerBeitreten,
   spielerEntfernen,
+  spielerNachName,
   type Partie,
   type Quiz,
 } from "./partie";
@@ -590,5 +591,52 @@ describe("Unveränderte Eingabe", () => {
     expect(partie.phase).toBe("einsatz");
     expect(chipsVon(partie, "anna")).toBe(10);
     expect(chipsVon(partie, "ben")).toBe(120);
+  });
+});
+
+describe("Eingabegrenzen", () => {
+  it("erlaubt Namen bis 20 Zeichen, gemessen nach dem Trimmen", () => {
+    const partie = partieErstellen(quiz);
+
+    expect(
+      spielerBeitreten(partie, "anna", ` ${"a".repeat(20)} `).spieler,
+    ).toHaveLength(1);
+    expect(() => spielerBeitreten(partie, "anna", "a".repeat(21))).toThrow(
+      "name-zu-lang",
+    );
+  });
+
+  it("erlaubt Antworten bis 200 Zeichen, gemessen nach dem Trimmen", () => {
+    const partie = frageZeigen(gestartetePartie());
+
+    expect(
+      antwortBestaetigen(partie, "anna", ` ${"a".repeat(200)} `).antworten.anna,
+    ).toHaveLength(200);
+    expect(() => antwortBestaetigen(partie, "anna", "a".repeat(201))).toThrow(
+      "antwort-zu-lang",
+    );
+  });
+});
+
+describe("Spieler am Namen erkennen", () => {
+  it("findet den Spieler unabhängig von Groß- und Kleinschreibung und Leerzeichen", () => {
+    const partie = gestartetePartie();
+
+    expect(spielerNachName(partie, "  ANNA ")?.id).toBe("anna");
+    expect(spielerNachName(partie, "Niemand")).toBeUndefined();
+  });
+
+  it("meldet einen vergebenen Namen auch in der letzten Runde und nach dem Ende", () => {
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+
+    expect(() => spielerBeitreten(partie, "x", "Anna")).toThrow(
+      "name-vergeben",
+    );
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    expect(() => spielerBeitreten(partie, "x", "Anna")).toThrow(
+      "name-vergeben",
+    );
   });
 });

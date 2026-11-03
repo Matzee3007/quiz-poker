@@ -5,12 +5,12 @@
     "lib": ["ES2023"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "types": ["./worker-configuration.d.ts"],
+    "types": ["./worker-configuration.d.ts", "@cloudflare/vitest-plugin/types"],
     "strict": true,
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true
   },
-  "include": ["worker/**/*.ts"]
+  "include": ["worker/**/*.ts", "src/regeln/**/*.ts", "src/protokoll.ts"]
 }

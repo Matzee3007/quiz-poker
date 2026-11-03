@@ -12,7 +12,12 @@ export type RegelfehlerCode =
   | "leere-antwort"
   | "keine-antwort"
   | "nicht-ausgewertet"
-  | "leeres-quiz";
+  | "leeres-quiz"
+  | "name-zu-lang"
+  | "antwort-zu-lang"
+  | "keine-berechtigung"
+  | "ungueltige-nachricht"
+  | "anfrage-laeuft";
 
 /** Ein Verstoß gegen die Spielregeln. Die Meldung ist der Code. */
 export class Regelfehler extends Error {

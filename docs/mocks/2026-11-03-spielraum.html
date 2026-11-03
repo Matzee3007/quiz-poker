@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mock Spielraum – Quiz-Poker</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#e9e9ec;color:#1c1f26;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed}
+
+/* ---------- Rahmen des Mocks ---------- */
+.kopf{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #cfd0d6;padding:12px 24px}
+.kopf h1{font-size:19px;margin:0 16px 0 0;display:inline}
+.kopf .notiz{color:#555a66;font-size:13.5px}
+.leiste{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px}
+.leiste button{border:1px solid #bfc1c9;background:#fff;color:#1c1f26;border-radius:7px;padding:5px 11px;font-size:13.5px}
+.leiste button.an{background:#1c1f26;border-color:#1c1f26;color:#fff}
+.leiste .trenn{width:1px;height:22px;background:#cfd0d6;margin:0 8px}
+.leiste .was{font-size:13px;color:#555a66;margin-right:2px}
+.variante{padding:26px 24px 8px}
+.variante>h2{font-size:21px;margin:0}
+.variante>p{margin:2px 0 11px;color:#3f4450}
+.browser{border-radius:10px 10px 0 0;background:#d5d6db;padding:7px 12px;font-size:12.5px;color:#444955;display:flex;gap:10px;align-items:center}
+.browser i{width:10px;height:10px;border-radius:50%;background:#a9abb3;display:inline-block}
+.browser span{background:#fff;border-radius:6px;padding:2px 12px;margin-left:8px;flex:1}
+.schirm{min-height:800px;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.fuss{padding:22px 24px 40px;color:#555a66;font-size:13.5px}
+
+/* ---------- gemeinsame Bausteine, Farben kommen aus den Variablen ---------- */
+.schirm{background:var(--bg);color:var(--ink)}
+.top{display:flex;align-items:center;gap:18px;padding:11px 26px;background:var(--topbg);border-bottom:1px solid var(--line);color:var(--topink,var(--ink))}
+.logo{font-weight:800;font-size:18px}
+.top .ort{font-size:14px;color:var(--mut)}
+.top .ort b{color:var(--topink,var(--ink))}
+.schritte{display:flex;gap:4px;margin-left:auto;font-size:13.5px}
+.schritte span{padding:3px 11px;border-radius:99px;color:var(--mut)}
+.schritte span.an{background:var(--acc);color:var(--accink);font-weight:700}
+.wer{font-size:14px;font-weight:700;padding-left:14px}
+.top .wer:first-of-type{margin-left:auto}
+.schritte + .wer{margin-left:0}
+.btn{border:1px solid var(--line2);background:var(--btn);color:var(--ink);border-radius:var(--r);padding:8px 14px;font-weight:600}
+.btn:hover:not(:disabled){filter:brightness(1.07)}
+.prim{background:var(--acc);border-color:var(--acc);color:var(--accink);font-weight:800;padding:12px 26px;font-size:17px}
+.btn:disabled{opacity:.55}
+.klein{padding:4px 9px;font-size:13px;font-weight:500}
+.leise{background:none;border:0;color:var(--mut);font-size:13px;padding:3px 0;text-decoration:underline}
+.fld{display:block;margin-bottom:12px}
+.fld span{display:block;font-size:13.5px;font-weight:600;margin-bottom:4px}
+.fld input,textarea{width:100%;background:var(--inp);border:1px solid var(--line2);border-radius:var(--r);color:var(--inpink,var(--ink));padding:10px 12px}
+.fld input{font-size:17px}
+textarea{resize:none;height:92px;font-size:18px;display:block}
+textarea:disabled{opacity:.72}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0;display:block}
+.tag{display:inline-block;font-size:13px;font-weight:600;border-radius:99px;padding:1px 10px;white-space:nowrap}
+.tag.ok{background:var(--okbg);color:var(--oktx)}
+.tag.warte{background:var(--wbg);color:var(--wtx)}
+.tag.falsch{background:var(--badbg);color:var(--badtx)}
+.punkt{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--mut);white-space:nowrap}
+.punkt::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--okdot)}
+.punkt.weg{color:var(--badtx);font-weight:600}
+.punkt.weg::before{background:var(--baddot)}
+.urteil{display:flex;gap:6px}
+.urteil button{flex:1;border:1px solid var(--line2);background:var(--btn);color:var(--ink);border-radius:var(--r);padding:6px 14px;font-weight:600;font-size:14px}
+.urteil button.r.an{background:var(--okdot);border-color:var(--okdot);color:var(--okon)}
+.urteil button.f.an{background:var(--baddot);border-color:var(--baddot);color:var(--badon)}
+.plus{color:var(--plus);font-weight:800}
+.minus{color:var(--minus);font-weight:800}
+.num{font-variant-numeric:tabular-nums}
+.link{display:flex;align-items:center;gap:10px}
+.link code{font:15.5px ui-monospace,Menlo,monospace}
+.hinweis{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--hbg);color:var(--htx);border:1px solid var(--hline);border-radius:var(--r);padding:9px 14px;font-weight:600}
+.hinweis .btn{background:var(--htx);color:var(--hbg);border-color:var(--htx)}
+.hint{font-size:13.5px;color:var(--mut);margin:6px 0 0}
+.zahlen{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Pokerchip */
+.chip{--s:22px;--c:#b3202c;width:var(--s);height:var(--s);border-radius:50%;flex:none;display:inline-grid;place-items:center;position:relative;
+  background:repeating-conic-gradient(var(--c) 0 30deg,#f6f1e2 30deg 60deg);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.chip::before{content:"";position:absolute;inset:17%;border-radius:50%;background:var(--c);border:1px solid rgba(255,255,255,.55)}
+.chip b{position:relative;color:#fff;font-size:calc(var(--s)*.3);font-weight:800}
+.stapel{display:inline-flex;flex-direction:column-reverse;vertical-align:middle}
+.stapel .chip{margin-top:calc(var(--s)*-.82)}
+.stapel .chip:last-child{margin-top:0}
+
+/* ========== A: grüner Pokertisch ========== */
+.vA{--bg:#20150e;--ink:#f4eedd;--mut:#c5cdb8;--topbg:#2c1c11;--topink:#f4eedd;--line:#4b3220;--line2:#8d7650;--acc:#e0b64a;--accink:#20150e;--btn:#17382a;
+  --inp:#fbf7ea;--inpink:#1f1c14;--r:8px;--okbg:#cdeed4;--oktx:#0f4a24;--wbg:#3a3f2c;--wtx:#ecdfae;--badbg:#f6cfcb;--badtx:#7c1610;
+  --okdot:#37c46b;--baddot:#e2574c;--okon:#06240f;--badon:#fff;--plus:#7dea9e;--minus:#ffa49b;--hbg:#f4d774;--htx:#2a1e05;--hline:#f4d774;font-family:"Helvetica Neue",Arial,sans-serif}
+.vA .logo,.vA h3{font-family:Georgia,"Times New Roman",serif}
+.vA .punkt.weg{color:#ffa49b}
+.vA .tag.falsch{background:#f6cfcb}
+.a-raum{flex:1;padding:22px 24px;display:flex}
+.a-tisch{position:relative;flex:1;display:grid;grid-template-columns:292px minmax(0,1fr) 292px;gap:10px;align-items:stretch;padding:12px 0}
+.a-tisch::before{content:"";position:absolute;inset:0 76px;border-radius:290px;border:20px solid #5f3a1d;outline:2px solid #2d1a0b;
+  background:radial-gradient(ellipse at center,#1f8554 0,#14683f 55%,#0d4f2f 100%);box-shadow:inset 0 0 44px rgba(0,0,0,.55)}
+.a-seiten{position:relative;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px}
+.a-mitte{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px 14px;text-align:center}
+.platz{background:#10291e;border:1px solid #6d8a62;border-radius:12px;padding:10px 13px;text-align:left;box-shadow:0 5px 14px rgba(0,0,0,.42)}
+.platz.du{border:2px solid var(--acc)}
+.platz.frei{background:rgba(16,41,30,.45);border:1px dashed #7e9d74;color:#c3d4b7;text-align:center;box-shadow:none;padding:20px}
+.platz .k{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.platz .k b.name{font-size:17px}
+.avatar{width:30px;height:30px;border-radius:50%;background:#e8dfc4;color:#27351f;font-weight:800;display:grid;place-items:center;flex:none}
+.platz .stand{margin-left:auto;display:flex;align-items:center;gap:7px;font-weight:800;font-size:18px}
+.platz .z{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;margin-top:5px}
+.platz .ant{font-size:17px;font-weight:600;margin:5px 0 7px}
+.platz .urteil{margin-top:6px}
+.a-kat{font:700 54px/1.05 Georgia,serif;color:#fff2c2;margin:0;text-shadow:0 2px 3px rgba(0,0,0,.5)}
+.a-unter{font-size:16px;color:#e5ecd6;margin:0}
+.a-bank{font:italic 15px Georgia,serif;color:#cfe5c7;letter-spacing:.04em}
+.a-kreis{width:176px;height:176px;border-radius:50%;border:3px solid #f1e5b8;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:12px;gap:2px}
+.a-kreis .wert{font:800 42px/1 Georgia,serif;color:#fff}
+.a-kreis small{color:#e5ecd6;font-size:13px}
+.a-chipbtn{background:none;border:0;padding:0;display:grid;justify-items:center;gap:2px;color:var(--ink);font-size:13px;font-weight:700}
+.a-chipbtn .chip{--s:56px}
+.a-chipbtn:disabled{opacity:.5}
+.a-reihe{display:flex;gap:16px;align-items:center;justify-content:center}
+.a-regler{width:430px}
+.a-regler .hint{color:#e5ecd6;text-align:center}
+.a-karte{background:#fbf7ea;color:#1f1c14;border-radius:14px;padding:16px 22px;box-shadow:0 7px 20px rgba(0,0,0,.45);width:min(100%,590px);text-align:left;--mut:#5d5a4d;--line2:#a59c7f;--inp:#fff;--ink:#1f1c14;--btn:#fff}
+.a-karte h3{font-size:25px;line-height:1.22;margin:0;font-weight:700}
+.a-karte .lab{font-size:12.5px;font-weight:700;color:#7a6424;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.a-karte .loes{font:700 24px Georgia,serif;color:#0f5a32}
+.a-karte .fz{display:flex;justify-content:space-between;font-size:13.5px;color:#5d5a4d;margin:5px 0 10px;align-items:center}
+.a-karte .prim{background:#14683f;border-color:#14683f;color:#fff}
+.a-karte .prim.gelb{background:var(--acc);border-color:var(--acc);color:#20150e}
+.a-code{display:flex;gap:10px}
+.a-code span{width:92px;height:124px;background:#fbf7ea;color:#14241a;border-radius:10px;font:800 70px/124px Georgia,serif;text-align:center;box-shadow:0 5px 12px rgba(0,0,0,.5)}
+.vA .link .btn{background:#0d4f2f}
+.a-forms{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:100%;max-width:760px;margin-top:6px}
+.a-forms .a-karte{width:100%;display:flex;flex-direction:column}
+.a-forms .a-karte h3{margin-bottom:6px}
+.a-forms .prim{margin-top:auto}
+.a-forms p{margin:0 0 14px;font-size:15px;color:#46432f}
+.a-titel{font:800 66px/1 Georgia,serif;color:#fff2c2;margin:0;text-shadow:0 2px 3px rgba(0,0,0,.5)}
+.a-sieg{font:700 44px/1.1 Georgia,serif;color:#fff2c2;margin:0;text-shadow:0 2px 3px rgba(0,0,0,.5)}
+.platz.erster{border:2px solid var(--acc);background:#2c3c17}
+
+/* ========== B: modern, ruhig, hell ========== */
+.vB{--bg:#f6f6f2;--ink:#21252e;--mut:#60666f;--topbg:#fff;--line:#e3e3dc;--line2:#c9cac2;--acc:#2a5f8f;--accink:#fff;--btn:#fff;--inp:#fff;--r:12px;
+  --okbg:#e0f1e6;--oktx:#1d6238;--wbg:#efeee7;--wtx:#5b5d58;--badbg:#f9e4e1;--badtx:#a12e22;--okdot:#2e8b57;--baddot:#c8483a;--okon:#fff;--badon:#fff;
+  --plus:#1d7a44;--minus:#b53325;--hbg:#fff6dc;--htx:#57430a;--hline:#ecd98d;font-family:"Avenir Next","Helvetica Neue",Arial,sans-serif}
+.vB .logo{font-weight:700;letter-spacing:-.01em}
+.vB .schritte span.an{font-weight:600}
+.vB .prim{font-weight:600}
+.b-haupt{flex:1;width:100%;max-width:1160px;margin:0 auto;padding:44px 26px 34px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+.b-haupt.breit{grid-template-columns:minmax(0,1fr);max-width:1040px;gap:18px;align-content:start;padding-top:30px}
+.b-karte{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px 28px}
+.b-klein{font-size:13.5px;font-weight:600;color:var(--mut);margin:0 0 4px}
+.b-kat{font-size:52px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:0}
+.b-frage{font-size:34px;font-weight:600;letter-spacing:-.015em;line-height:1.22;margin:0}
+.b-rail{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.b-rail h4{margin:0 0 8px;font-size:14px;color:var(--mut);font-weight:600}
+.b-zeile{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1px 10px;padding:9px 0;border-top:1px solid var(--line)}
+.b-zeile:first-of-type{border-top:0}
+.b-zeile b{font-size:16px;font-weight:600}
+.b-zeile .st{grid-column:1/3}
+.b-zeile.du b::after{content:" (du)";font-weight:400;color:var(--mut)}
+.b-zahl{font-size:72px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.b-eins{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px}
+.b-eins .re{text-align:right;color:var(--mut);font-size:15px}
+.b-eins .re b{display:block;color:var(--ink);font-size:26px;font-weight:600}
+.b-unten{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:16px}
+.vB .zahlen .btn{min-width:64px}
+.b-code{font-size:112px;font-weight:600;letter-spacing:.16em;line-height:1.1;color:var(--acc);margin:4px 0 8px}
+.b-start{max-width:880px;margin:0 auto;padding:60px 26px;flex:1;width:100%}
+.b-start h1{font-size:60px;letter-spacing:-.025em;line-height:1.05;font-weight:600;margin:0 0 8px;text-align:center}
+.b-start>p{font-size:19px;color:var(--mut);margin:0 0 40px;text-align:center}
+.b-zwei{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.b-zwei .b-karte{display:flex;flex-direction:column}
+.b-zwei h3{font-size:24px;font-weight:600;margin:0 0 8px}
+.b-zwei p{margin:0 0 16px;color:var(--mut)}
+.b-zwei .btn{margin-top:auto}
+.b-kopf{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:26px;align-items:start}
+.b-kopf .b-frage{font-size:27px}
+.b-loes{background:#e6f1ea;border-radius:14px;padding:12px 18px;color:#174f2d}
+.b-loes small{display:block;font-weight:600;font-size:13px}
+.b-loes b{font-size:24px;font-weight:600}
+.b-liste{background:#fff;border:1px solid var(--line);border-radius:18px;padding:2px 24px}
+.b-sp{display:grid;grid-template-columns:150px 76px minmax(0,1fr) 220px 72px;gap:18px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
+.b-sp:first-child{border-top:0}
+.b-sp .n{font-weight:600;font-size:17px}
+.b-sp .ant{font-size:20px;font-weight:500}
+.b-sp .wenig{font-size:12.5px;color:var(--mut)}
+.b-sp .ein{font-size:18px;font-weight:600}
+.b-erg{display:grid;grid-template-columns:150px 76px minmax(0,1fr) 100px 170px;gap:18px;align-items:center;padding:15px 0;border-top:1px solid var(--line)}
+.b-erg:first-child{border-top:0}
+.b-kopfz{padding-bottom:8px;font-size:13px;font-weight:600;color:var(--mut)}
+.b-erg .ant{font-size:20px;font-weight:500}
+.b-erg .n{font-weight:600;font-size:17px}
+.b-erg .ae{text-align:right;font-size:18px}
+.b-erg.du{background:#f0f5fa;margin:0 -24px;padding-left:24px;padding-right:24px}
+.b-ende{max-width:680px;margin:0 auto;padding:60px 26px;text-align:center;width:100%}
+.b-ende h1{font-size:50px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:0 0 6px}
+.b-ende>p{color:var(--mut);font-size:18px;margin:0 0 30px}
+.b-rang{display:grid;grid-template-columns:44px 1fr auto;padding:14px 0;border-top:1px solid var(--line);font-size:20px;text-align:left}
+.b-rang:first-child{border-top:0}
+.b-rang.erster{font-weight:700;color:var(--acc)}
+
+/* ========== C: dunkles, modernes Casino ========== */
+.vC{--bg:#0c0e13;--ink:#eef0f4;--mut:#a3a9b6;--topbg:#12151c;--line:#262b36;--line2:#3b4252;--acc:#e8bb4f;--accink:#17120a;--btn:#1c212b;--inp:#0c0e13;--r:6px;
+  --okbg:#113526;--oktx:#5fe3a4;--wbg:#2a2e38;--wtx:#c3c8d3;--badbg:#3c171c;--badtx:#ff8e99;--okdot:#35d08a;--baddot:#ff5d6c;--okon:#06241a;--badon:#26060a;
+  --plus:#5fe3a4;--minus:#ff8e99;--hbg:#e8bb4f;--htx:#17120a;--hline:#e8bb4f;font-family:"Avenir Next Condensed","Helvetica Neue",Arial,sans-serif}
+.vC{font-family:"Helvetica Neue",Arial,sans-serif}
+.vC .logo{color:var(--acc);text-transform:uppercase;letter-spacing:.12em;font-size:16px}
+.c-haupt{flex:1;display:grid;grid-template-columns:320px minmax(0,1fr);min-height:0}
+.c-rail{background:#12151c;border-right:1px solid var(--line);padding:20px}
+.c-lab{font-size:12.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:0 0 7px}
+.c-pl{padding:11px 0;border-bottom:1px solid var(--line)}
+.c-pl .o{display:flex;align-items:baseline;gap:8px}
+.c-pl .r{color:var(--mut);font-size:13px;width:15px}
+.c-pl .n{font-size:16px;font-weight:700}
+.c-pl.du .n{color:var(--acc)}
+.c-pl .w{margin-left:auto;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.c-bar{height:5px;background:#232833;border-radius:3px;margin:6px 0 7px;overflow:hidden}
+.c-bar i{display:block;height:100%;background:var(--acc)}
+.c-main{padding:26px 34px;display:flex;flex-direction:column;gap:18px}
+.c-kat{font-size:60px;font-weight:800;line-height:1;letter-spacing:-.01em;margin:0}
+.c-fl{background:#151922;border:1px solid var(--line);border-radius:10px;padding:20px 24px}
+.c-gross{font-size:128px;line-height:1;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.c-zwei{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px}
+.c-kach{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.c-kach .btn{padding:15px 0;font-size:20px;font-weight:800}
+.c-kach .btn.an{border-color:var(--acc);color:var(--acc)}
+.c-w{font-size:40px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.c-frage{font-size:36px;line-height:1.2;font-weight:700;margin:0}
+.c-frage.kl{font-size:25px}
+.vC textarea{border-color:var(--line2);height:120px}
+.c-tab{width:100%;border-collapse:collapse}
+.c-tab th{font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--mut);text-align:left;padding:9px 12px;font-weight:700;border-bottom:1px solid var(--line2)}
+.c-tab td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.c-tab .re{text-align:right}
+.c-tab .wert{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.c-tab .gold{color:var(--acc)}
+.c-tab .ant{font-size:18px;font-weight:600}
+.c-tab .name{font-size:16px;font-weight:700}
+.c-tab tr.du .name{color:var(--acc)}
+.vC .urteil{width:190px}
+.c-loes{border-left:4px solid var(--okdot);background:#10231b;padding:9px 18px;border-radius:0 8px 8px 0;min-width:270px}
+.c-loes b{font-size:27px;color:var(--oktx)}
+.c-reihe{display:flex;gap:20px;align-items:center;justify-content:space-between}
+.c-code{font-size:150px;font-weight:800;letter-spacing:.1em;line-height:1;color:var(--acc)}
+.c-start{flex:1;display:grid;grid-template-columns:1.1fr 1fr}
+.c-held{padding:70px 60px;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 18% 28%,#2a2312 0,#0c0e13 62%)}
+.c-held h1{font-size:96px;line-height:.95;margin:0 0 20px;font-weight:800;letter-spacing:-.02em}
+.c-held h1 span{color:var(--acc)}
+.c-held p{font-size:19px;color:var(--mut);margin:0;max-width:440px}
+.c-stapel{padding:44px 60px;display:flex;flex-direction:column;justify-content:center;gap:20px;background:#12151c;border-left:1px solid var(--line)}
+.c-stapel h3{margin:0 0 6px;font-size:23px}
+.c-stapel p{margin:0 0 14px;color:var(--mut)}
+.c-stapel .btn{width:100%}
+.c-ende{flex:1;padding:44px 60px;display:flex;flex-direction:column;align-items:center;gap:26px}
+.c-ende h1{font-size:64px;line-height:1.05;margin:0;font-weight:800;text-align:center}
+.c-ende h1 span{color:var(--acc)}
+.c-pod{display:flex;gap:18px;justify-content:center;align-items:flex-end;width:100%}
+.c-sau{flex:1;max-width:260px;background:#151922;border:1px solid var(--line);border-radius:10px;text-align:center;padding:18px 12px;display:flex;flex-direction:column;justify-content:flex-end}
+.c-sau.erster{border:2px solid var(--acc);background:linear-gradient(#2c2412,#151922)}
+.c-sau .pl{font-size:15px;color:var(--mut);font-weight:700}
+.c-sau .nm{font-size:27px;font-weight:800}
+.c-sau .ws{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.c-sau.erster .ws{color:var(--acc)}
+</style>
+</head>
+<body>
+
+<div class="kopf">
+  <h1>Mock Spielraum – 3 Stile</h1>
+  <span class="notiz">Wegwerf-Entwurf. Alle Namen, Fragen und Chipstände sind Beispieldaten. Der Knopf wählt die Ansicht für alle drei Stile zugleich.</span>
+  <div class="leiste" id="leiste"></div>
+</div>
+
+<section class="variante">
+  <h2>A: Grüner Pokertisch</h2>
+  <p>Der Tisch ist die Bühne: Jeder Spieler hat einen festen Platz am Rand, Einsätze und Antworten liegen bei seinem Platz, das Geschehen in der Mitte.</p>
+  <div class="browser"><i></i><i></i><i></i><span>quiz-poker.example.workers.dev/raum/KLMN</span></div>
+  <div class="schirm vA" id="vA"></div>
+</section>
+<section class="variante">
+  <h2>B: Modern und ruhig in Hell</h2>
+  <p>Die Frage steht im Vordergrund: eine ruhige Spalte mit viel Luft und großer Schrift, die Mitspieler stehen nur als schmale Randleiste daneben.</p>
+  <div class="browser"><i></i><i></i><i></i><span>quiz-poker.example.workers.dev/raum/KLMN</span></div>
+  <div class="schirm vB" id="vB"></div>
+</section>
+<section class="variante">
+  <h2>C: Dunkles, modernes Casino</h2>
+  <p>Die Rangliste steht im Vordergrund: dicht wie eine Anzeigetafel, feste Leiste mit dem Chipstand aller, große Zahlen in Gold und beim Quiz-Master eine kompakte Tabelle.</p>
+  <div class="browser"><i></i><i></i><i></i><span>quiz-poker.example.workers.dev/raum/KLMN</span></div>
+  <div class="schirm vC" id="vC"></div>
+</section>
+<div class="fuss">Ende des Mocks. Die Knöpfe im Entwurf reagieren, gespeichert wird nichts.</div>
+
+<script>
+const q=new URLSearchParams(location.search);
+const S={a:+(q.get('a')||1),rolle:q.get('rolle')||'qm',n:+(q.get('n')||4),ende:q.get('ende')||'sieger',
+  einsatz:50,gesetzt:q.get('gesetzt')==='1',antwort:'die Donau',bereit:q.get('bereit')==='1',
+  urteil:{Anna:'r',Ben:'f',Cara:'r',Dana:null},zurueck:true,weg:{}};
+
+const FRAGE='Welcher Fluss fließt durch die meisten Länder der Erde?',LOES='Donau',MAX=120,
+  LINK='quiz-poker.example.workers.dev/raum/KLMN',ICH='Cara';
+const SP=[{n:'Anna',vor:140,e:40,a:'Donau',u:'r'},{n:'Ben',vor:80,e:30,a:'Nil',u:'f'},
+          {n:'Cara',vor:120,e:50,a:'die Donau',u:'r'},{n:'Dana',vor:50,e:10,a:'Amazonas',u:'f'}];
+const ENDE={sieger:[['Anna',340],['Cara',215],['Ben',90],['Dana',60]],gleich:[['Anna',340],['Cara',340],['Ben',90],['Dana',60]]};
+
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const spieler=()=>SP.map(p=>{
+  const ich=p.n===ICH,e=ich?S.einsatz:p.e,u=S.urteil[p.n]||p.u;
+  return {...p,ich,e,u,antwort:ich?S.antwort:p.a,delta:u==='r'?e:-e,nach:p.vor+(u==='r'?e:-e),
+    gesetzt:ich?S.gesetzt:p.n!=='Dana',bereit:ich?S.bereit:p.n!=='Dana'};
+});
+const aktiv=()=>spieler().filter(p=>!S.weg[p.n]);
+const delta=d=>`<span class="${d>0?'plus':'minus'} num">${d>0?'+':'−'}${Math.abs(d)}</span>`;
+const erg=p=>p.u==='r'?'<span class="tag ok">Richtig</span>':'<span class="tag falsch">Falsch</span>';
+const tagGesetzt=p=>p.gesetzt?'<span class="tag ok">hat gesetzt</span>':'<span class="tag warte">noch kein Einsatz</span>';
+const tagBereit=p=>p.bereit?'<span class="tag ok">bereit</span>':'<span class="tag warte">noch nicht bereit</span>';
+const verb=p=>p.n==='Anna'&&S.zurueck?'<span class="punkt weg">getrennt</span>':'<span class="punkt">verbunden</span>';
+const urteil=p=>`<div class="urteil"><button class="r ${S.urteil[p.n]==='r'?'an':''}" data-t="urteil" data-n="${p.n}" data-v="r">Richtig</button><button class="f ${S.urteil[p.n]==='f'?'an':''}" data-t="urteil" data-n="${p.n}" data-v="f">Falsch</button></div>`;
+const entfernen=p=>`<button class="leise" data-t="weg" data-n="${p.n}">Entfernen</button>`;
+const offen=()=>aktiv().filter(p=>!S.urteil[p.n]).length;
+const aufloesen=()=>`<button class="btn prim" data-t="ansicht" data-v="6" ${offen()?'disabled':''}>Auflösen</button>`;
+const offenText=()=>offen()?`Noch ${offen()} Spieler ohne Auswertung`:'Alle ausgewertet';
+const hinweis=()=>S.zurueck?`<div class="hinweis"><span>Anna möchte zurück</span><button class="btn klein" data-t="zurueck">Bestätigen</button></div>`:'';
+const chip=(wert,farbe,gr)=>`<span class="chip" style="${farbe?`--c:${farbe};`:''}${gr?`--s:${gr}px`:''}">${wert?`<b>${wert}</b>`:''}</span>`;
+const FARBEN=['#b3202c','#1d4fa3','#1b1b1b','#b3202c','#1d4fa3','#1b1b1b','#b3202c','#1d4fa3'];
+const stapel=(n,gr=22)=>`<span class="stapel">${Array.from({length:Math.max(1,Math.min(8,Math.ceil(n/25)))},(_,i)=>chip('',FARBEN[i],gr)).join('')}</span>`;
+const hoehe=['Einsatz','Antwort','Auswertung','Auflösung'];
+const schritte=i=>`<div class="schritte">${hoehe.map((h,k)=>`<span class="${k===i?'an':''}">${h}</span>`).join('')}</div>`;
+const einsatzAn=()=>`<span class="js-einsatz">${S.einsatz}</span>`;
+const restAn=()=>`<span class="js-rest">${MAX-S.einsatz}</span>`;
+const regler=()=>`<input type="range" min="10" max="${MAX}" step="1" value="${S.einsatz}" class="js-regler" aria-label="Einsatz" ${S.gesetzt?'disabled':''}>`;
+const setzenKnopf=()=>S.gesetzt?`<button class="btn prim" data-t="setzen">Einsatz ändern</button>`:`<button class="btn prim" data-t="setzen">Einsatz setzen</button>`;
+const bereitKnopf=()=>S.bereit?`<button class="btn prim" data-t="bereit">Bereit lösen</button>`:`<button class="btn prim" data-t="bereit" ${S.antwort.trim()?'':'disabled'}>Bereit</button>`;
+const feld=(extra='')=>`<textarea class="js-antwort" maxlength="200" aria-label="Deine Antwort" placeholder="Deine Antwort" ${S.bereit?'disabled':''} ${extra}>${esc(S.antwort)}</textarea>`;
+const zaehler=()=>`<span><span class="js-zaehler">${S.antwort.length}</span> von 200 Zeichen</span>`;
+const bereitStatus=()=>S.bereit?'Du bist bereit. Zum Ändern löst du „Bereit“ wieder.':'Du kannst bis zur Auswertung noch ändern.';
+const setzStatus=()=>S.gesetzt?'Du hast gesetzt. Bis die Frage kommt, kannst du noch ändern.':'Geheim: Die anderen sehen nur „hat gesetzt“.';
+const linkFeld=()=>`<div class="link"><code>${LINK}</code><button class="btn klein" data-t="kopie">Link kopieren</button></div>`;
+const startKnopf=()=>S.n>=2?`<button class="btn prim" data-t="ansicht" data-v="3">Partie starten</button>`:`<button class="btn prim" disabled>Partie starten</button>`;
+const startHint=()=>S.n>=2?`${S.n} Spieler im Spielraum, mindestens 2 sind nötig.`:'Noch 1 Spieler fehlt, mindestens 2 sind nötig.';
+const warteSpieler=()=>SP.slice(0,S.n);
+const raenge=l=>l.map((e,i)=>({n:e[0],w:e[1],rang:l.findIndex(x=>x[1]===e[1])+1}));
+const siegTitel=()=>S.ende==='gleich'?'Gleichstand: Anna und Cara gewinnen':'Anna gewinnt die Partie';
+const siegUnter=()=>S.ende==='gleich'?'Beide mit 340 Chips. Es gibt zwei Sieger.':'Mit 340 Chips vor Cara mit 215 Chips.';
+
+function obenLeiste(i,kontext=true){
+  const istQm=S.a===5||((S.a===2||S.a===6)&&S.rolle==='qm')||(S.a===7&&S.rolle==='qm');
+  return `<div class="top"><span class="logo">Quiz-Poker</span><span class="ort">Spielraum <b>KLMN</b></span>
+   ${kontext?'<span class="ort">Kategorie <b>Geographie</b> · Runde <b>2 von 3</b></span>':''}
+   ${i>=0?schritte(i):''}<span class="wer" ${i<0?'style="margin-left:auto"':''}>${S.a===7?'Partie beendet':istQm?'Quiz-Master':'Cara · Spieler'}</span></div>`;
+}
+const formEroeffnen=()=>`<p>Du leitest die Partie als Quiz-Master und spielst nicht mit. Gespielt wird das Beispiel-Quiz.</p>`;
+const formBeitreten=()=>`<label class="fld"><span>Raumcode</span><input value="KLMN" maxlength="4"></label><label class="fld"><span>Name</span><input value="Cara" maxlength="20"></label>`;
+
+/* ===== A ===== */
+function platz(p,inhalt='',o={}){
+  const w=o.wert??p.vor;
+  return `<div class="platz ${p.ich&&S.a!==5&&(S.rolle!=='qm'||S.a===3||S.a===4)?'du':''} ${o.kl||''}"><div class="k"><span class="avatar">${p.n[0]}</span><b class="name">${p.n}</b>${p.ich&&(S.rolle!=='qm'||S.a===3||S.a===4)&&S.a!==5?'<span class="tag warte">du</span>':''}<span class="stand num">${stapel(w)}${w}</span></div>${inhalt}</div>`;
+}
+const frei=()=>`<div class="platz frei">Platz frei</div>`;
+function tisch(mitte,plaetze){
+  return `<div class="a-raum"><div class="a-tisch"><div class="a-seiten">${plaetze[0]}${plaetze[1]}</div><div class="a-mitte">${mitte}</div><div class="a-seiten">${plaetze[2]}${plaetze[3]}</div></div></div>`;
+}
+const A={
+ 1:()=>`<div class="a-raum"><div class="a-tisch" style="grid-template-columns:1fr"><div class="a-mitte">
+   <h1 class="a-titel">Quiz-Poker</h1><p class="a-bank" style="font-size:18px">Setze deine Chips gegen die Bank auf dein Wissen</p>
+   <div class="a-forms"><div class="a-karte"><h3>Raum eröffnen</h3>${formEroeffnen()}<button class="btn prim gelb" data-t="start" data-v="qm">Raum eröffnen</button></div>
+   <div class="a-karte"><h3>Raum beitreten</h3>${formBeitreten()}<button class="btn prim" data-t="start" data-v="spieler">Raum beitreten</button></div></div>
+  </div></div></div>`,
+ 2:()=>{const l=warteSpieler().map(p=>({...p}));const pl=[0,1,2,3].map(i=>l[i]?platz({...spieler()[i]},`<div class="z"><span class="tag ok">im Spielraum</span></div>`,{wert:100}):frei());
+   return obenLeiste(-1,false)+tisch(`<div class="a-bank">Raumcode zum Weitergeben</div><div class="a-code">${'KLMN'.split('').map(c=>`<span>${c}</span>`).join('')}</div>${linkFeld()}
+    ${S.rolle==='qm'?`<div style="margin-top:8px">${startKnopf()}</div><p class="a-unter">${startHint()}</p>`:`<p class="a-unter" style="margin-top:8px;font-size:19px">Der Quiz-Master startet gleich die Partie.</p>`}`,pl);},
+ 3:()=>{const s=spieler();const pl=s.map(p=>platz(p,`<div class="z">${tagGesetzt(p)}</div>`));
+   return obenLeiste(0)+tisch(`<div class="a-bank">Gesetzt wird gegen die Bank</div><h2 class="a-kat">Geographie</h2><p class="a-unter">Runde 2 von 3 · Die Frage kommt nach dem Setzen</p>
+    <div class="a-kreis">${stapel(S.einsatz*1.4,38)}<span class="wert num">${einsatzAn()}</span><small>dein Einsatz</small></div>
+    <div class="a-reihe">${[[10,'#1b1b1b'],[25,'#1d4fa3'],[50,'#b3202c']].map(([w,f])=>`<button class="a-chipbtn" data-t="betrag" data-v="${w}" ${S.gesetzt?'disabled':''}>${chip(w,f)}</button>`).join('')}
+      <button class="a-chipbtn" data-t="betrag" data-v="${MAX}" ${S.gesetzt?'disabled':''}>${chip('Alle','#8a6a13')}</button></div>
+    <div class="a-regler">${regler()}<p class="hint">Mindestens 10, höchstens ${MAX} (alle deine Chips). ${setzStatus()}</p></div>${setzenKnopf()}`,pl);},
+ 4:()=>{const s=spieler();const pl=s.map(p=>platz(p,`<div class="z">${tagBereit(p)}</div>`));
+   return obenLeiste(1)+tisch(`<div class="a-reihe"><span class="a-unter" style="display:flex;align-items:center;gap:9px;font-size:18px">${stapel(S.einsatz*1.2,26)} Dein Einsatz: <b>${einsatzAn()}</b> Chips</span></div>
+    <div class="a-karte"><div class="lab">Geographie · Runde 2 von 3</div><h3>${FRAGE}</h3><div style="margin-top:12px">${feld()}</div>
+      <div class="fz">${zaehler()}<span>${bereitStatus()}</span></div><div style="text-align:right">${bereitKnopf()}</div></div>`,pl);},
+ 5:()=>{const s=spieler();const pl=s.map(p=>S.weg[p.n]?frei():platz(p,`<div class="z"><span>Einsatz <b class="num">${p.e}</b></span>${verb(p)}</div><div class="ant">„${esc(p.antwort)}“</div>${urteil(p)}<div style="text-align:right">${entfernen(p)}</div>`));
+   return obenLeiste(2)+tisch(`${hinweis()}<div class="a-karte"><div class="lab">Frage</div><h3>${FRAGE}</h3><div class="lab" style="margin-top:14px">Musterlösung</div><div class="loes">${LOES}</div></div>
+    ${aufloesen()}<p class="a-unter">${offenText()}</p>`,pl);},
+ 6:()=>{const s=spieler();const ich=S.rolle!=='qm';const pl=s.map(p=>S.weg[p.n]?frei():platz(p,`<div class="z"><span>Einsatz <b class="num">${p.e}</b></span>${erg(p)}</div><div class="ant">„${esc(p.antwort)}“</div><div class="z"><span>Chips</span><span class="num">${p.vor} ${delta(p.delta)} = <b>${p.nach}</b></span></div>`,{wert:p.nach}));
+   return obenLeiste(3)+tisch(`<div class="a-karte"><div class="lab">Frage</div><h3>${FRAGE}</h3><div class="lab" style="margin-top:14px">Musterlösung</div><div class="loes">${LOES}</div></div>
+    ${ich?`<p class="a-unter" style="font-size:18px">Der Quiz-Master startet gleich die nächste Runde.</p>`:`<button class="btn prim">Nächste Runde</button>`}`,pl);},
+ 7:()=>{const r=raenge(ENDE[S.ende]);const by=n=>r.find(x=>x.n===n);const s=spieler();
+   const pl=s.map(p=>{const e=by(p.n);return platz({...p,ich:false},`<div class="z"><span>${e.rang}. Platz</span>${e.rang===1?'<span class="tag ok">Sieger</span>':''}</div>`,{wert:e.w,kl:e.rang===1?'erster':''});});
+   return obenLeiste(-1,false)+tisch(`<div class="a-reihe">${stapel(200,44)}${stapel(150,44)}${stapel(100,44)}</div><h1 class="a-sieg">${siegTitel()}</h1><p class="a-unter" style="font-size:18px">${siegUnter()}</p>
+     <div class="a-karte" style="max-width:400px">${r.map(e=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:18px;${e.rang===1?'font-weight:800':''}"><span>${e.rang}. ${e.n}</span><span class="num">${e.w} Chips</span></div>`).join('')}</div>`,pl);},
+};
+
+/* ===== B ===== */
+function bRail(status){
+  return `<aside class="b-rail"><h4>Chipstände</h4>${spieler().map(p=>`<div class="b-zeile ${p.ich?'du':''}"><b>${p.n}</b><span class="num" style="font-size:17px;font-weight:600">${p.vor}</span><span class="st">${status(p)}</span></div>`).join('')}</aside>`;
+}
+const B={
+ 1:()=>`<div class="b-start"><h1>Quiz-Poker</h1><p>Setze Chips gegen die Bank auf dein Wissen.</p><div class="b-zwei">
+   <div class="b-karte"><h3>Raum eröffnen</h3>${formEroeffnen()}<button class="btn prim" data-t="start" data-v="qm">Raum eröffnen</button></div>
+   <div class="b-karte"><h3>Raum beitreten</h3>${formBeitreten()}<button class="btn prim" data-t="start" data-v="spieler">Raum beitreten</button></div></div></div>`,
+ 2:()=>obenLeiste(-1,false)+`<div class="b-haupt"><div class="b-karte" style="padding:34px 36px"><p class="b-klein">Raumcode zum Weitergeben</p><div class="b-code">KLMN</div>${linkFeld()}
+   <div class="b-unten" style="margin-top:34px;border-top:1px solid var(--line);padding-top:22px">${S.rolle==='qm'?`<span style="color:var(--mut)">${startHint()}</span>${startKnopf()}`:`<span style="font-size:18px">Der Quiz-Master startet gleich die Partie.</span>`}</div></div>
+   <aside class="b-rail"><h4>Spieler (${S.n})</h4>${warteSpieler().map(p=>`<div class="b-zeile"><b>${p.n}</b><span class="num" style="font-size:15px;color:var(--mut)">100 Chips</span></div>`).join('')}</aside></div>`,
+ 3:()=>obenLeiste(0)+`<div class="b-haupt"><div><p class="b-klein">Kategorie · Runde 2 von 3</p><h2 class="b-kat">Geographie</h2><p style="color:var(--mut);font-size:17px;margin:6px 0 26px">Die Frage erscheint, nachdem gesetzt wurde.</p>
+   <div class="b-karte"><div class="b-eins"><div><p class="b-klein">Dein Einsatz</p><div class="b-zahl num">${einsatzAn()}</div></div><div class="re">Deine Chips<b class="num">${MAX}</b>davon bleiben ${restAn()}</div></div>
+    ${regler()}<p class="hint">Mindestens 10, höchstens ${MAX} (alle deine Chips).</p>
+    <div class="b-unten"><div class="zahlen">${[10,25,50].map(v=>`<button class="btn" data-t="betrag" data-v="${v}" ${S.gesetzt?'disabled':''}>${v}</button>`).join('')}<button class="btn" data-t="betrag" data-v="${MAX}" ${S.gesetzt?'disabled':''}>Alle</button></div>${setzenKnopf()}</div>
+    <p class="hint">${setzStatus()}</p></div></div>${bRail(tagGesetzt)}</div>`,
+ 4:()=>obenLeiste(1)+`<div class="b-haupt"><div><p class="b-klein">Geographie · Runde 2 von 3 · Dein Einsatz: ${einsatzAn()} Chips</p><h2 class="b-frage" style="margin-bottom:26px">${FRAGE}</h2>
+    <div class="b-karte">${feld()}<div style="display:flex;justify-content:space-between;color:var(--mut);font-size:13.5px;margin-top:6px">${zaehler()}</div>
+    <div class="b-unten"><span style="color:var(--mut)">${bereitStatus()}</span>${bereitKnopf()}</div></div></div>${bRail(tagBereit)}</div>`,
+ 5:()=>obenLeiste(2)+`<div class="b-haupt breit">${hinweis()}<div class="b-kopf"><div><p class="b-klein">Frage</p><h2 class="b-frage">${FRAGE}</h2></div><div class="b-loes"><small>Musterlösung</small><b>${LOES}</b></div></div>
+   <div class="b-liste">${aktiv().map(p=>`<div class="b-sp"><div><div class="n">${p.n}</div>${verb(p)}</div><div><div class="wenig">Einsatz</div><div class="ein num">${p.e}</div></div><div><div class="wenig">Antwort</div><div class="ant">${esc(p.antwort)}</div></div>${urteil(p)}${entfernen(p)}</div>`).join('')}</div>
+   <div class="b-unten" style="margin-top:0;justify-content:flex-end"><span style="color:var(--mut)">${offenText()}</span>${aufloesen()}</div></div>`,
+ 6:()=>{const qm=S.rolle==='qm';return obenLeiste(3)+`<div class="b-haupt breit"><div class="b-kopf"><div><p class="b-klein">Frage</p><h2 class="b-frage">${FRAGE}</h2></div><div class="b-loes"><small>Musterlösung</small><b>${LOES}</b></div></div>
+   <div class="b-liste"><div class="b-erg b-kopfz"><span>Spieler</span><span>Einsatz</span><span>Antwort</span><span>Ergebnis</span><span class="ae" style="font-size:13px">Chips</span></div>${aktiv().map(p=>`<div class="b-erg ${!qm&&p.ich?'du':''}"><span class="n">${p.n}${!qm&&p.ich?' (du)':''}</span><span class="num" style="font-size:18px;font-weight:600">${p.e}</span><span class="ant">${esc(p.antwort)}</span><span>${erg(p)}</span><span class="ae num">${delta(p.delta)} → <b>${p.nach}</b></span></div>`).join('')}</div>
+   <div class="b-unten" style="margin-top:0;justify-content:flex-end">${qm?`<button class="btn prim">Nächste Runde</button>`:`<span style="color:var(--mut);font-size:17px">Der Quiz-Master startet gleich die nächste Runde.</span>`}</div></div>`;},
+ 7:()=>obenLeiste(-1,false)+`<div class="b-ende"><h1>${siegTitel()}</h1><p>${siegUnter()}</p><div class="b-karte" style="padding:6px 28px">${raenge(ENDE[S.ende]).map(e=>`<div class="b-rang ${e.rang===1?'erster':''}"><span>${e.rang}.</span><span>${e.n}</span><span class="num">${e.w} Chips</span></div>`).join('')}</div></div>`,
+};
+
+/* ===== C ===== */
+function cRail(status,titel='Chipstände'){
+  const l=[...spieler()].sort((a,b)=>b.vor-a.vor);
+  return `<aside class="c-rail"><p class="c-lab">${titel}</p>${l.map((p,i)=>`<div class="c-pl ${p.ich?'du':''}"><div class="o"><span class="r">${i+1}</span><span class="n">${p.n}${p.ich?' (du)':''}</span><span class="w">${p.vor}</span></div><div class="c-bar"><i style="width:${p.vor/1.4}%"></i></div>${status(p)}</div>`).join('')}</aside>`;
+}
+const C={
+ 1:()=>`<div class="c-start"><div class="c-held"><h1>QUIZ<br><span>POKER</span></h1><p>Setze deine Chips gegen die Bank auf dein Wissen. Wer am Ende die meisten hat, gewinnt.</p></div>
+   <div class="c-stapel"><div class="c-fl"><h3>Raum eröffnen</h3>${formEroeffnen()}<button class="btn prim" data-t="start" data-v="qm">Raum eröffnen</button></div>
+   <div class="c-fl"><h3>Raum beitreten</h3>${formBeitreten()}<button class="btn prim" data-t="start" data-v="spieler">Raum beitreten</button></div></div></div>`,
+ 2:()=>obenLeiste(-1,false)+`<div class="c-haupt"><aside class="c-rail"><p class="c-lab">Spieler ${S.n}</p>${warteSpieler().map(p=>`<div class="c-pl"><div class="o"><span class="n">${p.n}</span><span class="w">100</span></div></div>`).join('')}</aside>
+   <div class="c-main" style="justify-content:center;align-items:center;text-align:center"><p class="c-lab">Raumcode</p><div class="c-code">KLMN</div>${linkFeld()}
+   <div style="margin-top:22px">${S.rolle==='qm'?`${startKnopf()}<p class="hint">${startHint()}</p>`:`<p style="font-size:20px;margin:0">Der Quiz-Master startet gleich die Partie.</p>`}</div></div></div>`,
+ 3:()=>obenLeiste(0)+`<div class="c-haupt">${cRail(tagGesetzt)}<div class="c-main"><div><p class="c-lab">Kategorie · Runde 2 von 3</p><h2 class="c-kat">Geographie</h2></div>
+   <div class="c-zwei"><div class="c-fl"><p class="c-lab">Dein Einsatz</p><div class="c-gross">${einsatzAn()}</div>
+     <div class="c-kach">${[10,25,50].map(v=>`<button class="btn ${S.einsatz===v?'an':''}" data-t="betrag" data-v="${v}" ${S.gesetzt?'disabled':''}>${v}</button>`).join('')}<button class="btn ${S.einsatz===MAX?'an':''}" data-t="betrag" data-v="${MAX}" ${S.gesetzt?'disabled':''}>Alle</button></div>
+     ${regler()}<p class="hint">Mindestens 10, höchstens ${MAX} (alle deine Chips).</p></div>
+    <div class="c-fl" style="display:flex;flex-direction:column;gap:16px"><div><p class="c-lab">Deine Chips</p><div class="c-w">${MAX}</div></div><div><p class="c-lab">Danach übrig</p><div class="c-w">${restAn()}</div></div><div><p class="c-lab">Bei Richtig</p><div class="c-w" style="color:var(--plus)">+${einsatzAn()}</div></div>
+      <div style="margin-top:auto">${setzenKnopf().replace('class="btn prim"','class="btn prim" style="width:100%;padding:12px 8px"')}<p class="hint">${setzStatus()}</p></div></div></div></div></div>`,
+ 4:()=>obenLeiste(1)+`<div class="c-haupt">${cRail(tagBereit)}<div class="c-main"><div class="c-reihe"><p class="c-lab" style="margin:0">Frage · Geographie · Runde 2 von 3</p><span style="font-size:16px">Dein Einsatz <b class="num" style="color:var(--acc);font-size:24px">${einsatzAn()}</b></span></div><h2 class="c-frage">${FRAGE}</h2>
+   <div class="c-fl">${feld()}<div class="c-reihe" style="margin-top:12px"><span class="hint" style="margin:0">${zaehler()} · ${bereitStatus()}</span>${bereitKnopf()}</div></div></div></div>`,
+ 5:()=>obenLeiste(2)+`<div class="c-haupt" style="grid-template-columns:minmax(0,1fr)"><div class="c-main">${hinweis()}<div class="c-reihe" style="align-items:stretch"><div><p class="c-lab">Frage</p><h2 class="c-frage kl">${FRAGE}</h2></div><div class="c-loes"><p class="c-lab" style="margin:0">Musterlösung</p><b>${LOES}</b></div></div>
+   <table class="c-tab"><thead><tr><th>Verbindung</th><th>Spieler</th><th class="re">Chips</th><th class="re">Einsatz</th><th>Antwort</th><th>Auswertung</th><th></th></tr></thead><tbody>
+   ${aktiv().map(p=>`<tr><td>${verb(p)}</td><td class="name">${p.n}</td><td class="re wert">${p.vor}</td><td class="re wert gold">${p.e}</td><td class="ant">${esc(p.antwort)}</td><td>${urteil(p)}</td><td class="re">${entfernen(p)}</td></tr>`).join('')}</tbody></table>
+   <div class="c-reihe" style="justify-content:flex-end"><span style="color:var(--mut)">${offenText()}</span>${aufloesen()}</div></div></div>`,
+ 6:()=>{const qm=S.rolle==='qm';const l=[...aktiv()].sort((a,b)=>b.nach-a.nach);return obenLeiste(3)+`<div class="c-haupt" style="grid-template-columns:minmax(0,1fr)"><div class="c-main"><div class="c-reihe" style="align-items:stretch"><div><p class="c-lab">Frage</p><h2 class="c-frage kl">${FRAGE}</h2></div><div class="c-loes"><p class="c-lab" style="margin:0">Musterlösung</p><b>${LOES}</b></div></div>
+   <table class="c-tab"><thead><tr><th>Platz</th><th>Spieler</th><th class="re">Einsatz</th><th>Antwort</th><th>Ergebnis</th><th class="re">Änderung</th><th class="re">Chips</th></tr></thead><tbody>
+   ${l.map((p,i)=>`<tr class="${!qm&&p.ich?'du':''}"><td class="wert">${i+1}</td><td class="name">${p.n}${!qm&&p.ich?' (du)':''}</td><td class="re wert gold">${p.e}</td><td class="ant">${esc(p.antwort)}</td><td>${erg(p)}</td><td class="re wert">${delta(p.delta)}</td><td class="re wert" style="font-size:30px">${p.nach}</td></tr>`).join('')}</tbody></table>
+   <div class="c-reihe" style="justify-content:flex-end">${qm?`<button class="btn prim">Nächste Runde</button>`:`<span style="color:var(--mut);font-size:17px">Der Quiz-Master startet gleich die nächste Runde.</span>`}</div></div></div>`;},
+ 7:()=>{const r=raenge(ENDE[S.ende]);return obenLeiste(-1,false)+`<div class="c-ende"><p class="c-lab">Endstand</p><h1>${S.ende==='gleich'?'Gleichstand:<br><span>Anna und Cara</span> gewinnen':'<span>Anna</span> gewinnt die Partie'}</h1><p style="margin:-14px 0 0;color:var(--mut);font-size:18px">${siegUnter()}</p>
+   <div class="c-pod">${r.map(e=>`<div class="c-sau ${e.rang===1?'erster':''}" style="min-height:${e.rang===1?260:e.rang===2?200:e.rang===3?165:140}px"><div class="pl">${e.rang}. Platz</div><div class="nm">${e.n}</div><div class="ws">${e.w}</div><div class="pl">Chips</div></div>`).join('')}</div></div>`;},
+};
+
+/* ===== Steuerung ===== */
+const TABS=['Start','Warten','Spieler: Einsatz','Spieler: Antwort','Quiz-Master: Auswertung','Auflösung','Ende'];
+function leiste(){
+  let h=TABS.map((t,i)=>`<button class="${S.a===i+1?'an':''}" data-t="ansicht" data-v="${i+1}">${i+1} ${t}</button>`).join('');
+  const umsch=(was,key,werte)=>`<span class="trenn"></span><span class="was">${was}:</span>`+werte.map(([v,l])=>`<button class="${String(S[key])===String(v)?'an':''}" data-t="setz" data-k="${key}" data-v="${v}">${l}</button>`).join('');
+  if(S.a===2||S.a===6) h+=umsch('Rolle','rolle',[['qm','Quiz-Master'],['spieler','Spieler']]);
+  if(S.a===2) h+=umsch('Im Spielraum','n',[[4,'4 Spieler'],[1,'1 Spieler']]);
+  if(S.a===7) h+=umsch('Ausgang','ende',[['sieger','Ein Sieger'],['gleich','Gleichstand']]);
+  return h;
+}
+function zeichne(){
+  document.getElementById('leiste').innerHTML=leiste();
+  vA.innerHTML=A[S.a]();vB.innerHTML=B[S.a]();vC.innerHTML=C[S.a]();
+}
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-t]');if(!b||b.disabled)return;
+  const {t,v,n,k}=b.dataset;
+  if(t==='ansicht')S.a=+v;
+  if(t==='setz')S[k]=k==='n'?+v:v;
+  if(t==='start'){S.rolle=v;S.a=2;}
+  if(t==='setzen')S.gesetzt=!S.gesetzt;
+  if(t==='betrag')S.einsatz=+v;
+  if(t==='bereit')S.bereit=!S.bereit;
+  if(t==='urteil')S.urteil[n]=v;
+  if(t==='weg')S.weg[n]=true;
+  if(t==='zurueck')S.zurueck=false;
+  if(t==='kopie'){b.textContent='Kopiert';return;}
+  zeichne();
+});
+document.addEventListener('input',ev=>{
+  const e=ev.target;
+  if(e.classList.contains('js-regler')){
+    S.einsatz=+e.value;
+    document.querySelectorAll('.js-einsatz').forEach(x=>x.textContent=S.einsatz);
+    document.querySelectorAll('.js-rest').forEach(x=>x.textContent=MAX-S.einsatz);
+    document.querySelectorAll('.js-regler').forEach(x=>{if(x!==e)x.value=S.einsatz;});
+  }
+  if(e.classList.contains('js-antwort')){
+    S.antwort=e.value;
+    document.querySelectorAll('.js-zaehler').forEach(x=>x.textContent=S.antwort.length);
+    document.querySelectorAll('.js-antwort').forEach(x=>{if(x!==e)x.value=S.antwort;});
+    document.querySelectorAll('[data-t=bereit]').forEach(x=>x.disabled=!S.antwort.trim()&&!S.bereit);
+  }
+});
+zeichne();
+/* nur zum Prüfen: ?klick=selektor|selektor löst Klicks der Reihe nach aus */
+(q.get('klick')||'').split('|').filter(Boolean).forEach(s=>document.querySelector(s).click());
+</script>
+</body>
+</html>

@@ -8,6 +8,8 @@ import { Regelfehler } from "./fehler";
 
 const MINDESTSPIELER = 2;
 const HOECHSTSPIELER = 8;
+const NAME_HOECHSTLAENGE = 20;
+const ANTWORT_HOECHSTLAENGE = 200;
 
 export interface Frage {
   text: string;
@@ -102,33 +104,42 @@ export function partieErstellen(quiz: Quiz): Partie {
   };
 }
 
+export function spielerNachName(
+  partie: Partie,
+  name: string,
+): Spieler | undefined {
+  const gesucht = name.trim().toLowerCase();
+  return partie.spieler.find(
+    (spieler) => spieler.name.toLowerCase() === gesucht,
+  );
+}
+
 export function spielerBeitreten(
   partie: Partie,
   id: string,
   name: string,
 ): Partie {
+  const sauberName = name.trim();
+  if (sauberName === "") {
+    throw new Regelfehler("leerer-name");
+  }
+  if (sauberName.length > NAME_HOECHSTLAENGE) {
+    throw new Regelfehler("name-zu-lang");
+  }
+  if (partie.spieler.some((spieler) => spieler.id === id)) {
+    throw new Regelfehler("id-vergeben");
+  }
+  // Vor den Phasen prüfen: Ein vergebener Name führt zur Rückkehr, auch in der letzten Runde.
+  if (spielerNachName(partie, sauberName)) {
+    throw new Regelfehler("name-vergeben");
+  }
+
   if (partie.phase === "beendet") {
     throw new Regelfehler("falsche-phase");
   }
   if (partie.phase !== "warten" && istLetzteRunde(partie)) {
     throw new Regelfehler("letzte-runde");
   }
-
-  const sauberName = name.trim();
-  if (sauberName === "") {
-    throw new Regelfehler("leerer-name");
-  }
-
-  if (partie.spieler.some((spieler) => spieler.id === id)) {
-    throw new Regelfehler("id-vergeben");
-  }
-  const nameVergeben = partie.spieler.some(
-    (spieler) => spieler.name.toLowerCase() === sauberName.toLowerCase(),
-  );
-  if (nameVergeben) {
-    throw new Regelfehler("name-vergeben");
-  }
-
   if (partie.spieler.length >= HOECHSTSPIELER) {
     throw new Regelfehler("raum-voll");
   }
@@ -201,6 +212,9 @@ export function antwortBestaetigen(
   const antwort = text.trim();
   if (antwort === "") {
     throw new Regelfehler("leere-antwort");
+  }
+  if (antwort.length > ANTWORT_HOECHSTLAENGE) {
+    throw new Regelfehler("antwort-zu-lang");
   }
 
   return {

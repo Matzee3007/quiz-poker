@@ -1,10 +1,10 @@
+import { exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import worker from "./index";
 
 describe("Worker", () => {
   it("meldet unter /api/health, dass der Server läuft", async () => {
-    const antwort = await worker.fetch(
-      new Request("https://quiz-poker.test/api/health"),
+    const antwort = await exports.default.fetch(
+      "https://quiz-poker.test/api/health",
     );
 
     expect(antwort.status).toBe(200);
@@ -12,9 +12,10 @@ describe("Worker", () => {
   });
 
   it("antwortet auf unbekannte API-Pfade mit 404", async () => {
-    const antwort = await worker.fetch(
-      new Request("https://quiz-poker.test/api/gibt-es-nicht"),
+    const antwort = await exports.default.fetch(
+      "https://quiz-poker.test/api/gibt-es-nicht",
     );
+    await antwort.text();
 
     expect(antwort.status).toBe(404);
   });
