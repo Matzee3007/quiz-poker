@@ -2,13 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   aktuelleRunde,
   antwortBestaetigen,
+  antwortBewerten,
   antwortZuruecknehmen,
+  aufloesen,
   auswertungStarten,
   einsatzSetzen,
   frageZeigen,
   partieErstellen,
   partieStarten,
   spielerBeitreten,
+  type Partie,
   type Quiz,
 } from "./partie";
 
@@ -35,6 +38,21 @@ function partieMitAnnaUndBen() {
     "ben",
     "Ben",
   );
+}
+
+/** Führt bis zur Auswertung: Beide haben gesetzt, Anna und Ben haben geantwortet. */
+function partieInAuswertung(einsatzAnna = 20, einsatzBen = 30) {
+  let partie = gestartetePartie();
+  partie = einsatzSetzen(partie, "anna", einsatzAnna);
+  partie = einsatzSetzen(partie, "ben", einsatzBen);
+  partie = frageZeigen(partie);
+  partie = antwortBestaetigen(partie, "anna", "Berlin");
+  partie = antwortBestaetigen(partie, "ben", "Paris");
+  return auswertungStarten(partie);
+}
+
+function chipsVon(partie: Partie, id: string) {
+  return partie.spieler.find((spieler) => spieler.id === id)?.chips;
 }
 
 function gestartetePartie() {
@@ -218,5 +236,65 @@ describe("Antwortphase", () => {
     expect(() => antwortZuruecknehmen(partie, "cara")).toThrow(
       "nicht-in-runde",
     );
+  });
+});
+
+describe("Auswertung und Auflösung", () => {
+  it("zahlt bei richtig den Einsatz aus und zieht ihn bei falsch ab", () => {
+    let partie = partieInAuswertung();
+    partie = antwortBewerten(partie, "anna", true);
+    partie = antwortBewerten(partie, "ben", false);
+    partie = aufloesen(partie);
+
+    expect(partie.phase).toBe("aufgeloest");
+    expect(chipsVon(partie, "anna")).toBe(120);
+    expect(chipsVon(partie, "ben")).toBe(70);
+  });
+
+  it("lässt die Bewertung bis zur Auflösung korrigieren, die Chips bleiben so lange gleich", () => {
+    let partie = partieInAuswertung();
+    partie = antwortBewerten(partie, "anna", false);
+    partie = antwortBewerten(partie, "anna", true);
+    partie = antwortBewerten(partie, "ben", false);
+
+    expect(chipsVon(partie, "anna")).toBe(100);
+    expect(chipsVon(aufloesen(partie), "anna")).toBe(120);
+  });
+
+  it("lehnt die Bewertung eines Spielers ohne Antwort ab", () => {
+    const partie = auswertungStarten(frageZeigen(gestartetePartie()));
+
+    expect(() => antwortBewerten(partie, "anna", true)).toThrow(
+      "keine-antwort",
+    );
+  });
+
+  it("löst nicht auf, solange eine Antwort unbewertet ist", () => {
+    const partie = antwortBewerten(partieInAuswertung(), "anna", true);
+
+    expect(() => aufloesen(partie)).toThrow("nicht-bewertet");
+  });
+
+  it("zieht den Einsatz ab, wenn die Antwort fehlt", () => {
+    let partie = einsatzSetzen(gestartetePartie(), "ben", 30);
+    partie = auswertungStarten(frageZeigen(partie));
+
+    expect(chipsVon(aufloesen(partie), "ben")).toBe(70);
+  });
+
+  it("ändert nichts, wenn Einsatz und Antwort fehlen", () => {
+    const partie = auswertungStarten(frageZeigen(gestartetePartie()));
+
+    expect(chipsVon(aufloesen(partie), "anna")).toBe(100);
+  });
+
+  it("zahlt beim zweiten Auflösen nicht doppelt aus", () => {
+    let partie = partieInAuswertung();
+    partie = antwortBewerten(partie, "anna", true);
+    partie = antwortBewerten(partie, "ben", false);
+    const aufgeloest = aufloesen(partie);
+
+    expect(() => aufloesen(aufgeloest)).toThrow("falsche-phase");
+    expect(chipsVon(aufgeloest, "anna")).toBe(120);
   });
 });

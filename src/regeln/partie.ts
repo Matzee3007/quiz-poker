@@ -1,4 +1,4 @@
-import { istGueltigerEinsatz, START_CHIPS } from "./chips";
+import { chipsNachRunde, istGueltigerEinsatz, START_CHIPS } from "./chips";
 import { Regelfehler } from "./fehler";
 
 const MINDESTSPIELER = 2;
@@ -194,4 +194,48 @@ export function antwortZuruecknehmen(
 export function auswertungStarten(partie: Partie): Partie {
   verlangePhase(partie, "antworten");
   return { ...partie, phase: "auswertung" };
+}
+
+export function antwortBewerten(
+  partie: Partie,
+  spielerId: string,
+  richtig: boolean,
+): Partie {
+  verlangePhase(partie, "auswertung");
+  rundenTeilnehmerFinden(partie, spielerId);
+  if (partie.antworten[spielerId] === undefined) {
+    throw new Regelfehler("keine-antwort");
+  }
+
+  return {
+    ...partie,
+    bewertungen: { ...partie.bewertungen, [spielerId]: richtig },
+  };
+}
+
+export function aufloesen(partie: Partie): Partie {
+  verlangePhase(partie, "auswertung");
+  const unbewertet = Object.keys(partie.antworten).some(
+    (id) => partie.bewertungen[id] === undefined,
+  );
+  if (unbewertet) {
+    throw new Regelfehler("nicht-bewertet");
+  }
+
+  return {
+    ...partie,
+    phase: "aufgeloest",
+    spieler: partie.spieler.map((spieler) =>
+      partie.rundenTeilnehmer.includes(spieler.id)
+        ? {
+            ...spieler,
+            chips: chipsNachRunde(
+              spieler.chips,
+              partie.einsaetze[spieler.id] ?? 0,
+              partie.bewertungen[spieler.id] === true,
+            ),
+          }
+        : spieler,
+    ),
+  };
 }
