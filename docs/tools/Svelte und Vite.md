@@ -22,6 +22,14 @@ Gerüst im Scratchpad erzeugt und in den Projektordner kopiert, weil dieser nich
 npm create vite@latest quiz-poker -- --template svelte-ts --no-interactive
 ```
 
+## Aufbau der Oberfläche
+
+- `src/App.svelte` entscheidet anhand von Adresse, Token und Ansicht, was zu sehen ist. Einen Router gibt es nicht.
+- `src/verbindung.svelte.ts` hält die WebSocket-Verbindung als Klasse mit Runes (`$state`) und verbindet nach Abbrüchen neu.
+- `src/ansichten/` enthält eine Komponente je Ansicht, `src/stil.css` den Stil C aus dem [[projects/quiz-poker/docs/mocks/2026-11-03-spielraum.html|Mock]].
+- `{#key}` setzt in `SpielerRunde` die Eingaben zu Beginn jeder Runde zurück.
+- Das Token liegt im `localStorage` je Browser-Profil. Zum Testen mehrerer Spieler braucht es also getrennte Profile oder private Fenster.
+
 ## Befehle
 
 ```bash

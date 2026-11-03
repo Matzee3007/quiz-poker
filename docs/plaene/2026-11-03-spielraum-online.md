@@ -233,17 +233,17 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 
 - Nutzt: `SpielerAnsicht`, `QuizMasterAnsicht`, `mindesteinsatzFuer`, `senden`
 
-- [ ] **Schritt 1: Spieler:** Einsatz mit Regler und Zahl, Mindestwert aus `mindesteinsatzFuer`, Freitext mit Zähler 200, „Bereit“ löst sich wieder. Später Einsteigende sehen dasselbe ohne Eingabefelder, mit „Du spielst ab der nächsten Runde mit“.
-- [ ] **Schritt 2: Quiz-Master:** Knöpfe für jede Phase, im Einsatz und bei den Antworten mit Anzeige, wer noch fehlt und Weiterschalten trotzdem möglich. Auswertung als Tabelle, „Auflösen“ gesperrt, bis alle Antworten ausgewertet sind. Hinweis „Anna möchte zurück“, Entfernen mit Rückfrage, „Spielraum schließen“ mit Rückfrage.
-- [ ] **Schritt 3: Auflösung und Ende nach Stil C, Gleichstand mit mehreren Siegern.** Serverfehler erscheinen als kurze Meldung.
-- [ ] **Schritt 4: Prüfen mit Skill `run`:** ganze Partie mit Quiz-Master und zwei Spielern in getrennten Browser-Profilen, in 1280 und 1440 px, dazu später Einstieg, Abbruch mit Neuladen und Rückkehr per Quiz-Master. Musterlösung bei einem Spieler in den Entwicklerwerkzeugen unter den WebSocket-Nachrichten suchen, sie darf vor der Auflösung nicht auftauchen.
-- [ ] **Schritt 5: `npm run check`, committen:** „Add game views“
+- [x] **Schritt 1: Spieler:** Einsatz mit Regler und Zahl, Mindestwert aus `mindesteinsatzFuer`, Freitext mit Zähler 200, „Bereit“ löst sich wieder. Später Einsteigende sehen dasselbe ohne Eingabefelder, mit „Du spielst ab der nächsten Runde mit“.
+- [x] **Schritt 2: Quiz-Master:** Knöpfe für jede Phase, im Einsatz und bei den Antworten mit Anzeige, wer noch fehlt und Weiterschalten trotzdem möglich. Auswertung als Tabelle, „Auflösen“ gesperrt, bis alle Antworten ausgewertet sind. Hinweis „Anna möchte zurück“, Entfernen mit Rückfrage, „Spielraum schließen“ mit Rückfrage.
+- [x] **Schritt 3: Auflösung und Ende nach Stil C, Gleichstand mit mehreren Siegern.** Serverfehler erscheinen als kurze Meldung.
+- [x] **Schritt 4: Prüfen mit Skill `run`:** ganze Partie mit Quiz-Master und zwei Spielern in getrennten Browser-Profilen, in 1280 und 1440 px, dazu später Einstieg, Abbruch mit Neuladen und Rückkehr per Quiz-Master. Musterlösung bei einem Spieler in den Entwicklerwerkzeugen unter den WebSocket-Nachrichten suchen, sie darf vor der Auflösung nicht auftauchen.
+- [x] **Schritt 5: `npm run check`, committen:** „Add game views“
 
 ### Aufgabe 10: PR 2
 
 **Dateien:** Ändern `CLAUDE.md`, `docs/tools/Svelte und Vite.md`
 
-- [ ] **Schritt 1: Doku ergänzen, `npm run check`, committen, pushen, PR öffnen:** „Add game room interface“
+- [x] **Schritt 1: Doku ergänzen, `npm run check`, committen, pushen, PR öffnen:** „Add game room interface“
 - [ ] **Schritt 2: `/code-review`, `plan-pruefer`, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
 
 ### Aufgabe 11: Veröffentlichung und Abschluss
