@@ -1,12 +1,82 @@
+import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
+
 export { Spielraum } from "./spielraum";
+
+const RAUMCODE_VERSUCHE = 10;
+
+async function raumEroeffnen(env: Env): Promise<Response> {
+  for (let versuch = 0; versuch < RAUMCODE_VERSUCHE; versuch++) {
+    const raumcode = raumcodeErzeugen();
+    const token = await env.SPIELRAUM.getByName(raumcode).eroeffnen();
+    if (token) {
+      return Response.json({ raumcode, token }, { status: 201 });
+    }
+  }
+  return new Response("Kein freier Raumcode gefunden", { status: 503 });
+}
+
+async function nameLesen(anfrage: Request): Promise<string | null> {
+  try {
+    const { name } = (await anfrage.json()) as { name?: unknown };
+    return typeof name === "string" ? name : null;
+  } catch {
+    return null;
+  }
+}
+
+async function spielerAnlegen(
+  anfrage: Request,
+  env: Env,
+  raumcode: string,
+): Promise<Response> {
+  const name = await nameLesen(anfrage);
+  if (name === null) {
+    return Response.json({ code: "ungueltige-nachricht" }, { status: 422 });
+  }
+
+  const ergebnis = await env.SPIELRAUM.getByName(raumcode).spielerAnlegen(name);
+  if (ergebnis.ok) {
+    return Response.json({ token: ergebnis.token }, { status: 201 });
+  }
+  if (ergebnis.code === "raum-unbekannt") {
+    return Response.json({ code: ergebnis.code }, { status: 404 });
+  }
+  return Response.json(
+    { code: ergebnis.code },
+    { status: ergebnis.code === "name-vergeben" ? 409 : 422 },
+  );
+}
 
 // Einstieg des Servers: Cloudflare ruft fetch für alle Anfragen an /api/* auf (siehe wrangler.jsonc).
 export default {
-  async fetch(anfrage: Request): Promise<Response> {
+  async fetch(anfrage: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(anfrage.url);
 
     if (pathname === "/api/health") {
       return Response.json({ status: "ok" });
+    }
+
+    if (pathname === "/api/raeume" && anfrage.method === "POST") {
+      return raumEroeffnen(env);
+    }
+
+    const treffer = /^\/api\/raeume\/([^/]+)\/(spieler|verbindung)$/.exec(
+      pathname,
+    );
+    if (treffer) {
+      const [, raumcode, weg] = treffer;
+      if (!istGueltigerRaumcode(raumcode)) {
+        return Response.json({ code: "raum-unbekannt" }, { status: 404 });
+      }
+      if (weg === "spieler" && anfrage.method === "POST") {
+        return spielerAnlegen(anfrage, env, raumcode);
+      }
+      if (weg === "verbindung") {
+        if (anfrage.headers.get("Upgrade") !== "websocket") {
+          return new Response("WebSocket erforderlich", { status: 426 });
+        }
+        return env.SPIELRAUM.getByName(raumcode).fetch(anfrage);
+      }
     }
 
     return new Response("Nicht gefunden", { status: 404 });

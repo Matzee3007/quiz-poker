@@ -144,7 +144,7 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
 - Nutzt: `raumcodeErzeugen`, `istGueltigerRaumcode`, `BEISPIEL_QUIZ`, `partieErstellen`, `spielerBeitreten`, die Ansichten
 - Liefert: die HTTP-Wege oben. Gespeicherter `Raumstand { partie: Partie; quizMasterToken: string; spielerTokens: Record<string, string>; rueckkehrAnfragen: { token: string; spielerId: string }[] }` unter dem Schlüssel `"stand"`
 
-- [ ] **Schritt 1: Tests schreiben, rot**
+- [x] **Schritt 1: Tests schreiben, rot**
   - `POST /api/raeume` liefert 201, gültigen Raumcode und Token. Ist ein Code schon belegt, nimmt der Worker einen anderen.
   - `POST …/spieler` liefert 201 und Token, unbekannter Raum 404, ungültiger Code 404, doppelter Name 409, zu langer Name 422, kein JSON 422.
   - Verbindung mit Spieler-Token bekommt sofort `{ typ: "ansicht" }` mit `rolle: "spieler"`, mit Quiz-Master-Token `rolle: "quiz-master"`.
@@ -153,9 +153,9 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
   - Ohne Upgrade-Kopfzeile antwortet `…/verbindung` mit 426.
   - Zweite Verbindung mit demselben Token schließt die alte mit 4003 (Schwerpunkt 4).
   - Beim Trennen einer Verbindung sehen die anderen `verbunden: false`.
-- [ ] **Schritt 2: Umsetzen.** Token und Rolle stehen per `serializeAttachment` an der Verbindung. Den Spielstand vor jeder Aktion aus `ctx.storage` lesen.
-- [ ] **Schritt 3: `npm test -- worker`, grün.**
-- [ ] **Schritt 4: `npm run check`, committen:** „Add room creation and connections“
+- [x] **Schritt 2: Umsetzen.** Token und Rolle stehen per `serializeAttachment` an der Verbindung. Den Spielstand vor jeder Aktion aus `ctx.storage` lesen.
+- [x] **Schritt 3: `npm test -- worker`, grün.**
+- [x] **Schritt 4: `npm run check`, committen:** „Add room creation and connections“
 
 ### Aufgabe 6: Aktionen und Rechte
 
