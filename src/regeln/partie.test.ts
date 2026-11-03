@@ -13,6 +13,7 @@ import {
   partieStarten,
   sieger,
   spielerBeitreten,
+  spielerEntfernen,
   type Partie,
   type Quiz,
 } from "./partie";
@@ -405,5 +406,71 @@ describe("Sieger", () => {
       "anna",
       "ben",
     ]);
+  });
+});
+
+describe("Später einsteigen", () => {
+  it("gibt in der Einsatzphase Startchips, aber erst die nächste Runde zählt", () => {
+    const partie = spielerBeitreten(gestartetePartie(), "cara", "Cara");
+
+    expect(chipsVon(partie, "cara")).toBe(100);
+    expect(() => einsatzSetzen(partie, "cara", 20)).toThrow("nicht-in-runde");
+  });
+
+  it("lässt die Chips bei der Auflösung unberührt und nimmt ab der nächsten Runde auf", () => {
+    let partie = frageZeigen(gestartetePartie());
+    partie = spielerBeitreten(partie, "cara", "Cara");
+    partie = aufloesen(auswertungStarten(partie));
+
+    expect(chipsVon(partie, "cara")).toBe(100);
+    expect(naechsteRunde(partie).rundenTeilnehmer).toContain("cara");
+  });
+
+  it("ist nach dem Ende der Partie nicht mehr möglich", () => {
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+
+    expect(() => spielerBeitreten(partie, "cara", "Cara")).toThrow(
+      "falsche-phase",
+    );
+  });
+});
+
+describe("Spieler entfernen", () => {
+  it("nimmt den Spieler aus allen Listen der Runde", () => {
+    let partie = partieInAuswertung();
+    partie = antwortBewerten(partie, "ben", true);
+    partie = spielerEntfernen(partie, "ben");
+
+    expect(partie.spieler.map((spieler) => spieler.id)).toEqual(["anna"]);
+    expect(partie.rundenTeilnehmer).toEqual(["anna"]);
+    expect(partie.einsaetze).toEqual({ anna: 20 });
+    expect(partie.antworten).toEqual({ anna: "Berlin" });
+    expect(partie.bewertungen).toEqual({});
+  });
+
+  it("lehnt unbekannte Spieler und das Entfernen nach dem Ende ab", () => {
+    let partie = gestartetePartie();
+    expect(() => spielerEntfernen(partie, "niemand")).toThrow(
+      "unbekannter-spieler",
+    );
+
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    expect(() => spielerEntfernen(partie, "anna")).toThrow("falsche-phase");
+  });
+
+  it("löst die Runde während der Auswertung ohne den Entfernten auf", () => {
+    let partie = partieInAuswertung();
+    partie = antwortBewerten(partie, "anna", true);
+    partie = antwortBewerten(partie, "ben", true);
+    partie = aufloesen(spielerEntfernen(partie, "ben"));
+
+    expect(partie.phase).toBe("aufgeloest");
+    expect(chipsVon(partie, "anna")).toBe(120);
+    expect(chipsVon(partie, "ben")).toBeUndefined();
   });
 });

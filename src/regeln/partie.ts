@@ -64,6 +64,15 @@ function rundenTeilnehmerFinden(partie: Partie, spielerId: string): Spieler {
   return spieler;
 }
 
+function ohneEintrag<T>(
+  eintraege: Record<string, T>,
+  schluessel: string,
+): Record<string, T> {
+  const kopie = { ...eintraege };
+  delete kopie[schluessel];
+  return kopie;
+}
+
 export function partieErstellen(quiz: Quiz): Partie {
   if (
     quiz.kategorien.length === 0 ||
@@ -90,6 +99,10 @@ export function spielerBeitreten(
   id: string,
   name: string,
 ): Partie {
+  if (partie.phase === "beendet") {
+    throw new Regelfehler("falsche-phase");
+  }
+
   const sauberName = name.trim();
   if (sauberName === "") {
     throw new Regelfehler("leerer-name");
@@ -191,9 +204,7 @@ export function antwortZuruecknehmen(
   verlangePhase(partie, "antworten");
   rundenTeilnehmerFinden(partie, spielerId);
 
-  const antworten = { ...partie.antworten };
-  delete antworten[spielerId];
-  return { ...partie, antworten };
+  return { ...partie, antworten: ohneEintrag(partie.antworten, spielerId) };
 }
 
 export function auswertungStarten(partie: Partie): Partie {
@@ -280,4 +291,22 @@ export function sieger(partie: Partie): Spieler[] {
     ...partie.spieler.map((spieler) => spieler.chips),
   );
   return partie.spieler.filter((spieler) => spieler.chips === hoechsterStand);
+}
+
+export function spielerEntfernen(partie: Partie, spielerId: string): Partie {
+  if (partie.phase === "beendet") {
+    throw new Regelfehler("falsche-phase");
+  }
+  if (!partie.spieler.some((spieler) => spieler.id === spielerId)) {
+    throw new Regelfehler("unbekannter-spieler");
+  }
+
+  return {
+    ...partie,
+    spieler: partie.spieler.filter((spieler) => spieler.id !== spielerId),
+    rundenTeilnehmer: partie.rundenTeilnehmer.filter((id) => id !== spielerId),
+    einsaetze: ohneEintrag(partie.einsaetze, spielerId),
+    antworten: ohneEintrag(partie.antworten, spielerId),
+    bewertungen: ohneEintrag(partie.bewertungen, spielerId),
+  };
 }
