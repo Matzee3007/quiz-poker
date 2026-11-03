@@ -13,7 +13,7 @@ Technische Abkürzungen stehen in [[Abkürzungen]].
 ## Rollen
 
 **Quiz-Master**:
-Die Person mit Konto, die eine Partie leitet und jeden Spielschritt weiterschaltet. Sie sieht die Lösungen und spielt nicht mit.
+Die Person, die eine Partie leitet und jeden Spielschritt weiterschaltet, ab Phase 3 mit Konto. Sie sieht die Lösungen und spielt nicht mit.
 _Nicht verwenden_: Host, Spielleiter, Admin
 
 **Ersteller**:
@@ -47,8 +47,16 @@ Der Ort, an dem genau eine Partie läuft und dem Quiz-Master und Spieler beitret
 _Nicht verwenden_: Lobby, Quiz-Raum
 
 **Raumcode**:
-Der kurze Code, mit dem Spieler einem Spielraum beitreten.
+Die 4 Großbuchstaben, mit denen Spieler einem Spielraum beitreten.
 _Nicht verwenden_: PIN, Einladungscode
+
+**Beispiel-Quiz**:
+Das fest eingebaute Quiz, mit dem Partien gespielt werden, solange es noch keine Quiz-Sammlung gibt.
+_Nicht verwenden_: Test-Quiz, Demo
+
+**Ansicht**:
+Der Teil des Spielstands, den eine Rolle gerade sehen darf.
+_Nicht verwenden_: Sicht, View
 
 **Partie**:
 Ein ganzes Spiel mit einem Quiz von der ersten bis zur letzten Runde. Sie besteht aus Kategorien.
