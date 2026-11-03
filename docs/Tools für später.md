@@ -28,3 +28,17 @@ Aufbau je Eintrag:
 - **Was:** Führt Vitest-Tests in der Cloudflare-Laufzeit aus, damit sich Durable Objects und WebSockets testen lassen.
 - **Warum noch nicht:** Bisher gibt es kein Durable Object. Der Worker lässt sich direkt aufrufen.
 - **Wann prüfen:** Start von Phase 2. Dann auch prüfen, ob es Vitest 5 unterstützt.
+
+## Cloudflare D1
+
+- **Link:** https://developers.cloudflare.com/d1/, Dienst von Cloudflare
+- **Was:** SQL-Datenbank für die Quiz-Sammlung und die Konten (siehe [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]).
+- **Warum noch nicht:** Bis Phase 2 reicht ein fest eingebautes Beispiel-Quiz.
+- **Wann prüfen:** Start von Phase 3.
+
+## Better Auth
+
+- **Link:** https://www.better-auth.com/, Lizenz vor dem Einsatz prüfen
+- **Was:** Bibliothek für Login mit E-Mail und Passwort (siehe [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]]).
+- **Warum noch nicht:** Konten kommen erst in Phase 3.
+- **Wann prüfen:** Start von Phase 3. Dann prüfen, ob sie mit D1 zusammenarbeitet und welcher Dienst die E-Mails verschickt.

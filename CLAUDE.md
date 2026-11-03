@@ -9,7 +9,7 @@ stehen in der globalen `~/.claude/CLAUDE.md` (Repo `claude-ecosystem`, `config/C
 
 Quiz-Poker ist ein Online-Quiz im Browser für Spieleabende in der Freundesrunde. Ein Quiz-Master erstellt Kategorien,
 Runden, Fragen und Antworten, die Spieler setzen Pokerchips auf ihre Antworten, am Ende gewinnt, wer die meisten Chips hat.
-Keine öffentliche Plattform, keine Konten für Spieler, kein Echtgeld.
+Frei erreichbar, aber keine beworbene Plattform. Konten nur für Quiz-Master (ADR 0003), Spieler sind Gäste, kein Echtgeld.
 
 Gleichwertiges Ziel ist das **Lernen**: Echtzeit-Multiplayer mit WebSockets, Rollen und Rechte (Spieler sehen Lösungen erst nach der Auflösung), testgetriebene Spiellogik und ein neuer Stack aus Svelte und Cloudflare.
 
@@ -31,7 +31,8 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
 2. **Regeln ohne Technik:** Die Spielregeln sind reines TypeScript ohne Svelte und Cloudflare und werden testgetrieben
    entwickelt.
 3. **Ein Raum, ein Durable Object:** Jeder Spielraum hat genau ein Objekt, das seinen Zustand verwaltet.
-4. **Klein bleiben:** Für eine Freundesrunde, ohne Konten für Spieler und ohne Echtgeld.
+4. **Klein bleiben:** Für eine Freundesrunde, ohne Konten für Spieler und ohne Echtgeld. Quizze liegen ab Phase 3 in D1
+   (ADR 0002).
 5. **Kontext liegt in Dateien** (`CLAUDE.md`, `docs/`), nicht im Chatverlauf.
 
 ## Repo-Struktur

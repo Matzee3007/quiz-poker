@@ -14,12 +14,58 @@ Kategorien (z. B. Sport, Gaming, Geographie), je Kategorie eine eigene Anzahl Ru
 
 Alle Spieler starten mit derselben Anzahl Pokerchips und setzen in jeder Runde einen Teil davon. Wer richtig antwortet,
 gewinnt Chips, wer falsch antwortet, verliert den Einsatz. Nach allen Kategorien und Runden gewinnt, wer die meisten
-Chips hat. Quiz-Master und Spieler treten per Link und Raumcode bei, jeder am eigenen Gerät.
+Chips hat. Spieler treten als Gäste per Link und Raumcode bei, der Quiz-Master leitet die Partie mit seinem Konto, jeder
+am eigenen Gerät. Fachbegriffe stehen im [[projects/quiz-poker/docs/Glossar|Glossar]].
 
 Der spätere Game-Launcher (im Ecosystem vorgemerkt) soll das Spiel über seine Web-Adresse öffnen, eine eigene
 Installation ist dafür nicht nötig.
 
-Ausdrücklich nicht: öffentliche Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
+Die Seite ist frei erreichbar, aber nicht beworben und für Freundesrunden gedacht. Ausdrücklich nicht: beworbene
+Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
+
+**Rahmen:** 2 bis 8 Spieler plus Quiz-Master, im selben Raum oder per Videoanruf. Das Spiel bringt weder Ton noch Video mit.
+
+## Spielregeln
+
+**Ablauf einer Runde** (eine Runde ist genau eine Frage, der Quiz-Master schaltet jeden Schritt von Hand weiter, ohne Timer):
+
+1. Die Kategorie wird angezeigt.
+2. Alle setzen geheim und können den Einsatz ändern, bis die Frage gestellt wird.
+3. Die Frage erscheint.
+4. Alle tippen ihre Antwort als Freitext und drücken „Bereit“. Sie können bis zum Start der Auswertung noch ändern.
+5. Der Quiz-Master sieht Musterlösung und Antworten und markiert jeden Spieler als richtig oder falsch. Das kann er bis zur
+   Auflösung korrigieren.
+6. Auflösung: Die Chips ändern sich, und alle sehen Einsätze, Antworten und Ergebnis.
+
+**Chips:**
+
+- Gespielt wird gegen die Bank, Spieler nehmen sich keine Chips ab.
+- Alle starten mit 100 Chips. Richtig bringt so viele Chips wie der Einsatz, falsch verliert den Einsatz.
+- Mindesteinsatz 10 oder der Rest, falls weniger da ist. Höchsteinsatz sind alle eigenen Chips. Nur ganze Zahlen.
+- Wer bei 0 Chips steht, bekommt zu Beginn der nächsten Runde den Mindesteinsatz.
+- Chipstände sind immer für alle sichtbar. Am Ende gewinnt, wer die meisten Chips hat, bei Gleichstand gibt es mehrere
+  Sieger.
+
+**Sonderfälle:**
+
+- Der Quiz-Master kann Einsatz- und Antwortphase von Hand beenden. Ein fehlender Einsatz zählt als 0, eine fehlende Antwort
+  (nicht auf „Bereit“) als falsch.
+- Beitreten geht bis zum Ende der Partie. Wer später kommt, bekommt die Startchips und spielt ab der nächsten Runde mit.
+- Spieler finden nach einem Abbruch über ein Token im Browser zurück. Geht ein Gerät verloren, ordnet der Quiz-Master den
+  Spieler per Name neu zu. Er kann Spieler auch entfernen.
+- Ein Spielraum endet, wenn der Quiz-Master ihn schließt oder er längere Zeit ungenutzt ist.
+
+## Quiz-Sammlung
+
+- Quizze gehören dem Konto ihres Erstellers ([[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]]) und
+  liegen in D1 ([[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]).
+- Ein privates Quiz kann nur sein Ersteller sehen und bearbeiten.
+- Ein öffentliches Quiz kann jeder in der Sammlung mit Titel und Kategorien sehen und mit einem Konto als eigene Kopie zum
+  Spielen und Bearbeiten übernehmen. Die Kopie ist unabhängig vom Original und zunächst privat.
+- Schutzregeln, weil sich jeder ein Konto anlegen kann: Neue Quizze sind zunächst privat, die Größe eines Quiz ist begrenzt,
+  und der Entwickler kann jedes Quiz löschen.
+- Bewusst hingenommen: Bei öffentlichen Quizzen kann ein Mitspieler vorab die Lösungen sehen. Wer sichergehen will, nimmt ein
+  eigenes privates Quiz.
 
 Weitere Notizen: [[projects/quiz-poker/docs/Arbeitsumgebung|Arbeitsumgebung]] (was der Rechner braucht), [[projects/quiz-poker/docs/Nächste Session|Nächste Session]] (womit es weitergeht),
 [[projects/quiz-poker/docs/Tools für später|Tools für später]] (vorgemerkte Werkzeuge).
@@ -46,17 +92,20 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 | Sprache | TypeScript |
 | Oberfläche | Svelte 5 mit Vite 8 |
 | Server und Echtzeit | Cloudflare Workers und Durable Objects, WebSockets |
+| Quiz-Sammlung und Konten (ab Phase 3) | Cloudflare D1, Login-Bibliothek (Kandidat Better Auth) |
 | Hosting | Cloudflare (kostenloser Tarif), `wrangler` |
 | Tests | Vitest 4 |
 | Qualität | ESLint, Prettier, `svelte-check` |
 
 ## Architekturentscheidungen
 
-1. **Der Server ist die Wahrheit:** Spielstand, Einsätze und Lösungen liegen auf dem Server, der Browser bekommt nur, was
-   seine Rolle sehen darf.
+1. **Der Server ist die Wahrheit:** Spielstand, Einsätze und Lösungen liegen auf dem Server, der Browser bekommt innerhalb
+   einer Partie nur, was seine Rolle sehen darf.
 2. **Regeln ohne Technik:** Die Spielregeln sind reines TypeScript und werden testgetrieben entwickelt.
 3. **Ein Raum, ein Durable Object:** Jeder Spielraum hat genau ein Objekt, das seinen Zustand verwaltet.
 4. **Stack:** [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001]].
+5. **Quiz-Sammlung in D1:** [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]].
+6. **Konten nur für Quiz-Master:** [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]].
 
 ## Roadmap
 
@@ -65,11 +114,14 @@ abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 
 - [ ] **Phase 0 – Fundament:** Repo und `CLAUDE.md` stehen, Stack eingerichtet, erster Test grün,
   Projektvision mit `/grill-with-docs` geschärft, Phasen 1 bis 4 geplant
-- [ ] **Phase 1 – Regelkern:** Chips, Einsätze, Runden und Kategorien als reines TypeScript, testgetrieben
+- [ ] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
 - [ ] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
-  Spieler, erste Veröffentlichung bei Cloudflare
-- [ ] **Phase 3 – Quiz-Editor:** Der Quiz-Master erstellt Kategorien, Runden, Fragen und Antworten
+  Spieler, Rückkehr nach Abbruch, ein fest eingebautes Beispiel-Quiz, erste Veröffentlichung bei Cloudflare
+- [ ] **Phase 3 – Quiz-Sammlung:** Konten, Editor, D1, öffentliche und private Quizze, Kopien, Schutzregeln
 - [ ] **Phase 4 – Spieleabend:** echter Test mit Freunden, Feinschliff (z. B. fürs Handy)
+
+**Für später:** Modus gegen andere Spieler (Pot), Fernseher-Ansicht, Timer, einstellbare Startchips und Einsatzgrenzen,
+Export eines Quiz als Datei, private Quizze mit einzelnen Freunden teilen.
 
 ## Stolpersteine
 
@@ -80,15 +132,10 @@ abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 - **Schummeln:** Alles, was im Browser ankommt, ist einsehbar. Deshalb gehen Lösungen erst bei der Auflösung hinaus.
 - **Abbrüche:** Handys verlieren beim Sperren die Verbindung, Spieler müssen ohne Konto zurück in den Raum finden.
 - **Fragen und Antworten:** Quizfragen aus fremden Quellen nicht ungeprüft veröffentlichen, das Repo bleibt privat.
+- **Betreiberpflichten:** Fremde können Inhalte einstellen, und Konten speichern E-Mail-Adressen. Impressum, Datenschutz und
+  Umgang mit Inhalten vor der Veröffentlichung von Phase 3 klären.
 
 ## Offene Fragen
 
-- Was bringt ein richtiger Einsatz genau? Bei 5 gesetzten Chips entweder 10 auf der Hand (Einsatz zurück plus 5, Stand +5)
-  oder 10 zusätzlich (Stand +10).
-- Müssen alle gleichzeitig und geheim setzen? Gibt es einen Mindest- oder Höchsteinsatz?
-- Wie viele Chips gibt es am Anfang, und was passiert bei 0 Chips?
-- Antworten die Spieler per Auswahl oder als Freitext, und wer entscheidet dann über richtig oder falsch?
-- Spielt der Quiz-Master selbst mit? (Annahme: nein, er kennt die Lösungen.)
-- Wie erkennt der Server einen Spieler nach einem Verbindungsabbruch wieder, ohne Konten?
-- Wo werden fertige Quizze gespeichert, und kann man sie wiederverwenden?
+- Welcher Dienst verschickt die E-Mails zum Zurücksetzen? (Auswahl im Plan für Phase 3.)
 - Wie startet das Spiel im Launcher genau? (Annahme: über die Web-Adresse.)
