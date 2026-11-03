@@ -166,7 +166,7 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
 - Nutzt: `aktionLesen`, alle Funktionen aus `partie.ts`
 - Liefert: `webSocketMessage` setzt jede Aktion um, speichert und schickt allen ihre Ansicht
 
-- [ ] **Schritt 1: Tests schreiben, rot**
+- [x] **Schritt 1: Tests schreiben, rot**
   - Eine ganze Partie mit Quiz-Master und zwei Spielern über WebSockets endet mit dem erwarteten Chipstand und `sieger`.
   - Spieler schickt `frage-zeigen`, `aufloesen`, `antwort-auswerten` oder `spieler-entfernen`: `{ typ: "fehler", code: "keine-berechtigung" }`, Stand unverändert (Schwerpunkt 1).
   - Quiz-Master schickt `einsatz-setzen`: ebenfalls `keine-berechtigung`.
@@ -174,9 +174,9 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
   - Regelverstoß geht als Fehler nur an den Absender, die anderen bekommen nichts.
   - Kaputte Nachricht: `ungueltige-nachricht` (Schwerpunkt 3).
   - Nach `evictDurableObject` mitten in der Runde bleiben Einsatz und Verbindung erhalten, die nächste Aktion gelingt (Schwerpunkt 2).
-- [ ] **Schritt 2: Umsetzen.** Für `Regelfehler` den Code schicken, andere Fehler nicht abfangen.
-- [ ] **Schritt 3: `npm test -- worker`, grün.**
-- [ ] **Schritt 4: `npm run check`, committen:** „Add game actions and permissions“
+- [x] **Schritt 2: Umsetzen.** Für `Regelfehler` den Code schicken, andere Fehler nicht abfangen.
+- [x] **Schritt 3: `npm test -- worker`, grün.**
+- [x] **Schritt 4: `npm run check`, committen:** „Add game actions and permissions“
 
 ### Aufgabe 7: Rückkehr, Entfernen, Raumende, PR 1
 

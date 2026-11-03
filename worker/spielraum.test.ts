@@ -1,8 +1,15 @@
-import { exports } from "cloudflare:workers";
+import { evictDurableObject } from "cloudflare:test";
+import { env, exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { istGueltigerRaumcode } from "../src/regeln/raumcode";
-import type { QuizMasterAnsicht } from "../src/regeln/ansicht";
-import { post, raumEroeffnen, spielerAnlegen, verbinden } from "./testhilfen";
+import type { QuizMasterAnsicht, SpielerAnsicht } from "../src/regeln/ansicht";
+import {
+  post,
+  raumEroeffnen,
+  raumMitAnnaUndBen,
+  spielerAnlegen,
+  verbinden,
+} from "./testhilfen";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -161,5 +168,153 @@ describe("Verbindung", () => {
     expect(await alt.geschlossen).toBe(4003);
     expect((await neu.ansicht()).spieler[0].verbunden).toBe(true);
     neu.schliessen();
+  });
+});
+
+describe("Aktionen", () => {
+  function alleGesetzt(ansicht: QuizMasterAnsicht) {
+    return ansicht.spieler.every((spieler) => spieler.hatGesetzt);
+  }
+  function alleBereit(ansicht: QuizMasterAnsicht) {
+    return ansicht.spieler.every((spieler) => spieler.istBereit);
+  }
+
+  it("spielt eine ganze Partie über WebSockets", async () => {
+    const { quizMaster, anna, ben, annaId, benId } = await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "partie-starten" });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) => a.phase === "einsatz");
+
+    for (let runde = 0; runde < 9; runde++) {
+      anna.senden({ typ: "einsatz-setzen", einsatz: 10 });
+      ben.senden({ typ: "einsatz-setzen", einsatz: 10 });
+      await quizMaster.ansicht<QuizMasterAnsicht>(alleGesetzt);
+      quizMaster.senden({ typ: "frage-zeigen" });
+      anna.senden({ typ: "antwort-bestaetigen", text: "Eins" });
+      ben.senden({ typ: "antwort-bestaetigen", text: "Zwei" });
+      await quizMaster.ansicht<QuizMasterAnsicht>(alleBereit);
+      quizMaster.senden({ typ: "auswertung-starten" });
+      quizMaster.senden({
+        typ: "antwort-auswerten",
+        spielerId: annaId,
+        richtig: true,
+      });
+      quizMaster.senden({
+        typ: "antwort-auswerten",
+        spielerId: benId,
+        richtig: false,
+      });
+      quizMaster.senden({ typ: "aufloesen" });
+      await quizMaster.ansicht<QuizMasterAnsicht>(
+        (a) => a.phase === "aufgeloest",
+      );
+      quizMaster.senden({ typ: "naechste-runde" });
+      await quizMaster.ansicht<QuizMasterAnsicht>(
+        (a) => a.phase === "einsatz" || a.phase === "beendet",
+      );
+    }
+
+    const ende = await anna.ansicht((a) => a.phase === "beendet");
+    expect(ende.sieger).toEqual([annaId]);
+    expect(ende.spieler.find((s) => s.id === annaId)?.chips).toBe(190);
+    expect(ende.spieler.find((s) => s.id === benId)?.chips).toBe(10);
+  });
+
+  it.each([
+    { typ: "partie-starten" },
+    { typ: "frage-zeigen" },
+    { typ: "aufloesen" },
+    { typ: "antwort-auswerten", spielerId: "x", richtig: true },
+    { typ: "spieler-entfernen", spielerId: "x" },
+    { typ: "raum-schliessen" },
+    { typ: "rueckkehr-bestaetigen", spielerId: "x" },
+  ] as const)("verbietet Spielern $typ", async (aktion) => {
+    const { quizMaster, anna } = await raumMitAnnaUndBen();
+    anna.senden(aktion);
+
+    expect(await anna.naechste()).toEqual({
+      typ: "fehler",
+      code: "keine-berechtigung",
+    });
+    quizMaster.senden({ typ: "partie-starten" });
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>();
+    expect(ansicht.phase).toBe("einsatz");
+  });
+
+  it.each([
+    { typ: "einsatz-setzen", einsatz: 10 },
+    { typ: "antwort-bestaetigen", text: "Eins" },
+    { typ: "antwort-zuruecknehmen" },
+  ] as const)("verbietet dem Quiz-Master $typ", async (aktion) => {
+    const { quizMaster } = await raumMitAnnaUndBen();
+    quizMaster.senden(aktion);
+
+    expect(await quizMaster.naechste()).toEqual({
+      typ: "fehler",
+      code: "keine-berechtigung",
+    });
+  });
+
+  it("setzt nur den eigenen Einsatz und verrät ihn anderen nicht", async () => {
+    const { quizMaster, anna, ben, annaId, benId } = await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "partie-starten" });
+    await ben.ansicht((a) => a.phase === "einsatz");
+    anna.senden({ typ: "einsatz-setzen", einsatz: 40 });
+
+    const benSieht = await ben.ansicht<SpielerAnsicht>((a) =>
+      a.spieler.some((s) => s.hatGesetzt),
+    );
+    const qmSieht = await quizMaster.ansicht<QuizMasterAnsicht>((a) =>
+      a.spieler.some((s) => s.hatGesetzt),
+    );
+
+    expect(benSieht.spieler.find((s) => s.id === annaId)?.einsatz).toBeNull();
+    expect(qmSieht.spieler.find((s) => s.id === annaId)?.einsatz).toBe(40);
+    expect(qmSieht.spieler.find((s) => s.id === benId)?.hatGesetzt).toBe(false);
+  });
+
+  it("schickt einen Regelverstoß nur an den Absender", async () => {
+    const { quizMaster, anna, ben } = await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "partie-starten" });
+    await anna.ansicht((a) => a.phase === "einsatz");
+    await ben.ansicht((a) => a.phase === "einsatz");
+    anna.senden({ typ: "einsatz-setzen", einsatz: 5 });
+
+    expect(await anna.naechste()).toEqual({
+      typ: "fehler",
+      code: "ungueltiger-einsatz",
+    });
+    quizMaster.senden({ typ: "frage-zeigen" });
+    const naechste = await ben.naechste();
+    expect(naechste.typ).toBe("ansicht");
+  });
+
+  it("meldet kaputte Nachrichten", async () => {
+    const { anna } = await raumMitAnnaUndBen();
+    anna.senden("kaputt");
+
+    expect(await anna.naechste()).toEqual({
+      typ: "fehler",
+      code: "ungueltige-nachricht",
+    });
+  });
+
+  it("behält Einsätze und Verbindungen nach dem Einschlafen", async () => {
+    const { raumcode, quizMaster, anna, ben, annaId } =
+      await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "partie-starten" });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) => a.phase === "einsatz");
+    anna.senden({ typ: "einsatz-setzen", einsatz: 40 });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) =>
+      a.spieler.some((s) => s.hatGesetzt),
+    );
+
+    await evictDurableObject(env.SPIELRAUM.getByName(raumcode));
+
+    ben.senden({ typ: "einsatz-setzen", einsatz: 20 });
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>((a) =>
+      a.spieler.every((s) => s.hatGesetzt),
+    );
+    expect(ansicht.spieler.find((s) => s.id === annaId)?.einsatz).toBe(40);
+    expect(ansicht.spieler.every((s) => s.verbunden)).toBe(true);
   });
 });

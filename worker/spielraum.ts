@@ -1,19 +1,35 @@
 import { DurableObject } from "cloudflare:workers";
 import {
+  aktionLesen,
   SCHLIESSCODE_ERSETZT,
   SCHLIESSCODE_UNBEKANNT,
+  type Aktion,
   type ServerNachricht,
 } from "../src/protokoll";
 import { quizMasterAnsicht, spielerAnsicht } from "../src/regeln/ansicht";
 import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
 import { Regelfehler, type RegelfehlerCode } from "../src/regeln/fehler";
 import {
+  antwortAuswerten,
+  antwortBestaetigen,
+  antwortZuruecknehmen,
+  aufloesen,
+  auswertungStarten,
+  einsatzSetzen,
+  frageZeigen,
+  naechsteRunde,
   partieErstellen,
+  partieStarten,
   spielerBeitreten,
   type Partie,
 } from "../src/regeln/partie";
 
 const STAND_SCHLUESSEL = "stand";
+const SPIELER_AKTIONEN: readonly Aktion["typ"][] = [
+  "einsatz-setzen",
+  "antwort-bestaetigen",
+  "antwort-zuruecknehmen",
+];
 
 /** Alles, was das Einschlafen überstehen muss. */
 interface Raumstand {
@@ -103,6 +119,39 @@ export class Spielraum extends DurableObject<Env> {
     return antwort;
   }
 
+  async webSocketMessage(
+    verbindung: WebSocket,
+    roh: string | ArrayBuffer,
+  ): Promise<void> {
+    const zugang = zugangVon(verbindung);
+    const stand = await this.standLesen();
+    if (!zugang || !stand) {
+      return;
+    }
+
+    const aktion = typeof roh === "string" ? aktionLesen(roh) : null;
+    if (!aktion) {
+      senden(verbindung, { typ: "fehler", code: "ungueltige-nachricht" });
+      return;
+    }
+
+    try {
+      stand.partie = aktionAusfuehren(stand.partie, aktion, zugang);
+    } catch (fehler) {
+      if (fehler instanceof Regelfehler) {
+        senden(verbindung, {
+          typ: "fehler",
+          code: fehler.message as RegelfehlerCode,
+        });
+        return;
+      }
+      throw fehler;
+    }
+
+    await this.standSpeichern(stand);
+    this.ansichtenVerteilen(stand);
+  }
+
   async webSocketClose(verbindung: WebSocket): Promise<void> {
     const stand = await this.standLesen();
     if (stand) {
@@ -145,6 +194,47 @@ export class Spielraum extends DurableObject<Env> {
         });
       }
     }
+  }
+}
+
+function aktionAusfuehren(
+  partie: Partie,
+  aktion: Aktion,
+  zugang: Zugang,
+): Partie {
+  const fuerSpieler = SPIELER_AKTIONEN.includes(aktion.typ);
+  if (fuerSpieler !== (zugang.rolle === "spieler")) {
+    throw new Regelfehler("keine-berechtigung");
+  }
+
+  if (zugang.rolle === "spieler") {
+    switch (aktion.typ) {
+      case "einsatz-setzen":
+        return einsatzSetzen(partie, zugang.spielerId, aktion.einsatz);
+      case "antwort-bestaetigen":
+        return antwortBestaetigen(partie, zugang.spielerId, aktion.text);
+      case "antwort-zuruecknehmen":
+        return antwortZuruecknehmen(partie, zugang.spielerId);
+      default:
+        return partie;
+    }
+  }
+
+  switch (aktion.typ) {
+    case "partie-starten":
+      return partieStarten(partie);
+    case "frage-zeigen":
+      return frageZeigen(partie);
+    case "auswertung-starten":
+      return auswertungStarten(partie);
+    case "antwort-auswerten":
+      return antwortAuswerten(partie, aktion.spielerId, aktion.richtig);
+    case "aufloesen":
+      return aufloesen(partie);
+    case "naechste-runde":
+      return naechsteRunde(partie);
+    default:
+      return partie;
   }
 }
 
