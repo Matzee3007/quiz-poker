@@ -20,6 +20,7 @@ prüft zusätzlich die Typen in `.svelte`-Dateien.
 
 ```bash
 npm test        # Tests einmal ausführen
+npm test -- src/regeln/partie.test.ts  # Nur die Tests einer Datei ausführen, für die Rot-Grün-Schleife
 npm run check   # Linter, Format, Typen, Tests und Build
 ```
 

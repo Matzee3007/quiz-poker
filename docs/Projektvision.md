@@ -50,7 +50,8 @@ Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
 
 - Der Quiz-Master kann Einsatz- und Antwortphase von Hand beenden. Ein fehlender Einsatz zählt als 0, eine fehlende Antwort
   (nicht auf „Bereit“) als falsch.
-- Beitreten geht bis zum Ende der Partie. Wer später kommt, bekommt die Startchips und spielt ab der nächsten Runde mit.
+- Beitreten geht bis zur letzten Runde, in ihr nicht mehr. Wer später kommt, bekommt die Startchips und spielt ab der nächsten
+  Runde mit. Wer entfernt wurde, kann neu beitreten und hat wieder die Startchips, das wird bewusst hingenommen.
 - Spieler finden nach einem Abbruch über ein Token im Browser zurück. Geht ein Gerät verloren, ordnet der Quiz-Master den
   Spieler per Name neu zu. Er kann Spieler auch entfernen.
 - Ein Spielraum endet, wenn der Quiz-Master ihn schließt oder er längere Zeit ungenutzt ist.
@@ -130,6 +131,9 @@ Export eines Quiz als Datei, private Quizze mit einzelnen Freunden teilen.
 - **Kostenloser Tarif:** Durable Objects nur mit SQLite-Speicher, 100.000 Anfragen pro Tag. Darüber schlagen Aufrufe fehl.
   Für eine Freundesrunde reicht das, Stand 2026-11-02.
 - **Schummeln:** Alles, was im Browser ankommt, ist einsehbar. Deshalb gehen Lösungen erst bei der Auflösung hinaus.
+- **Vor Phase 2 beachten:** `aktuelleRunde` liefert immer auch die Musterlösung, sie darf nur über die Ansicht je Rolle hinausgehen.
+  Spieler-IDs müssen vom Server kommen: `constructor` als ID würde die Chips zerstören, weil Einträge aus normalen Objekten gelesen
+  werden. Beides braucht in Phase 2 einen Test.
 - **Abbrüche:** Handys verlieren beim Sperren die Verbindung, Spieler müssen ohne Konto zurück in den Raum finden.
 - **Fragen und Antworten:** Quizfragen aus fremden Quellen nicht ungeprüft veröffentlichen, das Repo bleibt privat.
 - **Betreiberpflichten:** Fremde können Inhalte einstellen, und Konten speichern E-Mail-Adressen. Impressum, Datenschutz und
