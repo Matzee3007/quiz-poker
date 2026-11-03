@@ -129,11 +129,11 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
 
 - Liefert: `type Aktion` (Nachrichten oben), `type ServerNachricht`, `aktionLesen(roh: string): Aktion | null`, `BEISPIEL_QUIZ: Quiz`
 
-- [ ] **Schritt 1: Tests schreiben, rot**
+- [x] **Schritt 1: Tests schreiben, rot**
   - `aktionLesen` liefert für jede Nachricht aus der Tabelle die Aktion. `null` für `"kaputt"`, `"null"`, `"[]"`, unbekannten `typ`, `einsatz` als Text, fehlenden `text`, `antwort-auswerten` ohne `richtig` als boolean, `spielerId` kein Text (Schwerpunkt 3).
   - `BEISPIEL_QUIZ` hat 3 Kategorien mit je 3 Fragen, jede mit Text und Musterlösung, und `partieErstellen` nimmt es an.
-- [ ] **Schritt 2: Umsetzen. Fragen selbst formulieren, keine fremde Quelle.** `npm test -- src/protokoll.test.ts src/regeln/beispielQuiz.test.ts`, grün.
-- [ ] **Schritt 3: `npm run check`, committen:** „Add protocol and sample quiz“
+- [x] **Schritt 2: Umsetzen. Fragen selbst formulieren, keine fremde Quelle.** `npm test -- src/protokoll.test.ts src/regeln/beispielQuiz.test.ts`, grün.
+- [x] **Schritt 3: `npm run check`, committen:** „Add protocol and sample quiz“
 
 ### Aufgabe 5: Eröffnen, beitreten, verbinden
 
