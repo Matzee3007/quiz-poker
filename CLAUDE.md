@@ -41,7 +41,11 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
 quiz-poker/
 ├── src/                Oberfläche (Svelte)
 │   ├── App.svelte      Startseite
-│   └── main.ts         Einstieg im Browser
+│   ├── main.ts         Einstieg im Browser
+│   └── regeln/         Spielregeln als reines TypeScript, ohne Svelte und Cloudflare
+│       ├── chips.ts    Startchips, Einsatzgrenzen, Gewinn und Verlust
+│       ├── fehler.ts   Regelfehler mit Code
+│       └── partie.ts   Spielstand und alle Spielaktionen einer Partie
 ├── worker/             Server (Cloudflare Worker)
 │   ├── index.ts        beantwortet Anfragen an /api/*
 │   └── index.test.ts   Tests des Workers
@@ -52,7 +56,6 @@ quiz-poker/
 └── vitest.config.ts    Tests
 ```
 
-Ziel ab Phase 1: `src/regeln/` als reines TypeScript für die Spielregeln, ohne Svelte und ohne Cloudflare.
 Ziel ab Phase 2: ein Durable Object unter `worker/` je Spielraum.
 
 ## Befehle

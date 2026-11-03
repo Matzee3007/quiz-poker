@@ -58,7 +58,7 @@ direkt aufrufen. Die Reihenfolge der Aufgaben folgt dem Ablauf einer Runde.
   - `istGueltigerEinsatz(einsatz: number, chips: number): boolean`
   - `chipsNachRunde(chips: number, einsatz: number, richtig: boolean): number`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
 
 ```ts
 expect(mindesteinsatzFuer(100)).toBe(10);
@@ -77,10 +77,10 @@ expect(chipsNachRunde(100, 100, false)).toBe(0);
 expect(new Regelfehler("raum-voll").message).toBe("raum-voll");
 ```
 
-- [ ] **Schritt 2: `npm test -- src/regeln/chips.test.ts`, muss fehlschlagen**, weil das Modul fehlt.
-- [ ] **Schritt 3: `fehler.ts` und `chips.ts` nach den Schnittstellen umsetzen.**
-- [ ] **Schritt 4: `npm test -- src/regeln/chips.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add chip rules“
+- [x] **Schritt 2: `npm test -- src/regeln/chips.test.ts`, muss fehlschlagen**, weil das Modul fehlt.
+- [x] **Schritt 3: `fehler.ts` und `chips.ts` nach den Schnittstellen umsetzen.**
+- [x] **Schritt 4: `npm test -- src/regeln/chips.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add chip rules“
 
 ### Aufgabe 2: Partie erstellen, beitreten, starten
 
@@ -118,7 +118,7 @@ function partieStarten(partie: Partie): Partie;
 function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 ```
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - `partieErstellen` liefert Phase `warten` und keine Spieler. Ein Quiz ohne Kategorien oder mit einer leeren Kategorie wirft `leeres-quiz`.
   - `spielerBeitreten` legt den Spieler mit 100 Chips an. Die Eingabe bleibt unverändert (`partie.spieler` hat danach weiter Länge 0).
   - Der Name wird getrimmt. Nur Leerzeichen werfen `leerer-name`, „Anna“ neben „anna“ wirft `name-vergeben`, eine doppelte ID ebenfalls.
@@ -127,10 +127,10 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
   - `partieStarten` außerhalb von `warten` wirft `falsche-phase`.
   - `aktuelleRunde` nach dem Start liefert Kategorie „Sport“ und ihre erste Frage.
 
-- [ ] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, muss fehlschlagen**, weil das Modul fehlt.
-- [ ] **Schritt 3: Typen und die vier Funktionen in `partie.ts` umsetzen.**
-- [ ] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add match setup rules“
+- [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, muss fehlschlagen**, weil das Modul fehlt.
+- [x] **Schritt 3: Typen und die vier Funktionen in `partie.ts` umsetzen.**
+- [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add match setup rules“
 
 ### Aufgabe 3: Einsatzphase
 
@@ -141,16 +141,16 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - Nutzt: `istGueltigerEinsatz`, `Partie`
 - Liefert: `einsatzSetzen(partie: Partie, spielerId: string, einsatz: number): Partie`, `frageZeigen(partie: Partie): Partie`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - `einsatzSetzen` speichert den Einsatz, ein zweiter Aufruf ersetzt ihn.
   - Einsatz 9 wirft `ungueltiger-einsatz`, eine unbekannte ID `unbekannter-spieler`, ein Spieler außerhalb von `rundenTeilnehmer` `nicht-in-runde`.
   - `frageZeigen` liefert Phase `antworten`, auch wenn nicht alle gesetzt haben. Ein fehlender Einsatz steht danach als 0 in `einsaetze`.
   - Nach `frageZeigen` wirft `einsatzSetzen` `falsche-phase`, ebenso `frageZeigen` selbst.
 
-- [ ] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
-- [ ] **Schritt 3: Beide Funktionen umsetzen.**
-- [ ] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add betting phase rules“
+- [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
+- [x] **Schritt 3: Beide Funktionen umsetzen.**
+- [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add betting phase rules“
 
 ### Aufgabe 4: Antwortphase
 
@@ -161,17 +161,17 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - Liefert: `antwortBestaetigen(partie: Partie, spielerId: string, text: string): Partie`,
   `antwortZuruecknehmen(partie: Partie, spielerId: string): Partie`, `auswertungStarten(partie: Partie): Partie`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - `antwortBestaetigen` speichert den getrimmten Text. Nur Leerzeichen werfen `leere-antwort`.
   - Nach `antwortZuruecknehmen` steht keine Antwort mehr in `antworten`, und eine neue lässt sich bestätigen.
   - `auswertungStarten` liefert Phase `auswertung`, auch wenn nicht alle bestätigt haben.
   - Danach werfen `antwortBestaetigen` und `antwortZuruecknehmen` `falsche-phase`.
   - Spieler außerhalb der Runde werfen `nicht-in-runde`.
 
-- [ ] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
-- [ ] **Schritt 3: Die drei Funktionen umsetzen.**
-- [ ] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add answer phase rules“
+- [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
+- [x] **Schritt 3: Die drei Funktionen umsetzen.**
+- [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add answer phase rules“
 
 ### Aufgabe 5: Auswertung und Auflösung
 
@@ -182,7 +182,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - Nutzt: `chipsNachRunde`
 - Liefert: `antwortBewerten(partie: Partie, spielerId: string, richtig: boolean): Partie`, `aufloesen(partie: Partie): Partie`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - Anna setzt 20 und liegt richtig: 120 Chips. Ben setzt 30 und liegt falsch: 70 Chips. Phase ist danach `aufgeloest`.
   - `antwortBewerten` lässt sich vor `aufloesen` korrigieren, es zählt die letzte Bewertung.
   - Vor `aufloesen` bleiben die Chips unverändert.
@@ -192,10 +192,10 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
   - Kein Einsatz und keine Antwort: weiter 100 Chips (Schwerpunkt 1).
   - Ein zweites `aufloesen` wirft `falsche-phase`, die Chips ändern sich nicht (Schwerpunkt 4).
 
-- [ ] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
-- [ ] **Schritt 3: Beide Funktionen umsetzen.**
-- [ ] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add evaluation and resolution rules“
+- [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
+- [x] **Schritt 3: Beide Funktionen umsetzen.**
+- [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add evaluation and resolution rules“
 
 ### Aufgabe 6: Nächste Runde und Sieger
 
@@ -206,7 +206,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - Nutzt: `MINDESTEINSATZ`
 - Liefert: `naechsteRunde(partie: Partie): Partie`, `sieger(partie: Partie): Spieler[]`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - `naechsteRunde` liefert die nächste Frage in Phase `einsatz` und leert `einsaetze`, `antworten` und `bewertungen`.
   - Nach der letzten Frage von „Sport“ folgt die erste Frage von „Gaming“.
   - Nach der letzten Frage des Quiz liefert es Phase `beendet`.
@@ -216,10 +216,10 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
   - `sieger` liefert den Spieler mit den meisten Chips, bei Gleichstand alle mit diesem Stand.
   - Eine ganze Partie über alle drei Fragen endet mit dem erwarteten Chipstand.
 
-- [ ] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
-- [ ] **Schritt 3: Beide Funktionen umsetzen.** `rundenTeilnehmer` wird zu Beginn jeder Runde auf alle aktuellen Spieler gesetzt.
-- [ ] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add next round and winner rules“
+- [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
+- [x] **Schritt 3: Beide Funktionen umsetzen.** `rundenTeilnehmer` wird zu Beginn jeder Runde auf alle aktuellen Spieler gesetzt.
+- [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add next round and winner rules“
 
 ### Aufgabe 7: Später einsteigen und Spieler entfernen
 
@@ -230,7 +230,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - Liefert: `spielerEntfernen(partie: Partie, spielerId: string): Partie`
 - Ändert: `spielerBeitreten` ist in jeder Phase außer `beendet` erlaubt und nimmt den Spieler nicht in `rundenTeilnehmer` auf
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - Beitritt in Phase `einsatz`: Der neue Spieler bekommt 100 Chips, und `einsatzSetzen` wirft `nicht-in-runde`.
   - Beitritt in Phase `antworten`: Nach der Auflösung hat er weiter 100 Chips, in der nächsten Runde ist er in `rundenTeilnehmer` (Schwerpunkt 3).
   - Beitritt in Phase `beendet` wirft `falsche-phase`.
@@ -238,10 +238,10 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
   - Eine unbekannte ID wirft `unbekannter-spieler`, Phase `beendet` wirft `falsche-phase`.
   - Entfernen eines bewerteten Spielers während `auswertung`: `aufloesen` gelingt für den Rest (Schwerpunkt 5).
 
-- [ ] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
-- [ ] **Schritt 3: `spielerEntfernen` umsetzen und `spielerBeitreten` anpassen.**
-- [ ] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
-- [ ] **Schritt 5: `npm run check`, dann committen:** „Add late joining and player removal rules“
+- [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
+- [x] **Schritt 3: `spielerEntfernen` umsetzen und `spielerBeitreten` anpassen.**
+- [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
+- [x] **Schritt 5: `npm run check`, dann committen:** „Add late joining and player removal rules“
 
 ### Aufgabe 8: PR und Abschluss von Phase 1
 
@@ -255,7 +255,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 
 - Liefert: `src/regeln/partie.ts` als Grundlage für das Durable Object in Phase 2
 
-- [ ] **Schritt 1: `CLAUDE.md` ergänzen, `npm run check`, committen, pushen und PR öffnen.** „Document rules module“
+- [x] **Schritt 1: `CLAUDE.md` ergänzen, `npm run check`, committen, pushen und PR öffnen.** „Document rules module“
 - [ ] **Schritt 2: `/code-review`, Funde mit dem Entwickler durchgehen.**
 - [ ] **Schritt 3: Agent `plan-pruefer` prüft den Branch gegen diesen Plan.**
 - [ ] **Schritt 4: `gh pr checks <nr>` grün und `MERGEABLE`, dann mergen.**
