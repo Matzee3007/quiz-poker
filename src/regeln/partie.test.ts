@@ -14,6 +14,7 @@ import {
   sieger,
   spielerBeitreten,
   spielerEntfernen,
+  spielerNachName,
   type Partie,
   type Quiz,
 } from "./partie";
@@ -613,6 +614,29 @@ describe("Eingabegrenzen", () => {
     ).toHaveLength(200);
     expect(() => antwortBestaetigen(partie, "anna", "a".repeat(201))).toThrow(
       "antwort-zu-lang",
+    );
+  });
+});
+
+describe("Spieler am Namen erkennen", () => {
+  it("findet den Spieler unabhängig von Groß- und Kleinschreibung und Leerzeichen", () => {
+    const partie = gestartetePartie();
+
+    expect(spielerNachName(partie, "  ANNA ")?.id).toBe("anna");
+    expect(spielerNachName(partie, "Niemand")).toBeUndefined();
+  });
+
+  it("meldet einen vergebenen Namen auch in der letzten Runde und nach dem Ende", () => {
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+
+    expect(() => spielerBeitreten(partie, "x", "Anna")).toThrow(
+      "name-vergeben",
+    );
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    expect(() => spielerBeitreten(partie, "x", "Anna")).toThrow(
+      "name-vergeben",
     );
   });
 });

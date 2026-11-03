@@ -6,6 +6,7 @@ import {
 import { env, exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { istGueltigerRaumcode } from "../src/regeln/raumcode";
+import type { Spielraum } from "./spielraum";
 import type { QuizMasterAnsicht, SpielerAnsicht } from "../src/regeln/ansicht";
 import {
   post,
@@ -29,20 +30,22 @@ describe("Spielraum eröffnen", () => {
   });
 
   it("nimmt einen anderen Code, wenn einer schon belegt ist", async () => {
+    const wert = Math.random();
     const zufall = vi.spyOn(Math, "random");
-    zufall.mockReturnValue(0);
+    zufall.mockReturnValue(wert);
     const erster = await post("/api/raeume");
-    zufall
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(0)
-      .mockReturnValue(0.5);
+    zufall.mockRestore();
+    const wiederholt = vi.spyOn(Math, "random");
+    wiederholt
+      .mockReturnValueOnce(wert)
+      .mockReturnValueOnce(wert)
+      .mockReturnValueOnce(wert)
+      .mockReturnValueOnce(wert)
+      .mockReturnValue((wert + 0.5) % 1);
     const zweiter = await post("/api/raeume");
 
-    expect(erster.daten.raumcode).toBe("AAAA");
     expect(zweiter.status).toBe(201);
-    expect(zweiter.daten.raumcode).not.toBe("AAAA");
+    expect(zweiter.daten.raumcode).not.toBe(erster.daten.raumcode);
   });
 });
 
@@ -289,7 +292,14 @@ describe("Aktionen", () => {
     });
     quizMaster.senden({ typ: "frage-zeigen" });
     const naechste = await ben.naechste();
-    expect(naechste.typ).toBe("ansicht");
+    expect(naechste).toMatchObject({
+      typ: "ansicht",
+      ansicht: { phase: "antworten" },
+    });
+    const beimQuizMaster = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.phase === "einsatz",
+    );
+    expect(beimQuizMaster.phase).toBe("einsatz");
   });
 
   it("meldet kaputte Nachrichten", async () => {
@@ -409,18 +419,186 @@ describe("Rückkehr auf ein neues Gerät", () => {
     );
   });
 
-  it("führt je Spieler nur eine Anfrage, eine neue ersetzt die alte", async () => {
+  it("lehnt eine zweite Anfrage ab, solange ein wartendes Gerät verbunden ist", async () => {
     const { raumcode, quizMaster } = await raumMitAnnaUndBen();
     const erste = await anfrageVonAnna(raumcode);
     await erste.naechste();
-    const zweite = await anfrageVonAnna(raumcode);
-    await zweite.naechste();
 
-    expect(await erste.geschlossen).toBe(4001);
+    const zweite = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "Anna",
+    });
+
+    expect(zweite.status).toBe(409);
+    expect(zweite.daten.code).toBe("anfrage-laeuft");
     const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>(
       (a) => a.rueckkehrAnfragen.length > 0,
     );
     expect(ansicht.rueckkehrAnfragen).toHaveLength(1);
+  });
+
+  it("zeigt und bestätigt nur Anfragen von Geräten, die wirklich verbunden sind", async () => {
+    const { raumcode, quizMaster, anna, annaId } = await raumMitAnnaUndBen();
+    const ohneGeraet = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "Anna",
+    });
+    expect(ohneGeraet.status).toBe(202);
+
+    quizMaster.senden({ typ: "rueckkehr-bestaetigen", spielerId: annaId });
+
+    expect(await quizMaster.naechste()).toEqual({
+      typ: "fehler",
+      code: "unbekannter-spieler",
+    });
+    quizMaster.senden({ typ: "partie-starten" });
+    expect((await anna.ansicht((a) => a.phase === "einsatz")).ichId).toBe(
+      annaId,
+    );
+  });
+
+  it("ersetzt eine Anfrage, deren Gerät sich nie verbunden hat", async () => {
+    const { raumcode } = await raumMitAnnaUndBen();
+    await post(`/api/raeume/${raumcode}/rueckkehr`, { name: "Anna" });
+
+    const zweite = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "Anna",
+    });
+
+    expect(zweite.status).toBe(202);
+  });
+
+  it("entfernt die Anfrage, wenn sich das wartende Gerät trennt", async () => {
+    const { raumcode, quizMaster } = await raumMitAnnaUndBen();
+    const neu = await anfrageVonAnna(raumcode);
+    await neu.naechste();
+    await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.rueckkehrAnfragen.length > 0,
+    );
+
+    neu.schliessen();
+
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.rueckkehrAnfragen.length === 0,
+    );
+    expect(ansicht.rueckkehrAnfragen).toEqual([]);
+    const danach = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "Anna",
+    });
+    expect(danach.status).toBe(202);
+  });
+
+  it("schickt einem wartenden Gerät auch bei Änderungen keine Ansicht", async () => {
+    const { raumcode, quizMaster } = await raumMitAnnaUndBen();
+    const neu = await anfrageVonAnna(raumcode);
+    await neu.naechste();
+
+    quizMaster.senden({ typ: "partie-starten" });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) => a.phase === "einsatz");
+    neu.senden("kaputt");
+
+    expect(await neu.naechste()).toEqual({
+      typ: "fehler",
+      code: "keine-berechtigung",
+    });
+  });
+
+  it("meldet ungültige Eingaben auf dem Rückkehrweg mit 422", async () => {
+    const { raumcode } = await raumMitAnnaUndBen();
+    const antwort = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: 5,
+    });
+
+    expect(antwort.status).toBe(422);
+    expect(antwort.daten.code).toBe("ungueltige-nachricht");
+  });
+});
+
+describe("Sonderfälle der Verbindung", () => {
+  function verbindungVon(zustand: DurableObjectState, token: string) {
+    const verbindung = zustand
+      .getWebSockets()
+      .find(
+        (kandidat) =>
+          (kandidat.deserializeAttachment() as { token: string }).token ===
+          token,
+      );
+    if (!verbindung) {
+      throw new Error("Verbindung nicht gefunden");
+    }
+    return verbindung;
+  }
+
+  it("ignoriert Nachrichten von Verbindungen, deren Token nicht mehr gilt", async () => {
+    const { raumcode, quizMaster, annaToken } = await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "partie-starten" });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) => a.phase === "einsatz");
+
+    await runInDurableObject(
+      env.SPIELRAUM.getByName(raumcode),
+      async (raum: Spielraum, zustand) => {
+        const stand = (await zustand.storage.get("stand")) as {
+          spielerTokens: Record<string, string>;
+          partie: { einsaetze: Record<string, number> };
+        };
+        delete stand.spielerTokens[annaToken];
+        await zustand.storage.put("stand", stand);
+
+        await raum.webSocketMessage(
+          verbindungVon(zustand, annaToken),
+          JSON.stringify({ typ: "einsatz-setzen", einsatz: 10 }),
+        );
+
+        const danach = (await zustand.storage.get("stand")) as typeof stand;
+        expect(danach.partie.einsaetze).toEqual({});
+      },
+    );
+  });
+
+  it("stürzt nicht ab, wenn die Antwort auf eine schließende Verbindung ginge", async () => {
+    const { raumcode, annaToken } = await raumMitAnnaUndBen();
+
+    await runInDurableObject(
+      env.SPIELRAUM.getByName(raumcode),
+      async (raum: Spielraum, zustand) => {
+        const verbindung = verbindungVon(zustand, annaToken);
+        verbindung.close(4003, "Test");
+
+        await expect(
+          raum.webSocketMessage(verbindung, "kaputt"),
+        ).resolves.toBeUndefined();
+      },
+    );
+  });
+
+  it("meldet nach einem Verbindungsfehler den Spieler als getrennt", async () => {
+    const { raumcode, quizMaster, annaId, annaToken } =
+      await raumMitAnnaUndBen();
+
+    await runInDurableObject(
+      env.SPIELRAUM.getByName(raumcode),
+      async (raum: Spielraum, zustand) => {
+        await raum.webSocketError(verbindungVon(zustand, annaToken));
+      },
+    );
+
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.spieler.find((s) => s.id === annaId)?.verbunden === false,
+    );
+    expect(ansicht.spieler.find((s) => s.id === annaId)?.verbunden).toBe(false);
+  });
+
+  it("lässt den Stand bei kaputten Nachrichten und falschen Tokens unverändert", async () => {
+    const { raumcode, anna } = await raumMitAnnaUndBen();
+    const raum = env.SPIELRAUM.getByName(raumcode);
+    const lesen = () =>
+      runInDurableObject(raum, (_, zustand) => zustand.storage.get("stand"));
+    const vorher = await lesen();
+
+    anna.senden("kaputt");
+    await anna.naechste();
+    const falsch = await verbinden(raumcode, "constructor");
+    await falsch.geschlossen;
+
+    expect(await lesen()).toEqual(vorher);
   });
 });
 
@@ -460,8 +638,16 @@ describe("Spieler entfernen und Raum beenden", () => {
     expect(vorher).toBeGreaterThan(jetzt + 23 * 60 * 60 * 1000);
     expect(vorher).toBeLessThanOrEqual(jetzt + 24 * 60 * 60 * 1000);
 
+    await runInDurableObject(raum, (_, zustand) =>
+      zustand.storage.setAlarm(Date.now() + 60_000),
+    );
     quizMaster.senden({ typ: "partie-starten" });
     await anna.ansicht((a) => a.phase === "einsatz");
+    const nachAktion = await runInDurableObject(raum, (_, zustand) =>
+      zustand.storage.getAlarm(),
+    );
+    expect(nachAktion).toBeGreaterThan(Date.now() + 23 * 60 * 60 * 1000);
+
     expect(await runDurableObjectAlarm(raum)).toBe(true);
 
     expect(await quizMaster.geschlossen).toBe(4002);

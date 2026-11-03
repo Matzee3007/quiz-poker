@@ -111,6 +111,19 @@ describe("Ansicht eines Spielers", () => {
     expect(zeile(ansicht, "ben").antwort).toBeNull();
   });
 
+  it("zeigt in der Auswertung die eigene Antwort, aber noch kein eigenes Ergebnis", () => {
+    const partie = antwortAuswerten(
+      auswertungStarten(antwortPhase()),
+      "ben",
+      true,
+    );
+    const ansicht = spielerAnsicht(partie, "ben", []);
+
+    expect(zeile(ansicht, "ben").antwort).toBe("Bens Antwort");
+    expect(zeile(ansicht, "ben").einsatz).toBe(30);
+    expect(zeile(ansicht, "ben").richtig).toBeNull();
+  });
+
   it("schickt vor der Auflösung nichts Geheimes mit", () => {
     for (const partie of [
       einsatzPhase(),
@@ -188,6 +201,26 @@ describe("Ansicht des Quiz-Masters", () => {
 
     expect(zeile(quizMasterAnsicht(partie, [], []), "ben").richtig).toBe(true);
     expect(zeile(quizMasterAnsicht(partie, [], []), "anna").richtig).toBeNull();
+  });
+
+  it("zeigt auch nach der Auflösung und am Ende alles", () => {
+    const aufgeloest = aufgeloestePartie();
+    const ende = naechsteRunde(
+      aufloesen(auswertungStarten(frageZeigen(naechsteRunde(aufgeloest)))),
+    );
+
+    for (const partie of [aufgeloest, ende]) {
+      const ansicht = quizMasterAnsicht(partie, [], []);
+
+      expect(ansicht.frage).not.toBeNull();
+      expect(ansicht.musterloesung).not.toBeNull();
+    }
+    expect(zeile(quizMasterAnsicht(aufgeloest, [], []), "ben")).toMatchObject({
+      einsatz: 30,
+      antwort: "Bens Antwort",
+      richtig: true,
+    });
+    expect(quizMasterAnsicht(ende, [], []).sieger).toEqual(["ben"]);
   });
 
   it("zeigt vor dem Start noch keine Runde", () => {

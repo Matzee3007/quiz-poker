@@ -104,18 +104,21 @@ export function partieErstellen(quiz: Quiz): Partie {
   };
 }
 
+export function spielerNachName(
+  partie: Partie,
+  name: string,
+): Spieler | undefined {
+  const gesucht = name.trim().toLowerCase();
+  return partie.spieler.find(
+    (spieler) => spieler.name.toLowerCase() === gesucht,
+  );
+}
+
 export function spielerBeitreten(
   partie: Partie,
   id: string,
   name: string,
 ): Partie {
-  if (partie.phase === "beendet") {
-    throw new Regelfehler("falsche-phase");
-  }
-  if (partie.phase !== "warten" && istLetzteRunde(partie)) {
-    throw new Regelfehler("letzte-runde");
-  }
-
   const sauberName = name.trim();
   if (sauberName === "") {
     throw new Regelfehler("leerer-name");
@@ -123,17 +126,20 @@ export function spielerBeitreten(
   if (sauberName.length > NAME_HOECHSTLAENGE) {
     throw new Regelfehler("name-zu-lang");
   }
-
   if (partie.spieler.some((spieler) => spieler.id === id)) {
     throw new Regelfehler("id-vergeben");
   }
-  const nameVergeben = partie.spieler.some(
-    (spieler) => spieler.name.toLowerCase() === sauberName.toLowerCase(),
-  );
-  if (nameVergeben) {
+  // Vor den Phasen prüfen: Ein vergebener Name führt zur Rückkehr, auch in der letzten Runde.
+  if (spielerNachName(partie, sauberName)) {
     throw new Regelfehler("name-vergeben");
   }
 
+  if (partie.phase === "beendet") {
+    throw new Regelfehler("falsche-phase");
+  }
+  if (partie.phase !== "warten" && istLetzteRunde(partie)) {
+    throw new Regelfehler("letzte-runde");
+  }
   if (partie.spieler.length >= HOECHSTSPIELER) {
     throw new Regelfehler("raum-voll");
   }

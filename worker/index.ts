@@ -51,7 +51,12 @@ async function namensAnfrage(
   }
   return Response.json(
     { code: ergebnis.code },
-    { status: ergebnis.code === "name-vergeben" ? 409 : 422 },
+    {
+      status:
+        ergebnis.code === "name-vergeben" || ergebnis.code === "anfrage-laeuft"
+          ? 409
+          : 422,
+    },
   );
 }
 

@@ -16,7 +16,8 @@ export type RegelfehlerCode =
   | "name-zu-lang"
   | "antwort-zu-lang"
   | "keine-berechtigung"
-  | "ungueltige-nachricht";
+  | "ungueltige-nachricht"
+  | "anfrage-laeuft";
 
 /** Ein Verstoß gegen die Spielregeln. Die Meldung ist der Code. */
 export class Regelfehler extends Error {

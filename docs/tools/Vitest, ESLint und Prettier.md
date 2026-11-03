@@ -12,8 +12,8 @@ prüft zusätzlich die Typen in `.svelte`-Dateien.
 
 ## Wie wir es eingerichtet haben
 
-- **Vitest 4 statt 5:** `@cloudflare/vitest-plugin` verlangt laut Doku Vitest 4.1, siehe [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001]].
-- `vitest.config.ts` ist getrennt von `vite.config.ts`, damit Tests bisher ohne Cloudflare-Laufzeit laufen.
+- **Vitest 4 statt 5:** Beim Projektstart verlangte `@cloudflare/vitest-plugin` Vitest 4.1, Version 1.5 erlaubt auch `^5`. Ein Update ist eine eigene Aufgabe, siehe [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001]].
+- `vitest.config.ts` ist getrennt von `vite.config.ts`: Die Tests laufen mit dem eigenen Plugin `cloudflareTest`, die Oberfläche nicht.
 - ESLint mit `typescript-eslint` und `eslint-plugin-svelte`, Prettier mit `prettier-plugin-svelte`.
 
 ## Tests in der Cloudflare-Laufzeit

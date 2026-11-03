@@ -8,7 +8,7 @@ tags: [tools, cloudflare, workers, durable-objects]
 # Cloudflare Workers und Durable Objects
 
 Ein **Worker** ist ein kleines Server-Programm, das bei Cloudflare läuft. Ein **Durable Object** ist ein Server-Objekt
-mit eigenem Zustand, hier später genau eines je Spielraum. **`wrangler`** ist das Befehlszeilenwerkzeug dazu.
+mit eigenem Zustand, hier genau eines je Spielraum. **`wrangler`** ist das Befehlszeilenwerkzeug dazu.
 
 ## Wofür wir es nutzen
 
