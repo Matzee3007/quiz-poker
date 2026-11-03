@@ -1,0 +1,350 @@
+:root {
+  --grund: #0c0e13;
+  --flaeche: #12151c;
+  --knopf: #1c212b;
+  --schrift: #eef0f4;
+  --matt: #a3a9b6;
+  --linie: #262b36;
+  --linie-stark: #3b4252;
+  --gold: #e8bb4f;
+  --gold-schrift: #17120a;
+  --gruen: #2fd98c;
+  --rot: #ff5c6c;
+  --radius: 6px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--schrift);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  min-width: 1100px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: var(--knopf);
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius);
+  padding: 9px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+button.haupt {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--gold-schrift);
+}
+
+button.richtig-an {
+  background: var(--gruen);
+  border-color: var(--gruen);
+  color: #06140d;
+}
+
+button.falsch-an {
+  background: var(--rot);
+  border-color: var(--rot);
+  color: #1a0508;
+}
+
+button.text {
+  background: none;
+  border: none;
+  color: var(--matt);
+  padding: 4px;
+  font-weight: 400;
+  text-decoration: underline;
+}
+
+input,
+textarea {
+  background: var(--grund);
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  width: 100%;
+}
+
+textarea {
+  height: 120px;
+  resize: vertical;
+}
+
+label {
+  display: block;
+  color: var(--matt);
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--linie);
+  padding: 14px 32px;
+}
+
+.logo {
+  color: var(--gold);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.kopf .rest {
+  margin-left: auto;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  color: var(--matt);
+  font-size: 14px;
+}
+
+.schritt.an {
+  background: var(--gold);
+  color: var(--gold-schrift);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-weight: 700;
+}
+
+.seite {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.zwei-spalten {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 32px;
+  align-items: start;
+}
+
+.karte {
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.stapel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.reihe {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ueberschrift {
+  color: var(--matt);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.frage {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.loesung {
+  color: var(--gruen);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.grosszahl {
+  color: var(--gold);
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.raumcode {
+  color: var(--gold);
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.matt {
+  color: var(--matt);
+}
+
+.hinweis {
+  background: var(--gold);
+  color: var(--gold-schrift);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+.hinweis button {
+  color: var(--schrift);
+}
+
+.hinweis.fehler {
+  background: var(--rot);
+  color: #1a0508;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  color: var(--matt);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+p,
+td {
+  overflow-wrap: anywhere;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--linie);
+  padding: 12px 10px;
+  vertical-align: middle;
+}
+
+td.zahl,
+th.zahl {
+  text-align: right;
+}
+
+.gold {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.plus {
+  color: var(--gruen);
+  font-weight: 700;
+}
+
+.minus {
+  color: var(--rot);
+  font-weight: 700;
+}
+
+.punkt {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--rot);
+}
+
+.punkt.an {
+  background: var(--gruen);
+}
+
+.rangliste-zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linie);
+}
+
+.rangliste-zeile.ich {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.spielidee {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spielidee h1 {
+  color: var(--gold);
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.schnellwahl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.podest {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.podest-platz {
+  flex: 1;
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+
+.podest-platz.erster {
+  border-color: var(--gold);
+  padding: 36px 20px;
+}
+
+.podest-platz .chips {
+  color: var(--gold);
+  font-size: 28px;
+  font-weight: 800;
+}

@@ -41,8 +41,12 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
 ```
 quiz-poker/
 ├── src/                Oberfläche (Svelte)
-│   ├── App.svelte      Startseite
+│   ├── App.svelte      Wählt je nach Adresse, Token und Ansicht, was zu sehen ist
+│   ├── ansichten/      Eine Komponente je Ansicht (Start, Warten, Runde, Auflösung, Ende)
 │   ├── main.ts         Einstieg im Browser
+│   ├── meldungen.ts    Fehlercodes als deutsche Meldungen
+│   ├── stil.css        Stil C aus dem Mock
+│   ├── verbindung.svelte.ts  WebSocket mit Neuverbinden, Token im localStorage
 │   ├── protokoll.ts    Nachrichten zwischen Gerät und Server
 │   └── regeln/         Spielregeln als reines TypeScript, ohne Svelte und Cloudflare
 │       ├── ansicht.ts  Was jede Rolle sehen darf

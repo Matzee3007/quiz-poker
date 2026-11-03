@@ -167,7 +167,7 @@ export class Spielraum extends DurableObject<Env> {
   ): void {
     for (const verbindung of this.offeneVerbindungen(ausser)) {
       if (zugangVon(verbindung)?.token === token) {
-        verbindung.close(code, grund);
+        schliessen(verbindung, code, grund);
       }
     }
   }
@@ -213,7 +213,11 @@ export class Spielraum extends DurableObject<Env> {
   /** Löscht den Raum und schließt alle Geräte. */
   private async raumSchliessen(): Promise<void> {
     for (const verbindung of this.offeneVerbindungen()) {
-      verbindung.close(SCHLIESSCODE_RAUM_GESCHLOSSEN, "Spielraum geschlossen");
+      schliessen(
+        verbindung,
+        SCHLIESSCODE_RAUM_GESCHLOSSEN,
+        "Spielraum geschlossen",
+      );
     }
     await this.ctx.storage.deleteAlarm();
     await this.ctx.storage.deleteAll();
@@ -233,7 +237,7 @@ export class Spielraum extends DurableObject<Env> {
     const stand = await this.standLesen();
     const zugang = stand && zugangFinden(stand, token);
     if (!stand || !zugang) {
-      verbindung.close(SCHLIESSCODE_UNBEKANNT, "Unbekanntes Token");
+      schliessen(verbindung, SCHLIESSCODE_UNBEKANNT, "Unbekanntes Token");
       return antwort;
     }
 
@@ -381,7 +385,11 @@ export class Spielraum extends DurableObject<Env> {
     }
 
     const zugang = zugangVon(verbindung);
-    if (zugang?.rolle === "wartend") {
+    // Eine neue Verbindung mit demselben Token ersetzt die alte, die Anfrage bleibt dann bestehen.
+    const ersetzt = this.offeneVerbindungen(verbindung).some(
+      (andere) => zugangVon(andere)?.token === zugang?.token,
+    );
+    if (zugang?.rolle === "wartend" && !ersetzt) {
       stand.rueckkehrAnfragen = stand.rueckkehrAnfragen.filter(
         (anfrage) => anfrage.token !== zugang.token,
       );
@@ -469,6 +477,12 @@ function zugangFinden(stand: Raumstand, token: string): Zugang | null {
     return { rolle: "wartend", token, spielerId: anfrage.spielerId };
   }
   return null;
+}
+
+/** Das Schließ-Signal kann verzögert ankommen, deshalb geht vorher eine eigene Nachricht hinaus. */
+function schliessen(verbindung: WebSocket, code: number, grund: string): void {
+  senden(verbindung, { typ: "beendet", code });
+  verbindung.close(code, grund);
 }
 
 /** Sendet nur an offene Verbindungen, eine schließende würde sonst einen Fehler werfen. */
