@@ -1,5 +1,5 @@
 // Ohne O und I, damit man den Code am Tisch nicht mit 0 und 1 verwechselt.
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+export const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 const LAENGE = 4;
 
 export function raumcodeErzeugen(zufall: () => number = Math.random): string {

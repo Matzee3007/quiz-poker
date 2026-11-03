@@ -5,7 +5,11 @@ import {
 } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { istGueltigerRaumcode } from "../src/regeln/raumcode";
+import {
+  ALPHABET,
+  istGueltigerRaumcode,
+  raumcodeErzeugen,
+} from "../src/regeln/raumcode";
 import worker from "./index";
 import type { Spielraum } from "./spielraum";
 import type { QuizMasterAnsicht, SpielerAnsicht } from "../src/regeln/ansicht";
@@ -31,22 +35,20 @@ describe("Spielraum eröffnen", () => {
   });
 
   it("nimmt einen anderen Code, wenn einer schon belegt ist", async () => {
-    const wert = Math.random();
+    const { raumcode } = await raumEroeffnen();
+    const belegt = [...raumcode].map(
+      (zeichen) => (ALPHABET.indexOf(zeichen) + 0.5) / ALPHABET.length,
+    );
+    // Alle anderen Aufrufe bleiben echt zufällig, nur die ersten vier ergeben den belegten Code.
+    const echterZufall = Math.random;
     const zufall = vi.spyOn(Math, "random");
-    zufall.mockReturnValue(wert);
-    const erster = await post("/api/raeume");
-    zufall.mockRestore();
-    const wiederholt = vi.spyOn(Math, "random");
-    wiederholt
-      .mockReturnValueOnce(wert)
-      .mockReturnValueOnce(wert)
-      .mockReturnValueOnce(wert)
-      .mockReturnValueOnce(wert)
-      .mockReturnValue((wert + 0.5) % 1);
+    zufall.mockImplementation(() => belegt.shift() ?? echterZufall());
+
     const zweiter = await post("/api/raeume");
 
+    expect(belegt).toEqual([]);
     expect(zweiter.status).toBe(201);
-    expect(zweiter.daten.raumcode).not.toBe(erster.daten.raumcode);
+    expect(zweiter.daten.raumcode).not.toBe(raumcode);
   });
 });
 
@@ -82,7 +84,9 @@ describe("Spielraum beitreten", () => {
   });
 
   it("antwortet bei unbekanntem oder ungültigem Raum mit 404", async () => {
-    const unbekannt = await post("/api/raeume/QQQQ/spieler", { name: "Anna" });
+    const unbekannt = await post(`/api/raeume/${raumcodeErzeugen()}/spieler`, {
+      name: "Anna",
+    });
     const ungueltig = await post("/api/raeume/constructor/spieler", {
       name: "Anna",
     });
@@ -398,7 +402,9 @@ describe("Rückkehr auf ein neues Gerät", () => {
     const name = await post(`/api/raeume/${raumcode}/rueckkehr`, {
       name: "Niemand",
     });
-    const raum = await post("/api/raeume/QQQX/rueckkehr", { name: "Anna" });
+    const raum = await post(`/api/raeume/${raumcodeErzeugen()}/rueckkehr`, {
+      name: "Anna",
+    });
 
     expect(name.status).toBe(422);
     expect(name.daten.code).toBe("unbekannter-spieler");
