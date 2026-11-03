@@ -54,7 +54,7 @@ describe("Grenze für neue Spielräume", () => {
   it("antwortet über der Grenze mit 429, ohne einen Raum anzulegen", async () => {
     const antwort = await worker.fetch(
       new Request("https://quiz-poker.test/api/raeume", { method: "POST" }),
-      { ...env, RAEUME_PRO_STUNDE: "0" },
+      { ...env, RAEUME_PRO_STUNDE: "0" } as unknown as Env,
     );
 
     expect(antwort.status).toBe(429);
@@ -62,7 +62,7 @@ describe("Grenze für neue Spielräume", () => {
   });
 
   it("zählt im Zähler bis zur Grenze", async () => {
-    const zaehler = env.RAUMZAEHLER.getByName("test-grenze");
+    const zaehler = env.RAUMZAEHLER.getByName(crypto.randomUUID());
 
     expect(await zaehler.raumZulassen(2)).toBe(true);
     expect(await zaehler.raumZulassen(2)).toBe(true);
