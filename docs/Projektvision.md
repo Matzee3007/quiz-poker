@@ -115,7 +115,7 @@ abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 
 - [x] **Phase 0 – Fundament:** Repo und `CLAUDE.md` stehen, Stack eingerichtet, erster Test grün,
   Projektvision mit `/grill-with-docs` geschärft, Phasen 1 bis 4 geplant
-- [ ] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
+- [x] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
 - [ ] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
   Spieler, Rückkehr nach Abbruch, ein fest eingebautes Beispiel-Quiz, erste Veröffentlichung bei Cloudflare
 - [ ] **Phase 3 – Quiz-Sammlung:** Konten, Editor, D1, öffentliche und private Quizze, Kopien, Schutzregeln
