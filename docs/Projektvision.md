@@ -112,7 +112,7 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 Jede Phase endet mit etwas, das läuft und getestet ist. Eine fertige Phase wird in derselben Session
 abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 
-- [ ] **Phase 0 – Fundament:** Repo und `CLAUDE.md` stehen, Stack eingerichtet, erster Test grün,
+- [x] **Phase 0 – Fundament:** Repo und `CLAUDE.md` stehen, Stack eingerichtet, erster Test grün,
   Projektvision mit `/grill-with-docs` geschärft, Phasen 1 bis 4 geplant
 - [ ] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
 - [ ] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
