@@ -51,7 +51,7 @@ direkt aufrufen. Die Reihenfolge der Aufgaben folgt dem Ablauf einer Runde.
 **Schnittstellen:**
 
 - Liefert:
-  - `type RegelfehlerCode = "falsche-phase" | "unbekannter-spieler" | "nicht-in-runde" | "leerer-name" | "name-vergeben" | "raum-voll" | "zu-wenige-spieler" | "ungueltiger-einsatz" | "leere-antwort" | "keine-antwort" | "nicht-bewertet" | "leeres-quiz"`
+  - `type RegelfehlerCode = "falsche-phase" | "unbekannter-spieler" | "nicht-in-runde" | "leerer-name" | "name-vergeben" | "raum-voll" | "zu-wenige-spieler" | "ungueltiger-einsatz" | "leere-antwort" | "keine-antwort" | "nicht-ausgewertet" | "leeres-quiz"`
   - `class Regelfehler extends Error` mit `constructor(code: RegelfehlerCode)`, `message` ist der Code
   - `START_CHIPS = 100`, `MINDESTEINSATZ = 10`
   - `mindesteinsatzFuer(chips: number): number`
@@ -107,10 +107,10 @@ interface Partie {
   kategorieIndex: number;
   frageIndex: number;
   spieler: Spieler[];
-  rundenTeilnehmer: string[]; // Spieler-IDs, festgelegt zu Beginn jeder Runde
+  rundenSpieler: string[]; // Spieler-IDs, festgelegt zu Beginn jeder Runde
   einsaetze: Record<string, number>;
   antworten: Record<string, string>; // nur bestätigte Antworten
-  bewertungen: Record<string, boolean>;
+  auswertungen: Record<string, boolean>;
 }
 function partieErstellen(quiz: Quiz): Partie;
 function spielerBeitreten(partie: Partie, id: string, name: string): Partie;
@@ -123,7 +123,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
   - `spielerBeitreten` legt den Spieler mit 100 Chips an. Die Eingabe bleibt unverändert (`partie.spieler` hat danach weiter Länge 0).
   - Der Name wird getrimmt. Nur Leerzeichen werfen `leerer-name`, „Anna“ neben „anna“ wirft `name-vergeben`, eine doppelte ID ebenfalls.
   - Der 9. Spieler wirft `raum-voll`.
-  - `partieStarten` mit einem Spieler wirft `zu-wenige-spieler`. Mit zwei liefert es Phase `einsatz` und beide als `rundenTeilnehmer`.
+  - `partieStarten` mit einem Spieler wirft `zu-wenige-spieler`. Mit zwei liefert es Phase `einsatz` und beide als `rundenSpieler`.
   - `partieStarten` außerhalb von `warten` wirft `falsche-phase`.
   - `aktuelleRunde` nach dem Start liefert Kategorie „Sport“ und ihre erste Frage.
 
@@ -143,7 +143,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 
 - [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - `einsatzSetzen` speichert den Einsatz, ein zweiter Aufruf ersetzt ihn.
-  - Einsatz 9 wirft `ungueltiger-einsatz`, eine unbekannte ID `unbekannter-spieler`, ein Spieler außerhalb von `rundenTeilnehmer` `nicht-in-runde`.
+  - Einsatz 9 wirft `ungueltiger-einsatz`, eine unbekannte ID `unbekannter-spieler`, ein Spieler außerhalb von `rundenSpieler` `nicht-in-runde`.
   - `frageZeigen` liefert Phase `antworten`, auch wenn nicht alle gesetzt haben. Ein fehlender Einsatz steht danach als 0 in `einsaetze`.
   - Nach `frageZeigen` wirft `einsatzSetzen` `falsche-phase`, ebenso `frageZeigen` selbst.
 
@@ -180,14 +180,14 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 **Schnittstellen:**
 
 - Nutzt: `chipsNachRunde`
-- Liefert: `antwortBewerten(partie: Partie, spielerId: string, richtig: boolean): Partie`, `aufloesen(partie: Partie): Partie`
+- Liefert: `antwortAuswerten(partie: Partie, spielerId: string, richtig: boolean): Partie`, `aufloesen(partie: Partie): Partie`
 
 - [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - Anna setzt 20 und liegt richtig: 120 Chips. Ben setzt 30 und liegt falsch: 70 Chips. Phase ist danach `aufgeloest`.
-  - `antwortBewerten` lässt sich vor `aufloesen` korrigieren, es zählt die letzte Bewertung.
+  - `antwortAuswerten` lässt sich vor `aufloesen` korrigieren, es zählt die letzte Auswertung.
   - Vor `aufloesen` bleiben die Chips unverändert.
-  - Bewerten eines Spielers ohne Antwort wirft `keine-antwort`.
-  - Eine Antwort ohne Bewertung lässt `aufloesen` mit `nicht-bewertet` fehlschlagen.
+  - Auswerten eines Spielers ohne Antwort wirft `keine-antwort`.
+  - Eine Antwort ohne Auswertung lässt `aufloesen` mit `nicht-ausgewertet` fehlschlagen.
   - Einsatz 30, aber keine Antwort: 70 Chips (Schwerpunkt 1).
   - Kein Einsatz und keine Antwort: weiter 100 Chips (Schwerpunkt 1).
   - Ein zweites `aufloesen` wirft `falsche-phase`, die Chips ändern sich nicht (Schwerpunkt 4).
@@ -207,7 +207,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - Liefert: `naechsteRunde(partie: Partie): Partie`, `sieger(partie: Partie): Spieler[]`
 
 - [x] **Schritt 1: Fehlschlagende Tests schreiben**
-  - `naechsteRunde` liefert die nächste Frage in Phase `einsatz` und leert `einsaetze`, `antworten` und `bewertungen`.
+  - `naechsteRunde` liefert die nächste Frage in Phase `einsatz` und leert `einsaetze`, `antworten` und `auswertungen`.
   - Nach der letzten Frage von „Sport“ folgt die erste Frage von „Gaming“.
   - Nach der letzten Frage des Quiz liefert es Phase `beendet`.
   - Außerhalb von `aufgeloest` wirft es `falsche-phase`.
@@ -217,7 +217,7 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
   - Eine ganze Partie über alle drei Fragen endet mit dem erwarteten Chipstand.
 
 - [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
-- [x] **Schritt 3: Beide Funktionen umsetzen.** `rundenTeilnehmer` wird zu Beginn jeder Runde auf alle aktuellen Spieler gesetzt.
+- [x] **Schritt 3: Beide Funktionen umsetzen.** `rundenSpieler` wird zu Beginn jeder Runde auf alle aktuellen Spieler gesetzt.
 - [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
 - [x] **Schritt 5: `npm run check`, dann committen:** „Add next round and winner rules“
 
@@ -228,15 +228,15 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 **Schnittstellen:**
 
 - Liefert: `spielerEntfernen(partie: Partie, spielerId: string): Partie`
-- Ändert: `spielerBeitreten` ist in jeder Phase außer `beendet` erlaubt und nimmt den Spieler nicht in `rundenTeilnehmer` auf
+- Ändert: `spielerBeitreten` ist in jeder Phase außer `beendet` erlaubt und nimmt den Spieler nicht in `rundenSpieler` auf
 
 - [x] **Schritt 1: Fehlschlagende Tests schreiben**
   - Beitritt in Phase `einsatz`: Der neue Spieler bekommt 100 Chips, und `einsatzSetzen` wirft `nicht-in-runde`.
-  - Beitritt in Phase `antworten`: Nach der Auflösung hat er weiter 100 Chips, in der nächsten Runde ist er in `rundenTeilnehmer` (Schwerpunkt 3).
+  - Beitritt in Phase `antworten`: Nach der Auflösung hat er weiter 100 Chips, in der nächsten Runde ist er in `rundenSpieler` (Schwerpunkt 3).
   - Beitritt in Phase `beendet` wirft `falsche-phase`.
-  - `spielerEntfernen` nimmt den Spieler aus `spieler`, `rundenTeilnehmer`, `einsaetze`, `antworten` und `bewertungen`.
+  - `spielerEntfernen` nimmt den Spieler aus `spieler`, `rundenSpieler`, `einsaetze`, `antworten` und `auswertungen`.
   - Eine unbekannte ID wirft `unbekannter-spieler`, Phase `beendet` wirft `falsche-phase`.
-  - Entfernen eines bewerteten Spielers während `auswertung`: `aufloesen` gelingt für den Rest (Schwerpunkt 5).
+  - Entfernen eines ausgewerteten Spielers während `auswertung`: `aufloesen` gelingt für den Rest (Schwerpunkt 5).
 
 - [x] **Schritt 2: `npm test -- src/regeln/partie.test.ts`, die neuen Tests müssen fehlschlagen.**
 - [x] **Schritt 3: `spielerEntfernen` umsetzen und `spielerBeitreten` anpassen.**

@@ -40,11 +40,11 @@ export interface Partie {
   frageIndex: number;
   spieler: Spieler[];
   /** Spieler-IDs, festgelegt zu Beginn jeder Runde. */
-  rundenTeilnehmer: string[];
+  rundenSpieler: string[];
   einsaetze: Record<string, number>;
   /** Nur bestätigte Antworten. */
   antworten: Record<string, string>;
-  bewertungen: Record<string, boolean>;
+  auswertungen: Record<string, boolean>;
 }
 
 function verlangePhase(partie: Partie, phase: Phase): void {
@@ -53,12 +53,12 @@ function verlangePhase(partie: Partie, phase: Phase): void {
   }
 }
 
-function rundenTeilnehmerFinden(partie: Partie, spielerId: string): Spieler {
+function rundenSpielerFinden(partie: Partie, spielerId: string): Spieler {
   const spieler = partie.spieler.find((kandidat) => kandidat.id === spielerId);
   if (!spieler) {
     throw new Regelfehler("unbekannter-spieler");
   }
-  if (!partie.rundenTeilnehmer.includes(spielerId)) {
+  if (!partie.rundenSpieler.includes(spielerId)) {
     throw new Regelfehler("nicht-in-runde");
   }
   return spieler;
@@ -87,10 +87,10 @@ export function partieErstellen(quiz: Quiz): Partie {
     kategorieIndex: 0,
     frageIndex: 0,
     spieler: [],
-    rundenTeilnehmer: [],
+    rundenSpieler: [],
     einsaetze: {},
     antworten: {},
-    bewertungen: {},
+    auswertungen: {},
   };
 }
 
@@ -136,7 +136,7 @@ export function partieStarten(partie: Partie): Partie {
   return {
     ...partie,
     phase: "einsatz",
-    rundenTeilnehmer: partie.spieler.map((spieler) => spieler.id),
+    rundenSpieler: partie.spieler.map((spieler) => spieler.id),
   };
 }
 
@@ -157,7 +157,7 @@ export function einsatzSetzen(
   einsatz: number,
 ): Partie {
   verlangePhase(partie, "einsatz");
-  const spieler = rundenTeilnehmerFinden(partie, spielerId);
+  const spieler = rundenSpielerFinden(partie, spielerId);
   if (!istGueltigerEinsatz(einsatz, spieler.chips)) {
     throw new Regelfehler("ungueltiger-einsatz");
   }
@@ -172,7 +172,7 @@ export function frageZeigen(partie: Partie): Partie {
   verlangePhase(partie, "einsatz");
 
   const einsaetze: Record<string, number> = {};
-  for (const id of partie.rundenTeilnehmer) {
+  for (const id of partie.rundenSpieler) {
     einsaetze[id] = partie.einsaetze[id] ?? 0;
   }
 
@@ -185,7 +185,7 @@ export function antwortBestaetigen(
   text: string,
 ): Partie {
   verlangePhase(partie, "antworten");
-  rundenTeilnehmerFinden(partie, spielerId);
+  rundenSpielerFinden(partie, spielerId);
   const antwort = text.trim();
   if (antwort === "") {
     throw new Regelfehler("leere-antwort");
@@ -202,7 +202,7 @@ export function antwortZuruecknehmen(
   spielerId: string,
 ): Partie {
   verlangePhase(partie, "antworten");
-  rundenTeilnehmerFinden(partie, spielerId);
+  rundenSpielerFinden(partie, spielerId);
 
   return { ...partie, antworten: ohneEintrag(partie.antworten, spielerId) };
 }
@@ -212,43 +212,43 @@ export function auswertungStarten(partie: Partie): Partie {
   return { ...partie, phase: "auswertung" };
 }
 
-export function antwortBewerten(
+export function antwortAuswerten(
   partie: Partie,
   spielerId: string,
   richtig: boolean,
 ): Partie {
   verlangePhase(partie, "auswertung");
-  rundenTeilnehmerFinden(partie, spielerId);
+  rundenSpielerFinden(partie, spielerId);
   if (partie.antworten[spielerId] === undefined) {
     throw new Regelfehler("keine-antwort");
   }
 
   return {
     ...partie,
-    bewertungen: { ...partie.bewertungen, [spielerId]: richtig },
+    auswertungen: { ...partie.auswertungen, [spielerId]: richtig },
   };
 }
 
 export function aufloesen(partie: Partie): Partie {
   verlangePhase(partie, "auswertung");
-  const unbewertet = Object.keys(partie.antworten).some(
-    (id) => partie.bewertungen[id] === undefined,
+  const unausgewertet = Object.keys(partie.antworten).some(
+    (id) => partie.auswertungen[id] === undefined,
   );
-  if (unbewertet) {
-    throw new Regelfehler("nicht-bewertet");
+  if (unausgewertet) {
+    throw new Regelfehler("nicht-ausgewertet");
   }
 
   return {
     ...partie,
     phase: "aufgeloest",
     spieler: partie.spieler.map((spieler) =>
-      partie.rundenTeilnehmer.includes(spieler.id)
+      partie.rundenSpieler.includes(spieler.id)
         ? {
             ...spieler,
             chips: chipsNachRunde(
               spieler.chips,
               partie.einsaetze[spieler.id] ?? 0,
-              partie.bewertungen[spieler.id] === true,
+              partie.auswertungen[spieler.id] === true,
             ),
           }
         : spieler,
@@ -279,10 +279,10 @@ export function naechsteRunde(partie: Partie): Partie {
       : partie.kategorieIndex + 1,
     frageIndex: weitereFrage ? partie.frageIndex + 1 : 0,
     spieler,
-    rundenTeilnehmer: spieler.map((kandidat) => kandidat.id),
+    rundenSpieler: spieler.map((kandidat) => kandidat.id),
     einsaetze: {},
     antworten: {},
-    bewertungen: {},
+    auswertungen: {},
   };
 }
 
@@ -304,9 +304,9 @@ export function spielerEntfernen(partie: Partie, spielerId: string): Partie {
   return {
     ...partie,
     spieler: partie.spieler.filter((spieler) => spieler.id !== spielerId),
-    rundenTeilnehmer: partie.rundenTeilnehmer.filter((id) => id !== spielerId),
+    rundenSpieler: partie.rundenSpieler.filter((id) => id !== spielerId),
     einsaetze: ohneEintrag(partie.einsaetze, spielerId),
     antworten: ohneEintrag(partie.antworten, spielerId),
-    bewertungen: ohneEintrag(partie.bewertungen, spielerId),
+    auswertungen: ohneEintrag(partie.auswertungen, spielerId),
   };
 }

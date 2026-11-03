@@ -9,7 +9,7 @@ export type RegelfehlerCode =
   | "ungueltiger-einsatz"
   | "leere-antwort"
   | "keine-antwort"
-  | "nicht-bewertet"
+  | "nicht-ausgewertet"
   | "leeres-quiz";
 
 /** Ein Verstoß gegen die Spielregeln. Die Meldung ist der Code. */

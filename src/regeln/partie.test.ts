@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aktuelleRunde,
   antwortBestaetigen,
-  antwortBewerten,
+  antwortAuswerten,
   antwortZuruecknehmen,
   aufloesen,
   auswertungStarten,
@@ -73,7 +73,7 @@ function rundeSpielen(
   }
   partie = auswertungStarten(partie);
   for (const [id, [, richtig]] of Object.entries(ergebnisse)) {
-    partie = antwortBewerten(partie, id, richtig);
+    partie = antwortAuswerten(partie, id, richtig);
   }
   return aufloesen(partie);
 }
@@ -147,7 +147,7 @@ describe("Partie starten", () => {
     const partie = gestartetePartie();
 
     expect(partie.phase).toBe("einsatz");
-    expect(partie.rundenTeilnehmer).toEqual(["anna", "ben"]);
+    expect(partie.rundenSpieler).toEqual(["anna", "ben"]);
   });
 
   it("lässt sich nicht zweimal starten", () => {
@@ -265,8 +265,8 @@ describe("Antwortphase", () => {
 describe("Auswertung und Auflösung", () => {
   it("zahlt bei richtig den Einsatz aus und zieht ihn bei falsch ab", () => {
     let partie = partieInAuswertung();
-    partie = antwortBewerten(partie, "anna", true);
-    partie = antwortBewerten(partie, "ben", false);
+    partie = antwortAuswerten(partie, "anna", true);
+    partie = antwortAuswerten(partie, "ben", false);
     partie = aufloesen(partie);
 
     expect(partie.phase).toBe("aufgeloest");
@@ -274,28 +274,28 @@ describe("Auswertung und Auflösung", () => {
     expect(chipsVon(partie, "ben")).toBe(70);
   });
 
-  it("lässt die Bewertung bis zur Auflösung korrigieren, die Chips bleiben so lange gleich", () => {
+  it("lässt die Auswertung bis zur Auflösung korrigieren, die Chips bleiben so lange gleich", () => {
     let partie = partieInAuswertung();
-    partie = antwortBewerten(partie, "anna", false);
-    partie = antwortBewerten(partie, "anna", true);
-    partie = antwortBewerten(partie, "ben", false);
+    partie = antwortAuswerten(partie, "anna", false);
+    partie = antwortAuswerten(partie, "anna", true);
+    partie = antwortAuswerten(partie, "ben", false);
 
     expect(chipsVon(partie, "anna")).toBe(100);
     expect(chipsVon(aufloesen(partie), "anna")).toBe(120);
   });
 
-  it("lehnt die Bewertung eines Spielers ohne Antwort ab", () => {
+  it("lehnt die Auswertung eines Spielers ohne Antwort ab", () => {
     const partie = auswertungStarten(frageZeigen(gestartetePartie()));
 
-    expect(() => antwortBewerten(partie, "anna", true)).toThrow(
+    expect(() => antwortAuswerten(partie, "anna", true)).toThrow(
       "keine-antwort",
     );
   });
 
-  it("löst nicht auf, solange eine Antwort unbewertet ist", () => {
-    const partie = antwortBewerten(partieInAuswertung(), "anna", true);
+  it("löst nicht auf, solange eine Antwort unausgewertet ist", () => {
+    const partie = antwortAuswerten(partieInAuswertung(), "anna", true);
 
-    expect(() => aufloesen(partie)).toThrow("nicht-bewertet");
+    expect(() => aufloesen(partie)).toThrow("nicht-ausgewertet");
   });
 
   it("zieht den Einsatz ab, wenn die Antwort fehlt", () => {
@@ -313,8 +313,8 @@ describe("Auswertung und Auflösung", () => {
 
   it("zahlt beim zweiten Auflösen nicht doppelt aus", () => {
     let partie = partieInAuswertung();
-    partie = antwortBewerten(partie, "anna", true);
-    partie = antwortBewerten(partie, "ben", false);
+    partie = antwortAuswerten(partie, "anna", true);
+    partie = antwortAuswerten(partie, "ben", false);
     const aufgeloest = aufloesen(partie);
 
     expect(() => aufloesen(aufgeloest)).toThrow("falsche-phase");
@@ -323,7 +323,7 @@ describe("Auswertung und Auflösung", () => {
 });
 
 describe("Nächste Runde", () => {
-  it("zeigt die nächste Frage und beginnt ohne Einsätze, Antworten und Bewertungen", () => {
+  it("zeigt die nächste Frage und beginnt ohne Einsätze, Antworten und Auswertungen", () => {
     const partie = naechsteRunde(
       rundeSpielen(gestartetePartie(), {
         anna: [20, true],
@@ -335,7 +335,7 @@ describe("Nächste Runde", () => {
     expect(aktuelleRunde(partie).frage.text).toBe("Sportfrage 2");
     expect(partie.einsaetze).toEqual({});
     expect(partie.antworten).toEqual({});
-    expect(partie.bewertungen).toEqual({});
+    expect(partie.auswertungen).toEqual({});
   });
 
   it("wechselt nach der letzten Frage in die nächste Kategorie", () => {
@@ -423,7 +423,7 @@ describe("Später einsteigen", () => {
     partie = aufloesen(auswertungStarten(partie));
 
     expect(chipsVon(partie, "cara")).toBe(100);
-    expect(naechsteRunde(partie).rundenTeilnehmer).toContain("cara");
+    expect(naechsteRunde(partie).rundenSpieler).toContain("cara");
   });
 
   it("ist nach dem Ende der Partie nicht mehr möglich", () => {
@@ -441,14 +441,14 @@ describe("Später einsteigen", () => {
 describe("Spieler entfernen", () => {
   it("nimmt den Spieler aus allen Listen der Runde", () => {
     let partie = partieInAuswertung();
-    partie = antwortBewerten(partie, "ben", true);
+    partie = antwortAuswerten(partie, "ben", true);
     partie = spielerEntfernen(partie, "ben");
 
     expect(partie.spieler.map((spieler) => spieler.id)).toEqual(["anna"]);
-    expect(partie.rundenTeilnehmer).toEqual(["anna"]);
+    expect(partie.rundenSpieler).toEqual(["anna"]);
     expect(partie.einsaetze).toEqual({ anna: 20 });
     expect(partie.antworten).toEqual({ anna: "Berlin" });
-    expect(partie.bewertungen).toEqual({});
+    expect(partie.auswertungen).toEqual({});
   });
 
   it("lehnt unbekannte Spieler und das Entfernen nach dem Ende ab", () => {
@@ -465,8 +465,8 @@ describe("Spieler entfernen", () => {
 
   it("löst die Runde während der Auswertung ohne den Entfernten auf", () => {
     let partie = partieInAuswertung();
-    partie = antwortBewerten(partie, "anna", true);
-    partie = antwortBewerten(partie, "ben", true);
+    partie = antwortAuswerten(partie, "anna", true);
+    partie = antwortAuswerten(partie, "ben", true);
     partie = aufloesen(spielerEntfernen(partie, "ben"));
 
     expect(partie.phase).toBe("aufgeloest");
