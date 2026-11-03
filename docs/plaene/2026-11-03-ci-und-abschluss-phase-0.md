@@ -109,7 +109,7 @@ git commit -m "Document CI setup"
 git push
 ```
 
-- [ ] **Schritt 7: Prüfen und mergen**
+- [x] **Schritt 7: Prüfen und mergen**
 
 `/code-review` für den PR und die Funde mit dem Entwickler durchgehen, der Agent `plan-pruefer` prüft den Branch gegen diesen
 Plan. Danach `gh pr checks <nr>`, `gh pr view <nr> --json mergeable` und erst bei grün und `MERGEABLE` mergen.

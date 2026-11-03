@@ -19,7 +19,8 @@ Workflow `.github/workflows/ci.yml`, Job `check`, bei jedem Pull Request und jed
 2. `npm ci`: Abhängigkeiten genau nach `package-lock.json`.
 3. `npm run check`: Linter, Format, Typen, Tests und Build, also dieselben Prüfungen wie lokal.
 
-Ein Lauf dauert etwa eine Minute, davon rund 40 Sekunden für `npm ci`. Der Workflow darf nur lesen, bricht nach 10 Minuten ab
+Ein Lauf ohne npm-Cache dauert etwa eine Minute, davon rund 40 Sekunden für `npm ci`. Mit Cache waren es 33 Sekunden, davon
+6 für `npm ci`. Der Workflow darf nur lesen, bricht nach 10 Minuten ab
 und ersetzt ältere Läufe desselben Branches. Er braucht keine Secrets und kein Cloudflare-Konto.
 
 ## Wie haben wir es eingerichtet?
@@ -29,8 +30,9 @@ und ersetzt ältere Läufe desselben Branches. Er braucht keine Secrets und kein
 
 - **Probelauf rot:** Mit der absichtlich falsch formatierten Datei `src/ci-probe.ts` schlug `prettier . --check` fehl. Damit
   ist belegt, dass die CI Fehler findet.
-- **Lauf grün:** Ohne die Datei bestand der Job. Damit ist auch belegt: `package-lock.json` vom Mac funktioniert auf Linux, die
-  abgelehnten Installationsskripte von `esbuild` und `workerd` stören nicht, und `wrangler types` läuft ohne Login bei Cloudflare.
+- **Lauf grün:** Ohne die Datei bestand der Job. `npm ci` läuft also mit der `package-lock.json` vom Mac auf Linux, Build und
+  Tests laufen mit dem Eintrag `allowScripts`, und `wrangler types` läuft ohne Login bei Cloudflare. Ob `allowScripts` in der CI
+  tatsächlich gegriffen hat, zeigt das Log nicht.
 
 ## Regeln
 
