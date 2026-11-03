@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import {
   aktionLesen,
   SCHLIESSCODE_ERSETZT,
+  SCHLIESSCODE_RAUM_GESCHLOSSEN,
   SCHLIESSCODE_UNBEKANNT,
   type Aktion,
   type ServerNachricht,
@@ -21,10 +22,12 @@ import {
   partieErstellen,
   partieStarten,
   spielerBeitreten,
+  spielerEntfernen,
   type Partie,
 } from "../src/regeln/partie";
 
 const STAND_SCHLUESSEL = "stand";
+const LEBENSDAUER_MS = 24 * 60 * 60 * 1000;
 const SPIELER_AKTIONEN: readonly Aktion["typ"][] = [
   "einsatz-setzen",
   "antwort-bestaetigen",
@@ -37,12 +40,14 @@ interface Raumstand {
   quizMasterToken: string;
   /** Token → Spieler-ID */
   spielerTokens: Record<string, string>;
+  rueckkehrAnfragen: { token: string; spielerId: string }[];
 }
 
 /** Hängt an jeder Verbindung und übersteht das Einschlafen. */
 type Zugang =
   | { rolle: "quiz-master"; token: string }
-  | { rolle: "spieler"; token: string; spielerId: string };
+  | { rolle: "spieler"; token: string; spielerId: string }
+  | { rolle: "wartend"; token: string; spielerId: string };
 
 export type BeitrittsErgebnis =
   | { ok: true; token: string }
@@ -54,8 +59,10 @@ export class Spielraum extends DurableObject<Env> {
     return this.ctx.storage.get<Raumstand>(STAND_SCHLUESSEL);
   }
 
-  private standSpeichern(stand: Raumstand): Promise<void> {
-    return this.ctx.storage.put(STAND_SCHLUESSEL, stand);
+  /** Speichert den Stand und verschiebt das automatische Löschen des Raums. */
+  private async standSpeichern(stand: Raumstand): Promise<void> {
+    await this.ctx.storage.put(STAND_SCHLUESSEL, stand);
+    await this.ctx.storage.setAlarm(Date.now() + LEBENSDAUER_MS);
   }
 
   /** Legt den Raum an. Liefert das Quiz-Master-Token oder null, wenn der Raum schon belegt ist. */
@@ -69,6 +76,7 @@ export class Spielraum extends DurableObject<Env> {
       partie: partieErstellen(BEISPIEL_QUIZ),
       quizMasterToken,
       spielerTokens: {},
+      rueckkehrAnfragen: [],
     });
     return quizMasterToken;
   }
@@ -95,6 +103,110 @@ export class Spielraum extends DurableObject<Env> {
     return { ok: true, token };
   }
 
+  /** Ein Spieler möchte auf einem neuen Gerät zurück, der Quiz-Master muss das bestätigen. */
+  async rueckkehrAnfragen(name: string): Promise<BeitrittsErgebnis> {
+    const stand = await this.standLesen();
+    if (!stand) {
+      return { ok: false, code: "raum-unbekannt" };
+    }
+
+    const gesucht = name.trim().toLowerCase();
+    const spieler = stand.partie.spieler.find(
+      (kandidat) => kandidat.name.toLowerCase() === gesucht,
+    );
+    if (!spieler) {
+      return { ok: false, code: "unbekannter-spieler" };
+    }
+
+    this.anfrageEntfernen(stand, spieler.id);
+    const token = crypto.randomUUID();
+    stand.rueckkehrAnfragen.push({ token, spielerId: spieler.id });
+    await this.standSpeichern(stand);
+    this.ansichtenVerteilen(stand);
+    return { ok: true, token };
+  }
+
+  /** Wirft die Anfrage eines Spielers weg und schließt das wartende Gerät. */
+  private anfrageEntfernen(stand: Raumstand, spielerId: string): void {
+    const anfrage = stand.rueckkehrAnfragen.find(
+      (kandidat) => kandidat.spielerId === spielerId,
+    );
+    if (!anfrage) {
+      return;
+    }
+    stand.rueckkehrAnfragen = stand.rueckkehrAnfragen.filter(
+      (kandidat) => kandidat !== anfrage,
+    );
+    this.verbindungenSchliessen(
+      anfrage.token,
+      SCHLIESSCODE_UNBEKANNT,
+      "Anfrage abgelehnt",
+    );
+  }
+
+  private verbindungenSchliessen(
+    token: string,
+    code: number,
+    grund: string,
+    ausser?: WebSocket,
+  ): void {
+    for (const verbindung of this.offeneVerbindungen(ausser)) {
+      if (zugangVon(verbindung)?.token === token) {
+        verbindung.close(code, grund);
+      }
+    }
+  }
+
+  private spielerTokensLoeschen(stand: Raumstand, spielerId: string): void {
+    for (const [token, id] of Object.entries(stand.spielerTokens)) {
+      if (id === spielerId) {
+        delete stand.spielerTokens[token];
+        this.verbindungenSchliessen(
+          token,
+          SCHLIESSCODE_ERSETZT,
+          "Platz nicht mehr gültig",
+        );
+      }
+    }
+  }
+
+  private rueckkehrBestaetigen(stand: Raumstand, spielerId: string): void {
+    const anfrage = stand.rueckkehrAnfragen.find(
+      (kandidat) => kandidat.spielerId === spielerId,
+    );
+    if (!anfrage) {
+      throw new Regelfehler("unbekannter-spieler");
+    }
+
+    this.spielerTokensLoeschen(stand, spielerId);
+    stand.spielerTokens[anfrage.token] = spielerId;
+    stand.rueckkehrAnfragen = stand.rueckkehrAnfragen.filter(
+      (kandidat) => kandidat !== anfrage,
+    );
+    for (const verbindung of this.offeneVerbindungen()) {
+      if (zugangVon(verbindung)?.token === anfrage.token) {
+        verbindung.serializeAttachment({
+          rolle: "spieler",
+          token: anfrage.token,
+          spielerId,
+        } satisfies Zugang);
+      }
+    }
+  }
+
+  /** Löscht den Raum und schließt alle Geräte. */
+  private async raumSchliessen(): Promise<void> {
+    for (const verbindung of this.offeneVerbindungen()) {
+      verbindung.close(SCHLIESSCODE_RAUM_GESCHLOSSEN, "Spielraum geschlossen");
+    }
+    await this.ctx.storage.deleteAlarm();
+    await this.ctx.storage.deleteAll();
+  }
+
+  async alarm(): Promise<void> {
+    await this.raumSchliessen();
+  }
+
   async fetch(anfrage: Request): Promise<Response> {
     const token = new URL(anfrage.url).searchParams.get("token") ?? "";
     const paar = new WebSocketPair();
@@ -109,12 +221,16 @@ export class Spielraum extends DurableObject<Env> {
       return antwort;
     }
 
-    for (const andere of this.offeneVerbindungen()) {
-      if (andere !== verbindung && zugangVon(andere)?.token === token) {
-        andere.close(SCHLIESSCODE_ERSETZT, "Auf einem anderen Gerät geöffnet");
-      }
-    }
+    this.verbindungenSchliessen(
+      token,
+      SCHLIESSCODE_ERSETZT,
+      "Auf einem anderen Gerät geöffnet",
+      verbindung,
+    );
     verbindung.serializeAttachment(zugang);
+    if (zugang.rolle === "wartend") {
+      senden(verbindung, { typ: "wartet-auf-bestaetigung" });
+    }
     this.ansichtenVerteilen(stand);
     return antwort;
   }
@@ -136,7 +252,25 @@ export class Spielraum extends DurableObject<Env> {
     }
 
     try {
-      stand.partie = aktionAusfuehren(stand.partie, aktion, zugang);
+      rechtePruefen(aktion, zugang);
+      switch (aktion.typ) {
+        case "raum-schliessen":
+          await this.raumSchliessen();
+          return;
+        case "rueckkehr-bestaetigen":
+          this.rueckkehrBestaetigen(stand, aktion.spielerId);
+          break;
+        case "rueckkehr-ablehnen":
+          this.anfrageEntfernen(stand, aktion.spielerId);
+          break;
+        case "spieler-entfernen":
+          stand.partie = spielerEntfernen(stand.partie, aktion.spielerId);
+          this.anfrageEntfernen(stand, aktion.spielerId);
+          this.spielerTokensLoeschen(stand, aktion.spielerId);
+          break;
+        default:
+          stand.partie = aktionAusfuehren(stand.partie, aktion, zugang);
+      }
     } catch (fehler) {
       if (fehler instanceof Regelfehler) {
         senden(verbindung, {
@@ -181,7 +315,16 @@ export class Spielraum extends DurableObject<Env> {
       if (zugang?.rolle === "quiz-master") {
         senden(verbindung, {
           typ: "ansicht",
-          ansicht: quizMasterAnsicht(stand.partie, verbundeneIds, []),
+          ansicht: quizMasterAnsicht(
+            stand.partie,
+            verbundeneIds,
+            stand.rueckkehrAnfragen.map(({ spielerId }) => ({
+              spielerId,
+              name:
+                stand.partie.spieler.find((s) => s.id === spielerId)?.name ??
+                "",
+            })),
+          ),
         });
       } else if (zugang?.rolle === "spieler") {
         senden(verbindung, {
@@ -197,16 +340,20 @@ export class Spielraum extends DurableObject<Env> {
   }
 }
 
+function rechtePruefen(aktion: Aktion, zugang: Zugang): void {
+  const erlaubteRolle = SPIELER_AKTIONEN.includes(aktion.typ)
+    ? "spieler"
+    : "quiz-master";
+  if (zugang.rolle !== erlaubteRolle) {
+    throw new Regelfehler("keine-berechtigung");
+  }
+}
+
 function aktionAusfuehren(
   partie: Partie,
   aktion: Aktion,
   zugang: Zugang,
 ): Partie {
-  const fuerSpieler = SPIELER_AKTIONEN.includes(aktion.typ);
-  if (fuerSpieler !== (zugang.rolle === "spieler")) {
-    throw new Regelfehler("keine-berechtigung");
-  }
-
   if (zugang.rolle === "spieler") {
     switch (aktion.typ) {
       case "einsatz-setzen":
@@ -248,6 +395,12 @@ function zugangFinden(stand: Raumstand, token: string): Zugang | null {
   }
   if (Object.hasOwn(stand.spielerTokens, token)) {
     return { rolle: "spieler", token, spielerId: stand.spielerTokens[token] };
+  }
+  const anfrage = stand.rueckkehrAnfragen.find(
+    (kandidat) => kandidat.token === token,
+  );
+  if (anfrage) {
+    return { rolle: "wartend", token, spielerId: anfrage.spielerId };
   }
   return null;
 }

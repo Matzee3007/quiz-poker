@@ -1,4 +1,8 @@
-import { evictDurableObject } from "cloudflare:test";
+import {
+  evictDurableObject,
+  runDurableObjectAlarm,
+  runInDurableObject,
+} from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { istGueltigerRaumcode } from "../src/regeln/raumcode";
@@ -316,5 +320,155 @@ describe("Aktionen", () => {
     );
     expect(ansicht.spieler.find((s) => s.id === annaId)?.einsatz).toBe(40);
     expect(ansicht.spieler.every((s) => s.verbunden)).toBe(true);
+  });
+});
+
+describe("Rückkehr auf ein neues Gerät", () => {
+  async function anfrageVonAnna(raumcode: string) {
+    const { status, daten } = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "anna",
+    });
+    expect(status).toBe(202);
+    return verbinden(raumcode, daten.token);
+  }
+
+  it("zeigt dem neuen Gerät vor der Bestätigung nichts vom Spielstand", async () => {
+    const { raumcode, quizMaster, annaId } = await raumMitAnnaUndBen();
+    const neu = await anfrageVonAnna(raumcode);
+
+    expect(await neu.naechste()).toEqual({ typ: "wartet-auf-bestaetigung" });
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.rueckkehrAnfragen.length > 0,
+    );
+    expect(ansicht.rueckkehrAnfragen).toEqual([
+      { spielerId: annaId, name: "Anna" },
+    ]);
+  });
+
+  it("verbietet dem wartenden Gerät jede Aktion, auch die des Quiz-Masters", async () => {
+    const { raumcode } = await raumMitAnnaUndBen();
+    const neu = await anfrageVonAnna(raumcode);
+    await neu.naechste();
+
+    for (const aktion of [
+      { typ: "partie-starten" },
+      { typ: "einsatz-setzen", einsatz: 10 },
+    ] as const) {
+      neu.senden(aktion);
+      expect(await neu.naechste()).toEqual({
+        typ: "fehler",
+        code: "keine-berechtigung",
+      });
+    }
+  });
+
+  it("lehnt einen unbekannten Namen und Raum ab", async () => {
+    const { raumcode } = await raumMitAnnaUndBen();
+    const name = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "Niemand",
+    });
+    const raum = await post("/api/raeume/QQQX/rueckkehr", { name: "Anna" });
+
+    expect(name.status).toBe(422);
+    expect(name.daten.code).toBe("unbekannter-spieler");
+    expect(raum.status).toBe(404);
+  });
+
+  it("übergibt nach der Bestätigung den Platz und sperrt das alte Gerät", async () => {
+    const { raumcode, quizMaster, anna, annaId, annaToken } =
+      await raumMitAnnaUndBen();
+    const neu = await anfrageVonAnna(raumcode);
+    await neu.naechste();
+
+    quizMaster.senden({ typ: "rueckkehr-bestaetigen", spielerId: annaId });
+
+    const ansicht = await neu.ansicht();
+    expect(ansicht.ichId).toBe(annaId);
+    expect(ansicht.spieler.find((s) => s.id === annaId)?.chips).toBe(100);
+    expect(await anna.geschlossen).toBe(4003);
+    const fertig = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.rueckkehrAnfragen.length === 0,
+    );
+    expect(fertig.rueckkehrAnfragen).toEqual([]);
+
+    const altesToken = await verbinden(raumcode, annaToken);
+    expect(await altesToken.geschlossen).toBe(4001);
+  });
+
+  it("schließt das neue Gerät bei einer Ablehnung", async () => {
+    const { raumcode, quizMaster, anna, annaId } = await raumMitAnnaUndBen();
+    const neu = await anfrageVonAnna(raumcode);
+    await neu.naechste();
+
+    quizMaster.senden({ typ: "rueckkehr-ablehnen", spielerId: annaId });
+
+    expect(await neu.geschlossen).toBe(4001);
+    quizMaster.senden({ typ: "partie-starten" });
+    expect((await anna.ansicht((a) => a.phase === "einsatz")).ichId).toBe(
+      annaId,
+    );
+  });
+
+  it("führt je Spieler nur eine Anfrage, eine neue ersetzt die alte", async () => {
+    const { raumcode, quizMaster } = await raumMitAnnaUndBen();
+    const erste = await anfrageVonAnna(raumcode);
+    await erste.naechste();
+    const zweite = await anfrageVonAnna(raumcode);
+    await zweite.naechste();
+
+    expect(await erste.geschlossen).toBe(4001);
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.rueckkehrAnfragen.length > 0,
+    );
+    expect(ansicht.rueckkehrAnfragen).toHaveLength(1);
+  });
+});
+
+describe("Spieler entfernen und Raum beenden", () => {
+  it("schließt das Gerät eines entfernten Spielers, das Token gilt nicht mehr", async () => {
+    const { raumcode, quizMaster, anna, ben, annaId, annaToken } =
+      await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "spieler-entfernen", spielerId: annaId });
+
+    expect(await anna.geschlossen).toBe(4003);
+    const ansicht = await ben.ansicht((a) => a.spieler.length === 1);
+    expect(ansicht.spieler[0].name).toBe("Ben");
+
+    const erneut = await verbinden(raumcode, annaToken);
+    expect(await erneut.geschlossen).toBe(4001);
+  });
+
+  it("schließt beim Raumende alle Geräte, ein Beitritt ist nicht mehr möglich", async () => {
+    const { raumcode, quizMaster, anna } = await raumMitAnnaUndBen();
+    quizMaster.senden({ typ: "raum-schliessen" });
+
+    expect(await quizMaster.geschlossen).toBe(4002);
+    expect(await anna.geschlossen).toBe(4002);
+    const beitritt = await post(`/api/raeume/${raumcode}/spieler`, {
+      name: "Cara",
+    });
+    expect(beitritt.status).toBe(404);
+  });
+
+  it("setzt bei jeder Aktion den Alarm auf 24 Stunden und löscht danach den Raum", async () => {
+    const { raumcode, quizMaster, anna } = await raumMitAnnaUndBen();
+    const raum = env.SPIELRAUM.getByName(raumcode);
+    const vorher = await runInDurableObject(raum, (_, zustand) =>
+      zustand.storage.getAlarm(),
+    );
+    const jetzt = Date.now();
+    expect(vorher).toBeGreaterThan(jetzt + 23 * 60 * 60 * 1000);
+    expect(vorher).toBeLessThanOrEqual(jetzt + 24 * 60 * 60 * 1000);
+
+    quizMaster.senden({ typ: "partie-starten" });
+    await anna.ansicht((a) => a.phase === "einsatz");
+    expect(await runDurableObjectAlarm(raum)).toBe(true);
+
+    expect(await quizMaster.geschlossen).toBe(4002);
+    expect(await anna.geschlossen).toBe(4002);
+    const beitritt = await post(`/api/raeume/${raumcode}/spieler`, {
+      name: "Cara",
+    });
+    expect(beitritt.status).toBe(404);
   });
 });

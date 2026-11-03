@@ -24,19 +24,27 @@ async function nameLesen(anfrage: Request): Promise<string | null> {
   }
 }
 
-async function spielerAnlegen(
+async function namensAnfrage(
   anfrage: Request,
   env: Env,
   raumcode: string,
+  weg: "spieler" | "rueckkehr",
 ): Promise<Response> {
   const name = await nameLesen(anfrage);
   if (name === null) {
     return Response.json({ code: "ungueltige-nachricht" }, { status: 422 });
   }
 
-  const ergebnis = await env.SPIELRAUM.getByName(raumcode).spielerAnlegen(name);
+  const raum = env.SPIELRAUM.getByName(raumcode);
+  const ergebnis =
+    weg === "spieler"
+      ? await raum.spielerAnlegen(name)
+      : await raum.rueckkehrAnfragen(name);
   if (ergebnis.ok) {
-    return Response.json({ token: ergebnis.token }, { status: 201 });
+    return Response.json(
+      { token: ergebnis.token },
+      { status: weg === "spieler" ? 201 : 202 },
+    );
   }
   if (ergebnis.code === "raum-unbekannt") {
     return Response.json({ code: ergebnis.code }, { status: 404 });
@@ -60,16 +68,18 @@ export default {
       return raumEroeffnen(env);
     }
 
-    const treffer = /^\/api\/raeume\/([^/]+)\/(spieler|verbindung)$/.exec(
-      pathname,
-    );
+    const treffer =
+      /^\/api\/raeume\/([^/]+)\/(spieler|rueckkehr|verbindung)$/.exec(pathname);
     if (treffer) {
       const [, raumcode, weg] = treffer;
       if (!istGueltigerRaumcode(raumcode)) {
         return Response.json({ code: "raum-unbekannt" }, { status: 404 });
       }
-      if (weg === "spieler" && anfrage.method === "POST") {
-        return spielerAnlegen(anfrage, env, raumcode);
+      if (
+        (weg === "spieler" || weg === "rueckkehr") &&
+        anfrage.method === "POST"
+      ) {
+        return namensAnfrage(anfrage, env, raumcode, weg);
       }
       if (weg === "verbindung") {
         if (anfrage.headers.get("Upgrade") !== "websocket") {

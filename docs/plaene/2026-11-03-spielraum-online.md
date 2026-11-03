@@ -186,7 +186,7 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
 
 - Liefert: `POST …/rueckkehr`, Aktionen `rueckkehr-bestaetigen`, `rueckkehr-ablehnen`, `spieler-entfernen`, `raum-schliessen`, `alarm()`
 
-- [ ] **Schritt 1: Tests schreiben, rot**
+- [x] **Schritt 1: Tests schreiben, rot**
   - `POST …/rueckkehr` mit bekanntem Namen liefert Token, Verbindung damit bekommt nur `wartet-auf-bestaetigung`, keine Ansicht (Schwerpunkt 5). Der Quiz-Master sieht die Anfrage.
   - `rueckkehr-bestaetigen`: Neues Gerät bekommt die Ansicht des Spielers mit seinem Chipstand, altes Token schließt mit 4003 und gilt nicht mehr.
   - `rueckkehr-ablehnen`: Neues Gerät wird mit 4001 geschlossen.
@@ -194,9 +194,9 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
   - `spieler-entfernen` schließt die Verbindung mit 4003, die anderen sehen ihn nicht mehr, das Token gilt nicht mehr.
   - `raum-schliessen` schließt alle mit 4002, und ein neuer Beitritt liefert 404.
   - Jede Aktion setzt den Alarm auf 24 Stunden. `runDurableObjectAlarm` löscht den Stand und schließt mit 4002.
-- [ ] **Schritt 2: Umsetzen, `npm test -- worker`, grün.**
-- [ ] **Schritt 3: `npm run dev` starten und per `curl` gegen `/api/raeume` prüfen, ob der Worker im Dev-Server antwortet.**
-- [ ] **Schritt 4: `CLAUDE.md` Repo-Struktur ergänzen, `npm run check`, committen, PR öffnen:** „Add online game room server“
+- [x] **Schritt 2: Umsetzen, `npm test -- worker`, grün.**
+- [x] **Schritt 3: `npm run dev` starten und per `curl` gegen `/api/raeume` prüfen, ob der Worker im Dev-Server antwortet.**
+- [x] **Schritt 4: `CLAUDE.md` Repo-Struktur ergänzen, `npm run check`, committen, PR öffnen:** „Add online game room server“
 - [ ] **Schritt 5: `/code-review`, `plan-pruefer` für die Aufgaben 1 bis 7, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
 
 ## PR 2: Oberfläche und Veröffentlichung

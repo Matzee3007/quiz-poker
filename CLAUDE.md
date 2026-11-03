@@ -30,7 +30,8 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
    was seine Rolle gerade sehen darf. Lösungen und fremde Einsätze gehen erst bei der Auflösung einer Runde hinaus.
 2. **Regeln ohne Technik:** Die Spielregeln sind reines TypeScript ohne Svelte und Cloudflare und werden testgetrieben
    entwickelt.
-3. **Ein Raum, ein Durable Object:** Jeder Spielraum hat genau ein Objekt, das seinen Zustand verwaltet.
+3. **Ein Raum, ein Durable Object:** Jeder Spielraum hat genau ein Objekt, das seinen Zustand verwaltet. Es speichert nach jeder Aktion
+   und schläft im Leerlauf (ADR 0004).
 4. **Klein bleiben:** Für eine Freundesrunde, ohne Konten für Spieler und ohne Echtgeld. Quizze liegen ab Phase 3 in D1
    (ADR 0002).
 5. **Kontext liegt in Dateien** (`CLAUDE.md`, `docs/`), nicht im Chatverlauf.
@@ -42,13 +43,19 @@ quiz-poker/
 ├── src/                Oberfläche (Svelte)
 │   ├── App.svelte      Startseite
 │   ├── main.ts         Einstieg im Browser
+│   ├── protokoll.ts    Nachrichten zwischen Gerät und Server
 │   └── regeln/         Spielregeln als reines TypeScript, ohne Svelte und Cloudflare
+│       ├── ansicht.ts  Was jede Rolle sehen darf
+│       ├── beispielQuiz.ts  Fest eingebautes Quiz bis Phase 3
 │       ├── chips.ts    Startchips, Einsatzgrenzen, Gewinn und Verlust
 │       ├── fehler.ts   Regelfehler mit Code
-│       └── partie.ts   Spielstand und alle Spielaktionen einer Partie
+│       ├── partie.ts   Spielstand und alle Spielaktionen einer Partie
+│       └── raumcode.ts Raumcode erzeugen und prüfen
 ├── worker/             Server (Cloudflare Worker)
 │   ├── index.ts        beantwortet Anfragen an /api/*
-│   └── index.test.ts   Tests des Workers
+│   ├── spielraum.ts    Durable Object je Spielraum: Verbindungen und Speicher
+│   ├── testhilfen.ts   Hilfen für Tests mit WebSockets
+│   └── *.test.ts       Tests des Workers
 ├── docs/               Doku, zugleich Teil des Obsidian-Vaults
 ├── index.html          Seite, in die Svelte die Oberfläche einhängt
 ├── wrangler.jsonc      Cloudflare-Einstellungen
@@ -56,7 +63,6 @@ quiz-poker/
 └── vitest.config.ts    Tests
 ```
 
-Ziel ab Phase 2: ein Durable Object unter `worker/` je Spielraum.
 
 ## Befehle
 
