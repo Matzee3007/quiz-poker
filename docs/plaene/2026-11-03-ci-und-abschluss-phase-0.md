@@ -1,6 +1,6 @@
 ---
 titel: "Plan: CI und Abschluss von Phase 0"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-03
 tags: [plan, ci, phase-0]
 ---
@@ -129,13 +129,13 @@ Plan. Danach `gh pr checks <nr>`, `gh pr view <nr> --json mergeable` und erst be
 - Liefert: `main` ohne offene PRs. Die Übergabe nennt Phase 1 als nächste Phase und die Frage, ob vorher etwas anderes
   ansteht.
 
-- [ ] **Schritt 1: Journal mit dem Skill `journal` schreiben**
+- [x] **Schritt 1: Journal mit dem Skill `journal` schreiben**
 
 Enthält auch die Entscheidungen aus `/grill-with-docs` und die Korrektur der offenen Regelfrage (+5 statt +10).
 
-- [ ] **Schritt 2: Roadmap abhaken und Übergabe mit dem Skill `naechste-session` schreiben**
+- [x] **Schritt 2: Roadmap abhaken und Übergabe mit dem Skill `naechste-session` schreiben**
 
-- [ ] **Schritt 3: Doku-PR mergen und Stand prüfen**
+- [x] **Schritt 3: Doku-PR mergen und Stand prüfen**
 
 `git status --short` und `gh pr list`
 Erwartet: Branch `main`, keine Änderungen, keine offenen PRs.

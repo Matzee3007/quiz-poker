@@ -1,6 +1,6 @@
 ---
 titel: Lernjournal Phase 0 - Projektstart
-status: aktiv
+status: abgeschlossen
 phase: 0
 erstellt: 2026-11-02
 tags: [lernjournal, phase-0, svelte, cloudflare, vitest]
