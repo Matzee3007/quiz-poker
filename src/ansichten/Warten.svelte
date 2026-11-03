@@ -12,11 +12,16 @@
   let { ansicht, raumcode, senden }: Props = $props();
 
   const link = $derived(`${location.origin}/raum/${raumcode}`);
-  let kopiert = $state(false);
+  let kopierText = $state("Link kopieren");
 
   async function kopieren() {
-    await navigator.clipboard.writeText(link);
-    kopiert = true;
+    try {
+      // Ohne sichere Verbindung gibt es navigator.clipboard nicht, der Aufruf schlägt dann fehl.
+      await navigator.clipboard.writeText(link);
+      kopierText = "Kopiert";
+    } catch {
+      kopierText = "Bitte von Hand kopieren";
+    }
   }
 </script>
 
@@ -26,8 +31,7 @@
     <p class="raumcode">{raumcode}</p>
     <div class="reihe">
       <span class="matt">{link}</span>
-      <button onclick={kopieren}>{kopiert ? "Kopiert" : "Link kopieren"}</button
-      >
+      <button onclick={kopieren}>{kopierText}</button>
     </div>
     {#if ansicht.rolle === "quiz-master"}
       <div>

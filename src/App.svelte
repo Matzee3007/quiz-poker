@@ -11,6 +11,7 @@
   import { istGueltigerRaumcode } from "./regeln/raumcode";
   import {
     tokenLesen,
+    rueckkehrOffen,
     tokenLoeschen,
     tokenSpeichern,
     Verbindung,
@@ -18,7 +19,8 @@
 
   function raumcodeAusPfad(): string | null {
     const treffer = /^\/raum\/([^/]+)$/.exec(location.pathname);
-    return treffer && istGueltigerRaumcode(treffer[1]) ? treffer[1] : null;
+    const code = treffer?.[1].toUpperCase();
+    return code && istGueltigerRaumcode(code) ? code : null;
   }
 
   let raumcode = $state(raumcodeAusPfad());
@@ -44,8 +46,8 @@
     }
     if (verbindung?.zustand === "unbekannt") {
       // Die Adresse bleibt: Das Namensfeld des Raums führt direkt zurück ins Spiel.
+      const warGewartet = rueckkehrOffen(code);
       tokenLoeschen(code);
-      const warGewartet = verbindung.warteteAufBestaetigung;
       untrack(() => {
         startMeldung = warGewartet
           ? "Deine Rückkehr wurde nicht bestätigt oder ist abgelaufen. Du kannst sie neu anfragen."
@@ -60,10 +62,15 @@
 
   function adresseUebernehmen() {
     const code = raumcodeAusPfad();
-    verbindung = null;
+    const neuesToken = code ? tokenLesen(code) : null;
     startMeldung = null;
+    // Gleicher Raum und gleiches Token: Die offene Verbindung bleibt gültig.
+    if (code === raumcode && neuesToken === token) {
+      return;
+    }
+    verbindung = null;
     raumcode = code;
-    token = code ? tokenLesen(code) : null;
+    token = neuesToken;
   }
 
   function zumStart() {
@@ -71,12 +78,18 @@
     adresseUebernehmen();
   }
 
-  function eintreten(neuerCode: string, neuesToken: string) {
-    tokenSpeichern(neuerCode, neuesToken);
+  function eintreten(
+    neuerCode: string,
+    neuesToken: string,
+    rueckkehr: boolean,
+  ) {
+    tokenSpeichern(neuerCode, neuesToken, rueckkehr);
     startMeldung = null;
     raumcode = neuerCode;
     token = neuesToken;
-    history.pushState(null, "", `/raum/${neuerCode}`);
+    if (raumcodeAusPfad() !== neuerCode) {
+      history.pushState(null, "", `/raum/${neuerCode}`);
+    }
   }
 
   const SCHRITTE = [

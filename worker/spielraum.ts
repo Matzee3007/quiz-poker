@@ -385,7 +385,11 @@ export class Spielraum extends DurableObject<Env> {
     }
 
     const zugang = zugangVon(verbindung);
-    if (zugang?.rolle === "wartend") {
+    // Eine neue Verbindung mit demselben Token ersetzt die alte, die Anfrage bleibt dann bestehen.
+    const ersetzt = this.offeneVerbindungen(verbindung).some(
+      (andere) => zugangVon(andere)?.token === zugang?.token,
+    );
+    if (zugang?.rolle === "wartend" && !ersetzt) {
       stand.rueckkehrAnfragen = stand.rueckkehrAnfragen.filter(
         (anfrage) => anfrage.token !== zugang.token,
       );

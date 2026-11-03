@@ -1,11 +1,12 @@
 <script lang="ts">
   import { meldungFuer } from "../meldungen";
-  import { tokenLesen } from "../verbindung.svelte";
+  import { istGueltigerRaumcode } from "../regeln/raumcode";
+  import { rueckkehrOffen, tokenLesen } from "../verbindung.svelte";
 
   interface Props {
     raumcode: string | null;
     meldung: string | null;
-    onEintritt: (raumcode: string, token: string) => void;
+    onEintritt: (raumcode: string, token: string, rueckkehr: boolean) => void;
   }
 
   let { raumcode, meldung, onEintritt }: Props = $props();
@@ -14,6 +15,7 @@
   let name = $state("");
   let fehler = $state<string | null>(null);
   let rueckkehrAnbieten = $state(false);
+  let eroeffnetGerade = $state(false);
 
   const code = $derived((raumcode ?? eingabeCode).trim().toUpperCase());
 
@@ -24,6 +26,7 @@
 
   async function eroeffnen() {
     fehler = null;
+    eroeffnetGerade = true;
     try {
       const antwort = await fetch("/api/raeume", { method: "POST" });
       if (!antwort.ok) {
@@ -34,18 +37,24 @@
         raumcode: string;
         token: string;
       };
-      onEintritt(daten.raumcode, daten.token);
+      onEintritt(daten.raumcode, daten.token, false);
     } catch {
       fehler = meldungFuer("keine-verbindung");
+    } finally {
+      eroeffnetGerade = false;
     }
   }
 
   async function namensAnfrage(weg: "spieler" | "rueckkehr") {
     fehler = null;
+    if (!istGueltigerRaumcode(code)) {
+      fehler = meldungFuer("raum-unbekannt");
+      return;
+    }
     // Wer hier schon einen Platz hat, kehrt zurück und überschreibt sein Token nicht.
     const vorhanden = tokenLesen(code);
     if (vorhanden) {
-      onEintritt(code, vorhanden);
+      onEintritt(code, vorhanden, rueckkehrOffen(code));
       return;
     }
 
@@ -56,7 +65,7 @@
       });
       if (antwort.ok) {
         const daten = (await antwort.json()) as { token: string };
-        onEintritt(code, daten.token);
+        onEintritt(code, daten.token, weg === "rueckkehr");
         return;
       }
 
@@ -95,7 +104,9 @@
           Du leitest die Partie als Quiz-Master und spielst nicht mit.
         </p>
         <div>
-          <button class="haupt" onclick={eroeffnen}>Spielraum eröffnen</button>
+          <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
+            >Spielraum eröffnen</button
+          >
         </div>
       </section>
     {/if}
@@ -116,6 +127,7 @@
           <input
             id="code"
             bind:value={eingabeCode}
+            oninput={() => (rueckkehrAnbieten = false)}
             maxlength="4"
             autocomplete="off"
           />
@@ -123,7 +135,13 @@
       {/if}
       <div>
         <label for="name">Dein Name</label>
-        <input id="name" bind:value={name} maxlength="20" autocomplete="off" />
+        <input
+          id="name"
+          bind:value={name}
+          oninput={() => (rueckkehrAnbieten = false)}
+          maxlength="20"
+          autocomplete="off"
+        />
       </div>
       <div class="reihe">
         <button class="haupt" type="submit">Beitreten</button>

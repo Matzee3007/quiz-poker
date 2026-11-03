@@ -513,6 +513,22 @@ describe("Rückkehr auf ein neues Gerät", () => {
     expect(danach.status).toBe(202);
   });
 
+  it("behält die Anfrage, wenn das wartende Gerät sich neu verbindet", async () => {
+    const { raumcode, quizMaster, annaId } = await raumMitAnnaUndBen();
+    const { daten } = await post(`/api/raeume/${raumcode}/rueckkehr`, {
+      name: "Anna",
+    });
+    const alt = await verbinden(raumcode, daten.token);
+    await alt.naechste();
+    const neu = await verbinden(raumcode, daten.token);
+    await neu.naechste();
+    await alt.geschlossen;
+
+    quizMaster.senden({ typ: "rueckkehr-bestaetigen", spielerId: annaId });
+
+    expect((await neu.ansicht()).ichId).toBe(annaId);
+  });
+
   it("schickt einem wartenden Gerät auch bei Änderungen keine Ansicht", async () => {
     const { raumcode, quizMaster } = await raumMitAnnaUndBen();
     const neu = await anfrageVonAnna(raumcode);

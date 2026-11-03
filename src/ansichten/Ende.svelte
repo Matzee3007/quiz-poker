@@ -22,10 +22,15 @@
 </script>
 
 <main class="seite stapel">
-  <p class="ueberschrift">
-    {namen.length > 1 ? "Gleichstand, gewonnen haben" : "Gewonnen hat"}
-  </p>
-  <p class="raumcode">{namen.join(" und ")}</p>
+  {#if namen.length === 0}
+    <p class="ueberschrift">Partie beendet</p>
+    <p class="matt">Es ist kein Spieler mehr im Spielraum.</p>
+  {:else}
+    <p class="ueberschrift">
+      {namen.length > 1 ? "Gleichstand, gewonnen haben" : "Gewonnen hat"}
+    </p>
+    <p class="raumcode">{namen.join(" und ")}</p>
+  {/if}
 
   <section class="podest" aria-label="Podest">
     {#each endstand.slice(0, 3) as spieler (spieler.id)}

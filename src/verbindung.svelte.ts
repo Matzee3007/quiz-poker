@@ -23,8 +23,6 @@ export class Verbindung {
   ansicht = $state<SpielerAnsicht | QuizMasterAnsicht | null>(null);
   fehler = $state<RegelfehlerCode | "keine-verbindung" | null>(null);
   zustand = $state<Zustand>("verbinden");
-  /** Das Gerät wartete auf den Quiz-Master, ein Unbekannt-Schließen heißt dann „Anfrage beendet“. */
-  warteteAufBestaetigung = $state(false);
 
   private socket: WebSocket | null = null;
   private versuche = 0;
@@ -46,6 +44,9 @@ export class Verbindung {
 
     socket.addEventListener("open", () => {
       this.versuche = 0;
+      if (this.fehler === "keine-verbindung") {
+        this.fehler = null;
+      }
     });
     socket.addEventListener("message", (ereignis) => {
       this.nachrichtVerarbeiten(
@@ -69,14 +70,13 @@ export class Verbindung {
         }
         this.ansicht = nachricht.ansicht;
         this.zustand = "verbunden";
-        this.warteteAufBestaetigung = false;
+        rueckkehrAbschliessen(this.raumcode);
         break;
       case "fehler":
         this.fehler = nachricht.code;
         break;
       case "wartet-auf-bestaetigung":
         this.zustand = "wartet";
-        this.warteteAufBestaetigung = true;
         break;
       case "beendet":
         this.schliessenVerarbeiten(nachricht.code);
@@ -129,14 +129,35 @@ function tokenSchluessel(raumcode: string): string {
   return `quiz-poker:${raumcode}`;
 }
 
+function rueckkehrSchluessel(raumcode: string): string {
+  return `quiz-poker:${raumcode}:rueckkehr`;
+}
+
 export function tokenLesen(raumcode: string): string | null {
   return localStorage.getItem(tokenSchluessel(raumcode));
 }
 
-export function tokenSpeichern(raumcode: string, token: string): void {
+export function tokenSpeichern(
+  raumcode: string,
+  token: string,
+  rueckkehr: boolean,
+): void {
   localStorage.setItem(tokenSchluessel(raumcode), token);
+  if (rueckkehr) {
+    localStorage.setItem(rueckkehrSchluessel(raumcode), "1");
+  }
 }
 
 export function tokenLoeschen(raumcode: string): void {
   localStorage.removeItem(tokenSchluessel(raumcode));
+  rueckkehrAbschliessen(raumcode);
+}
+
+/** Das Token stammt aus einer Rückkehr-Anfrage, die noch nicht bestätigt ist. */
+export function rueckkehrOffen(raumcode: string): boolean {
+  return localStorage.getItem(rueckkehrSchluessel(raumcode)) !== null;
+}
+
+function rueckkehrAbschliessen(raumcode: string): void {
+  localStorage.removeItem(rueckkehrSchluessel(raumcode));
 }

@@ -250,6 +250,8 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 - [x] Browser-Zurück, Fehlermeldungen je Schritt, Offline-Meldung beim Eröffnen und Beitreten, lange Wörter brechen um.
 - [x] Mock vollständig: Podest, Spalten „Platz“ und „Einsatz“, „(du)“, Schnellwahl, Spielidee, später Einsteigende in der Auflösung, Chips beim Warten.
 
+- [x] Dritte Runde: Zurück ohne Hänger, Anfrage übersteht Neuverbinden, richtige Meldung nach dem Neuladen, Fehlermeldung verschwindet nach dem Neuverbinden, Raumcode auch in Kleinbuchstaben, Rückmeldung beim Kopieren, Prüfung leerer Raumcodes, Rückkehr-Knopf verschwindet bei Namensänderung, kein Doppeleröffnen, Text für ein Ende ohne Spieler.
+
 ### Aufgabe 10: PR 2
 
 **Dateien:** Ändern `CLAUDE.md`, `docs/tools/Svelte und Vite.md`
