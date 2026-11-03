@@ -592,3 +592,27 @@ describe("Unveränderte Eingabe", () => {
     expect(chipsVon(partie, "ben")).toBe(120);
   });
 });
+
+describe("Eingabegrenzen", () => {
+  it("erlaubt Namen bis 20 Zeichen, gemessen nach dem Trimmen", () => {
+    const partie = partieErstellen(quiz);
+
+    expect(
+      spielerBeitreten(partie, "anna", ` ${"a".repeat(20)} `).spieler,
+    ).toHaveLength(1);
+    expect(() => spielerBeitreten(partie, "anna", "a".repeat(21))).toThrow(
+      "name-zu-lang",
+    );
+  });
+
+  it("erlaubt Antworten bis 200 Zeichen, gemessen nach dem Trimmen", () => {
+    const partie = frageZeigen(gestartetePartie());
+
+    expect(
+      antwortBestaetigen(partie, "anna", ` ${"a".repeat(200)} `).antworten.anna,
+    ).toHaveLength(200);
+    expect(() => antwortBestaetigen(partie, "anna", "a".repeat(201))).toThrow(
+      "antwort-zu-lang",
+    );
+  });
+});

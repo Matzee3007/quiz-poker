@@ -80,9 +80,9 @@ Schließcodes: 4001 unbekanntes Token, 4002 Raum geschlossen, 4003 ersetzt oder 
 
 - Liefert: `raumcodeErzeugen(zufall: () => number = Math.random): string`, `istGueltigerRaumcode(code: string): boolean`; neue Codes `name-zu-lang`, `antwort-zu-lang`, `keine-berechtigung`, `ungueltige-nachricht`
 
-- [ ] **Schritt 1: Tests schreiben, rot**: `raumcodeErzeugen(() => 0)` ist `"AAAA"`, `raumcodeErzeugen(() => 0.999)` ist `"ZZZZ"`. `istGueltigerRaumcode` lehnt `"ABC"`, `"ABCDE"`, `"abcd"`, `"OABC"`, `"IABC"`, `"constructor"` ab. Name mit 20 Zeichen geht, mit 21 wirft `name-zu-lang`. Antwort mit 200 Zeichen geht, mit 201 wirft `antwort-zu-lang`, jeweils nach dem Trimmen.
-- [ ] **Schritt 2: Umsetzen, `npm test -- src/regeln`, grün.**
-- [ ] **Schritt 3: `npm run check`, committen:** „Add room codes and input limits“
+- [x] **Schritt 1: Tests schreiben, rot**: `raumcodeErzeugen(() => 0)` ist `"AAAA"`, `raumcodeErzeugen(() => 0.999)` ist `"ZZZZ"`. `istGueltigerRaumcode` lehnt `"ABC"`, `"ABCDE"`, `"abcd"`, `"OABC"`, `"IABC"`, `"constructor"` ab. Name mit 20 Zeichen geht, mit 21 wirft `name-zu-lang`. Antwort mit 200 Zeichen geht, mit 201 wirft `antwort-zu-lang`, jeweils nach dem Trimmen.
+- [x] **Schritt 2: Umsetzen, `npm test -- src/regeln`, grün.**
+- [x] **Schritt 3: `npm run check`, committen:** „Add room codes and input limits“
 
 ### Aufgabe 3: Ansicht je Rolle
 

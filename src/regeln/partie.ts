@@ -8,6 +8,8 @@ import { Regelfehler } from "./fehler";
 
 const MINDESTSPIELER = 2;
 const HOECHSTSPIELER = 8;
+const NAME_HOECHSTLAENGE = 20;
+const ANTWORT_HOECHSTLAENGE = 200;
 
 export interface Frage {
   text: string;
@@ -118,6 +120,9 @@ export function spielerBeitreten(
   if (sauberName === "") {
     throw new Regelfehler("leerer-name");
   }
+  if (sauberName.length > NAME_HOECHSTLAENGE) {
+    throw new Regelfehler("name-zu-lang");
+  }
 
   if (partie.spieler.some((spieler) => spieler.id === id)) {
     throw new Regelfehler("id-vergeben");
@@ -201,6 +206,9 @@ export function antwortBestaetigen(
   const antwort = text.trim();
   if (antwort === "") {
     throw new Regelfehler("leere-antwort");
+  }
+  if (antwort.length > ANTWORT_HOECHSTLAENGE) {
+    throw new Regelfehler("antwort-zu-lang");
   }
 
   return {
