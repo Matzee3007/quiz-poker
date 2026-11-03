@@ -53,25 +53,25 @@ Alle fünf sind Eigenschaften des Laufs auf GitHub und werden in Aufgabe 1, Schr
 - Nutzt: `npm run check` aus `package.json`
 - Liefert: Status `check` an jedem Pull Request, abrufbar mit `gh pr checks <nr>`
 
-- [ ] **Schritt 1: `engines` ergänzen**
+- [x] **Schritt 1: `engines` ergänzen**
 
 `package.json` bekommt `"engines": { "node": "24" }`.
 
-- [ ] **Schritt 2: Workflow anlegen**
+- [x] **Schritt 2: Workflow anlegen**
 
 `.github/workflows/ci.yml` nach dem Muster von tages-dashboard: Name `CI`, Auslöser `pull_request` und `push` auf `main`,
 `concurrency` mit `cancel-in-progress`, `permissions: contents: read`, Job `check` auf `ubuntu-latest` mit
 `timeout-minutes: 10`. Schritte: `actions/checkout@v7`, `actions/setup-node@v7` mit `node-version-file: package.json` und
 `cache: npm`, `npm ci`, `npm run check`.
 
-- [ ] **Schritt 3: Probedatei anlegen und lokal rot sehen**
+- [x] **Schritt 3: Probedatei anlegen und lokal rot sehen**
 
 `src/ci-probe.ts` mit dem Inhalt `export const probe   =   1`.
 
 `npm run format:check`
 Erwartet: `[warn] src/ci-probe.ts` und Exit-Code 1.
 
-- [ ] **Schritt 4: Branch pushen, PR öffnen, CI muss rot werden**
+- [x] **Schritt 4: Branch pushen, PR öffnen, CI muss rot werden**
 
 ```bash
 git add .github/workflows/ci.yml package.json src/ci-probe.ts
@@ -85,7 +85,7 @@ gh run view <id> --log-failed
 Erwartet: Job `check` schlägt im Schritt `npm run check` bei `format:check` mit `src/ci-probe.ts` fehl. `npm ci` lief also
 durch (Schwerpunkte 1, 2 und 5).
 
-- [ ] **Schritt 5: Probedatei löschen, CI muss grün werden**
+- [x] **Schritt 5: Probedatei löschen, CI muss grün werden**
 
 ```bash
 git rm src/ci-probe.ts
@@ -97,7 +97,7 @@ gh pr checks <nr> --watch
 Erwartet: `check` besteht. Damit laufen `wrangler types`, Typprüfung, Tests und Build auf Linux ohne Login (Schwerpunkte 2
 bis 4).
 
-- [ ] **Schritt 6: Einrichtung dokumentieren und committen**
+- [x] **Schritt 6: Einrichtung dokumentieren und committen**
 
 `docs/tools/GitHub Actions - Einrichtung.md` nach dem Muster von tages-dashboard: was die CI prüft, Probelauf mit Ergebnis,
 Regel zu `gh pr checks`, Dauer des Laufs, Fehler mit Ursache und Lösung. Zeile in `docs/tools/Tools Übersicht.md` ergänzen.
