@@ -38,6 +38,15 @@ Objects mit SQLite-Speicher, 100.000 Anfragen pro Tag. Eingehende WebSocket-Nach
 Die Klasse `Raumzaehler` (`worker/raumzaehler.ts`) begrenzt neue Räume über die Variable `RAEUME_PRO_STUNDE` in `wrangler.jsonc`. Das
 Rate-Limiting-Binding von Cloudflare nutzen wir nicht: Die Doku bestätigt es nicht für den kostenlosen Tarif, es zählt nur ungefähr und je Standort.
 
+## Fehler
+
+**Schließ-Signal kommt im Browser erst nach rund 10 Sekunden an** (2026-11-03, Phase 2, lokal mit `npm run dev`):
+
+- Wo: Ein vom Quiz-Master entfernter Spieler sah noch rund 10 Sekunden lang das Spiel, in den Tests fiel das nicht auf.
+- Ursache: nicht geklärt. Der Server ruft `close()` sofort auf, der Browser meldet das Schließen erst später. Ob das auch bei Cloudflare passiert, ist nicht geprüft.
+- Lösung: Der Server schickt vor dem Schließen die Nachricht `{ typ: "beendet", code }`, die Oberfläche reagiert darauf sofort.
+- Prüfen: Spieler im Browser entfernen, die Meldung erscheint sofort.
+
 ## Befehle
 
 ```bash

@@ -21,8 +21,10 @@ const WARTEZEITEN_MS = [1000, 2000, 4000, 10000];
 /** Hält die WebSocket-Verbindung eines Geräts und verbindet nach Abbrüchen neu. */
 export class Verbindung {
   ansicht = $state<SpielerAnsicht | QuizMasterAnsicht | null>(null);
-  fehler = $state<RegelfehlerCode | null>(null);
+  fehler = $state<RegelfehlerCode | "keine-verbindung" | null>(null);
   zustand = $state<Zustand>("verbinden");
+  /** Das Gerät wartete auf den Quiz-Master, ein Unbekannt-Schließen heißt dann „Anfrage beendet“. */
+  warteteAufBestaetigung = $state(false);
 
   private socket: WebSocket | null = null;
   private versuche = 0;
@@ -58,14 +60,26 @@ export class Verbindung {
   private nachrichtVerarbeiten(nachricht: ServerNachricht): void {
     switch (nachricht.typ) {
       case "ansicht":
+        // Eine Fehlermeldung gilt nur für den Schritt, in dem sie entstand.
+        if (
+          this.ansicht?.phase !== nachricht.ansicht.phase ||
+          this.ansicht?.rundeInKategorie !== nachricht.ansicht.rundeInKategorie
+        ) {
+          this.fehler = null;
+        }
         this.ansicht = nachricht.ansicht;
         this.zustand = "verbunden";
+        this.warteteAufBestaetigung = false;
         break;
       case "fehler":
         this.fehler = nachricht.code;
         break;
       case "wartet-auf-bestaetigung":
         this.zustand = "wartet";
+        this.warteteAufBestaetigung = true;
+        break;
+      case "beendet":
+        this.schliessenVerarbeiten(nachricht.code);
         break;
     }
   }
@@ -76,10 +90,13 @@ export class Verbindung {
     }
     if (code === SCHLIESSCODE_UNBEKANNT) {
       this.zustand = "unbekannt";
+      this.beendet = true;
     } else if (code === SCHLIESSCODE_RAUM_GESCHLOSSEN) {
       this.zustand = "geschlossen";
+      this.beendet = true;
     } else if (code === SCHLIESSCODE_ERSETZT) {
       this.zustand = "ersetzt";
+      this.beendet = true;
     } else {
       this.zustand = "verbinden";
       const wartezeit =
@@ -94,10 +111,12 @@ export class Verbindung {
   }
 
   senden(aktion: Aktion): void {
-    this.fehler = null;
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify(aktion));
+    if (this.socket?.readyState !== WebSocket.OPEN) {
+      this.fehler = "keine-verbindung";
+      return;
     }
+    this.fehler = null;
+    this.socket.send(JSON.stringify(aktion));
   }
 
   beenden(): void {

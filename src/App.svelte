@@ -3,6 +3,7 @@
   import Aufloesung from "./ansichten/Aufloesung.svelte";
   import Ende from "./ansichten/Ende.svelte";
   import QuizMasterRunde from "./ansichten/QuizMasterRunde.svelte";
+  import RueckkehrHinweise from "./ansichten/RueckkehrHinweise.svelte";
   import SpielerRunde from "./ansichten/SpielerRunde.svelte";
   import Start from "./ansichten/Start.svelte";
   import Warten from "./ansichten/Warten.svelte";
@@ -37,20 +38,37 @@
   });
 
   $effect(() => {
-    if (verbindung?.zustand === "unbekannt" && raumcode) {
-      tokenLoeschen(raumcode);
+    const code = raumcode;
+    if (!code) {
+      return;
+    }
+    if (verbindung?.zustand === "unbekannt") {
+      // Die Adresse bleibt: Das Namensfeld des Raums führt direkt zurück ins Spiel.
+      tokenLoeschen(code);
+      const warGewartet = verbindung.warteteAufBestaetigung;
       untrack(() => {
-        startMeldung = "Dein Platz in diesem Spielraum gilt nicht mehr.";
-        zumStart();
+        startMeldung = warGewartet
+          ? "Deine Rückkehr wurde nicht bestätigt oder ist abgelaufen. Du kannst sie neu anfragen."
+          : "Dein Platz in diesem Spielraum gilt nicht mehr.";
+        verbindung = null;
+        token = null;
       });
+    } else if (verbindung?.zustand === "geschlossen") {
+      tokenLoeschen(code);
     }
   });
 
-  function zumStart() {
+  function adresseUebernehmen() {
+    const code = raumcodeAusPfad();
     verbindung = null;
-    token = null;
-    raumcode = null;
+    startMeldung = null;
+    raumcode = code;
+    token = code ? tokenLesen(code) : null;
+  }
+
+  function zumStart() {
     history.pushState(null, "", "/");
+    adresseUebernehmen();
   }
 
   function eintreten(neuerCode: string, neuesToken: string) {
@@ -68,6 +86,8 @@
     ["aufgeloest", "Auflösung"],
   ] as const;
 </script>
+
+<svelte:window onpopstate={adresseUebernehmen} />
 
 <header class="kopf">
   <span class="logo">Quiz-Poker</span>
@@ -130,6 +150,12 @@
     <div class="seite" style="padding-bottom: 0">
       <p class="hinweis">Verbindung unterbrochen, wird wiederhergestellt …</p>
     </div>
+  {/if}
+  {#if verbindung.ansicht.rolle === "quiz-master"}
+    <RueckkehrHinweise
+      anfragen={verbindung.ansicht.rueckkehrAnfragen}
+      senden={(aktion) => verbindung?.senden(aktion)}
+    />
   {/if}
   {#if verbindung.ansicht.phase === "warten"}
     <Warten

@@ -225,6 +225,10 @@ label {
   font-weight: 600;
 }
 
+.hinweis button {
+  color: var(--schrift);
+}
+
 .hinweis.fehler {
   background: var(--rot);
   color: #1a0508;
@@ -241,6 +245,11 @@ th {
   letter-spacing: 0.08em;
   text-align: left;
   text-transform: uppercase;
+}
+
+p,
+td {
+  overflow-wrap: anywhere;
 }
 
 th,
@@ -294,4 +303,48 @@ th.zahl {
 .rangliste-zeile.ich {
   color: var(--gold);
   font-weight: 700;
+}
+
+.spielidee {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spielidee h1 {
+  color: var(--gold);
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.schnellwahl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.podest {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.podest-platz {
+  flex: 1;
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+
+.podest-platz.erster {
+  border-color: var(--gold);
+  padding: 36px 20px;
+}
+
+.podest-platz .chips {
+  color: var(--gold);
+  font-size: 28px;
+  font-weight: 800;
 }

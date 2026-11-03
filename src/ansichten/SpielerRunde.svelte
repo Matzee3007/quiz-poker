@@ -20,7 +20,13 @@
 
   let einsatzEingabe = $state<number | null>(null);
   let antwort = $state("");
-  const einsatz = $derived(einsatzEingabe ?? minimum);
+  // Nach dem Neuladen zeigt der Regler den schon gesetzten Einsatz, nicht das Minimum.
+  const einsatz = $derived(
+    einsatzEingabe ?? (ich?.hatGesetzt ? ich.einsatz : null) ?? minimum,
+  );
+  const schnellwahl = $derived(
+    [10, 25, 50].filter((wert) => wert >= minimum && wert <= chips),
+  );
 </script>
 
 <main class="seite zwei-spalten">
@@ -52,7 +58,12 @@
           >
             {ich?.hatGesetzt ? "Einsatz ändern" : "Einsatz setzen"}
           </button>
-          <button onclick={() => (einsatzEingabe = chips)}>Alle Chips</button>
+          <div class="schnellwahl">
+            {#each schnellwahl as wert (wert)}
+              <button onclick={() => (einsatzEingabe = wert)}>{wert}</button>
+            {/each}
+            <button onclick={() => (einsatzEingabe = chips)}>Alle Chips</button>
+          </div>
         </div>
         <p class="matt">
           {#if ich?.hatGesetzt}
@@ -71,7 +82,12 @@
         {#if ich?.istBereit}
           <p>Deine Antwort: <strong>{ich.antwort}</strong></p>
           <div>
-            <button onclick={() => senden({ typ: "antwort-zuruecknehmen" })}>
+            <button
+              onclick={() => {
+                antwort = ich?.antwort ?? "";
+                senden({ typ: "antwort-zuruecknehmen" });
+              }}
+            >
               Bereit lösen und ändern
             </button>
           </div>
@@ -114,7 +130,13 @@
             {#if ansicht.phase === "einsatz"}
               {spieler.hatGesetzt ? "hat gesetzt" : "wählt noch"}
             {:else}
-              {spieler.istBereit ? "bereit" : "antwortet noch"}
+              {#if spieler.istBereit}
+                bereit
+              {:else if ansicht.phase === "antworten"}
+                antwortet noch
+              {:else}
+                keine Antwort
+              {/if}
             {/if}
           </span>
         </div>

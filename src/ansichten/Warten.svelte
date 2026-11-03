@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Aktion } from "../protokoll";
   import type { QuizMasterAnsicht, SpielerAnsicht } from "../regeln/ansicht";
+  import EntfernenKnopf from "./EntfernenKnopf.svelte";
 
   interface Props {
     ansicht: SpielerAnsicht | QuizMasterAnsicht;
@@ -50,10 +51,15 @@
     <p class="ueberschrift">Spieler ({ansicht.spieler.length} von 8)</p>
     {#each ansicht.spieler as spieler (spieler.id)}
       <div class="rangliste-zeile">
-        <span
-          ><span class="punkt" class:an={spieler.verbunden}
-          ></span>{spieler.name}</span
-        >
+        <span>
+          <span class="punkt" class:an={spieler.verbunden}></span>{spieler.name}
+        </span>
+        <span class="reihe">
+          <span class="gold">{spieler.chips}</span>
+          {#if ansicht.rolle === "quiz-master"}
+            <EntfernenKnopf id={spieler.id} name={spieler.name} {senden} />
+          {/if}
+        </span>
       </div>
     {/each}
   </aside>

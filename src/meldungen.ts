@@ -18,6 +18,8 @@ const MELDUNGEN: Record<string, string> = {
   "keine-berechtigung": "Das darfst du in dieser Rolle nicht.",
   "ungueltige-nachricht": "Der Server hat die Eingabe nicht verstanden.",
   "anfrage-laeuft": "Für diesen Namen läuft schon eine Rückkehr-Anfrage.",
+  "keine-verbindung":
+    "Gerade besteht keine Verbindung. Das wurde nicht übernommen, bitte versuche es gleich noch einmal.",
   "raum-unbekannt": "Diesen Spielraum gibt es nicht.",
   "zu-viele-raeume":
     "Gerade wurden zu viele Spielräume eröffnet. Bitte versuche es später noch einmal.",

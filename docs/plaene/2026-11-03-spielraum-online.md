@@ -43,8 +43,9 @@ Gerät → Server: { typ: "partie-starten" | "frage-zeigen" | "auswertung-starte
                 { typ: "einsatz-setzen", einsatz: number }
                 { typ: "antwort-bestaetigen", text: string } | { typ: "antwort-zuruecknehmen" }
                 { typ: "antwort-auswerten" | "rueckkehr-bestaetigen" | "rueckkehr-ablehnen" | "spieler-entfernen", spielerId: string, richtig?: boolean }
-Server → Gerät: { typ: "ansicht", ansicht } | { typ: "fehler", code } | { typ: "wartet-auf-bestaetigung" }
+Server → Gerät: { typ: "ansicht", ansicht } | { typ: "fehler", code } | { typ: "wartet-auf-bestaetigung" } | { typ: "beendet", code }
 Schließcodes: 4001 unbekanntes Token, 4002 Raum geschlossen, 4003 ersetzt oder entfernt
+Vor dem Schließen schickt der Server { typ: "beendet", code }, weil das Schließ-Signal verzögert ankommen kann.
 ```
 
 ## Prüf-Schwerpunkte
@@ -218,7 +219,7 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 **Schnittstellen:**
 
 - Nutzt: HTTP-Wege und Nachrichten oben
-- Liefert: `verbindungOeffnen(raumcode: string, token: string)` mit `ansicht`, `fehler`, `zustand` als Runes und `senden(aktion: Aktion): void`; Token in `localStorage` unter `quiz-poker:<RAUMCODE>`
+- Liefert: Klasse `Verbindung(raumcode: string, token: string)` mit `ansicht`, `fehler`, `zustand` als Runes und `senden(aktion: Aktion): void`; Token in `localStorage` unter `quiz-poker:<RAUMCODE>`
 
 - [x] **Schritt 1: Oberfläche nach Stil C bauen:** Start mit „Spielraum eröffnen“ und „Spielraum beitreten“. `/raum/ABCD` zeigt nur noch das Namensfeld. Warten mit Raumcode, Link, Spielerliste und beim Quiz-Master „Partie starten“ ab 2 Spielern.
 - [x] **Schritt 2: Verhalten:** Beim Abbruch neu verbinden nach 1, 2, 4, höchstens 10 Sekunden. Bei 4001 Token löschen und zum Start, bei 4002 „Spielraum geschlossen“, bei 4003 „Auf einem anderen Gerät geöffnet oder entfernt“, kein neuer Versuch. Bei `name-vergeben` fragen, ob der Spieler zurückkehren möchte, dann `…/rueckkehr`, danach „Warten auf Bestätigung“.
@@ -238,6 +239,16 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 - [x] **Schritt 3: Auflösung und Ende nach Stil C, Gleichstand mit mehreren Siegern.** Serverfehler erscheinen als kurze Meldung.
 - [x] **Schritt 4: Prüfen mit Skill `run`:** ganze Partie mit Quiz-Master und zwei Spielern in getrennten Browser-Profilen, in 1280 und 1440 px, dazu später Einstieg, Abbruch mit Neuladen und Rückkehr per Quiz-Master. Musterlösung bei einem Spieler in den Entwicklerwerkzeugen unter den WebSocket-Nachrichten suchen, sie darf vor der Auflösung nicht auftauchen.
 - [x] **Schritt 5: `npm run check`, committen:** „Add game views“
+
+### Nachtrag aus dem Review von PR #8
+
+Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
+
+- [x] Rückkehr-Anfragen erscheinen in allen Phasen, „Entfernen“ in allen außer `beendet`.
+- [x] Ein vorhandenes Token wird beim Beitritt über die Startseite nicht überschrieben. Bei 4001 bleibt die Adresse und das Namensfeld erscheint, bei 4002 wird das Token gelöscht.
+- [x] Nach dem Neuladen zeigt der Regler den gesetzten Einsatz, „Bereit lösen“ behält die Antwort. Ohne Verbindung meldet `senden` einen Fehler, statt Klicks zu verwerfen.
+- [x] Browser-Zurück, Fehlermeldungen je Schritt, Offline-Meldung beim Eröffnen und Beitreten, lange Wörter brechen um.
+- [x] Mock vollständig: Podest, Spalten „Platz“ und „Einsatz“, „(du)“, Schnellwahl, Spielidee, später Einsteigende in der Auflösung, Chips beim Warten.
 
 ### Aufgabe 10: PR 2
 

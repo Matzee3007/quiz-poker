@@ -539,6 +539,31 @@ describe("Rückkehr auf ein neues Gerät", () => {
   });
 });
 
+describe("Ende einer Verbindung", () => {
+  it("kündigt das Schließen als Nachricht an, weil das Schließ-Signal verzögert ankommen kann", async () => {
+    const { quizMaster, anna, annaId } = await raumMitAnnaUndBen();
+
+    quizMaster.senden({ typ: "spieler-entfernen", spielerId: annaId });
+
+    expect(await anna.naechste()).toEqual({ typ: "beendet", code: 4003 });
+  });
+
+  it("kündigt auch das Raumende an", async () => {
+    const { quizMaster, anna } = await raumMitAnnaUndBen();
+
+    quizMaster.senden({ typ: "raum-schliessen" });
+
+    expect(await anna.naechste()).toEqual({ typ: "beendet", code: 4002 });
+  });
+
+  it("kündigt auch ein unbekanntes Token an", async () => {
+    const { raumcode } = await raumEroeffnen();
+    const geraet = await verbinden(raumcode, "falsch");
+
+    expect(await geraet.naechste()).toEqual({ typ: "beendet", code: 4001 });
+  });
+});
+
 describe("Sonderfälle der Verbindung", () => {
   function verbindungVon(zustand: DurableObjectState, token: string) {
     const verbindung = zustand

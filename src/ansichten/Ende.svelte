@@ -15,6 +15,10 @@
   const endstand = $derived(
     [...ansicht.spieler].sort((links, rechts) => rechts.chips - links.chips),
   );
+
+  function platzVon(chips: number): number {
+    return endstand.findIndex((spieler) => spieler.chips === chips) + 1;
+  }
 </script>
 
 <main class="seite stapel">
@@ -23,9 +27,23 @@
   </p>
   <p class="raumcode">{namen.join(" und ")}</p>
 
+  <section class="podest" aria-label="Podest">
+    {#each endstand.slice(0, 3) as spieler (spieler.id)}
+      <div
+        class="podest-platz"
+        class:erster={ansicht.sieger.includes(spieler.id)}
+      >
+        <p class="ueberschrift">Platz {platzVon(spieler.chips)}</p>
+        <p><strong>{spieler.name}</strong></p>
+        <p class="chips">{spieler.chips}</p>
+      </div>
+    {/each}
+  </section>
+
   <table>
     <thead>
       <tr>
+        <th class="zahl">Platz</th>
         <th>Spieler</th>
         <th class="zahl">Chips</th>
       </tr>
@@ -33,6 +51,7 @@
     <tbody>
       {#each endstand as spieler (spieler.id)}
         <tr>
+          <td class="zahl">{platzVon(spieler.chips)}</td>
           <td><strong>{spieler.name}</strong></td>
           <td class="zahl gold">{spieler.chips}</td>
         </tr>

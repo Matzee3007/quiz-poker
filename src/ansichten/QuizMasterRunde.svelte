@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Aktion } from "../protokoll";
   import type { QuizMasterAnsicht } from "../regeln/ansicht";
+  import EntfernenKnopf from "./EntfernenKnopf.svelte";
 
   interface Props {
     ansicht: QuizMasterAnsicht;
@@ -22,36 +23,9 @@
       ansicht.phase === "einsatz" ? !spieler.hatGesetzt : !spieler.istBereit,
     ).length,
   );
-
-  function entfernen(id: string, name: string) {
-    if (confirm(`${name} wirklich aus der Partie entfernen?`)) {
-      senden({ typ: "spieler-entfernen", spielerId: id });
-    }
-  }
 </script>
 
 <main class="seite stapel">
-  {#each ansicht.rueckkehrAnfragen as anfrage (anfrage.spielerId)}
-    <div class="hinweis reihe">
-      <span>{anfrage.name} möchte zurück.</span>
-      <button
-        onclick={() =>
-          senden({
-            typ: "rueckkehr-bestaetigen",
-            spielerId: anfrage.spielerId,
-          })}
-      >
-        Bestätigen
-      </button>
-      <button
-        onclick={() =>
-          senden({ typ: "rueckkehr-ablehnen", spielerId: anfrage.spielerId })}
-      >
-        Ablehnen
-      </button>
-    </div>
-  {/each}
-
   <section class="reihe" style="align-items: flex-start; gap: 32px">
     <div class="stapel" style="flex: 1">
       <p class="ueberschrift">Frage</p>
@@ -123,12 +97,7 @@
             </td>
           {/if}
           <td>
-            <button
-              class="text"
-              onclick={() => entfernen(spieler.id, spieler.name)}
-            >
-              Entfernen
-            </button>
+            <EntfernenKnopf id={spieler.id} name={spieler.name} {senden} />
           </td>
         </tr>
       {/each}

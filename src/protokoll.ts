@@ -21,7 +21,8 @@ export type Aktion =
 export type ServerNachricht =
   | { typ: "ansicht"; ansicht: SpielerAnsicht | QuizMasterAnsicht }
   | { typ: "fehler"; code: RegelfehlerCode }
-  | { typ: "wartet-auf-bestaetigung" };
+  | { typ: "wartet-auf-bestaetigung" }
+  | { typ: "beendet"; code: number };
 
 export const SCHLIESSCODE_UNBEKANNT = 4001;
 export const SCHLIESSCODE_RAUM_GESCHLOSSEN = 4002;
