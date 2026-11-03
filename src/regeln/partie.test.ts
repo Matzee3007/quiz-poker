@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   aktuelleRunde,
+  antwortBestaetigen,
+  antwortZuruecknehmen,
+  auswertungStarten,
   einsatzSetzen,
   frageZeigen,
   partieErstellen,
@@ -156,5 +159,64 @@ describe("Einsatzphase", () => {
 
     expect(() => einsatzSetzen(partie, "anna", 20)).toThrow("falsche-phase");
     expect(() => frageZeigen(partie)).toThrow("falsche-phase");
+  });
+});
+
+describe("Antwortphase", () => {
+  it("speichert die bestätigte Antwort ohne Leerzeichen am Rand", () => {
+    const partie = antwortBestaetigen(
+      frageZeigen(gestartetePartie()),
+      "anna",
+      "  Berlin ",
+    );
+
+    expect(partie.antworten).toEqual({ anna: "Berlin" });
+  });
+
+  it("lehnt eine leere Antwort ab", () => {
+    expect(() =>
+      antwortBestaetigen(frageZeigen(gestartetePartie()), "anna", "   "),
+    ).toThrow("leere-antwort");
+  });
+
+  it("lässt eine Antwort zurücknehmen und ändern", () => {
+    const bestaetigt = antwortBestaetigen(
+      frageZeigen(gestartetePartie()),
+      "anna",
+      "Berlin",
+    );
+    const zurueckgenommen = antwortZuruecknehmen(bestaetigt, "anna");
+
+    expect(zurueckgenommen.antworten).toEqual({});
+    expect(
+      antwortBestaetigen(zurueckgenommen, "anna", "Paris").antworten,
+    ).toEqual({ anna: "Paris" });
+  });
+
+  it("startet die Auswertung auch ohne alle Antworten und sperrt sie dann", () => {
+    const partie = auswertungStarten(
+      antwortBestaetigen(frageZeigen(gestartetePartie()), "anna", "Berlin"),
+    );
+
+    expect(partie.phase).toBe("auswertung");
+    expect(() => antwortBestaetigen(partie, "ben", "Paris")).toThrow(
+      "falsche-phase",
+    );
+    expect(() => antwortZuruecknehmen(partie, "anna")).toThrow("falsche-phase");
+  });
+
+  it("lehnt Spieler ab, die nicht in der Runde sind", () => {
+    const partie = spielerBeitreten(
+      frageZeigen(gestartetePartie()),
+      "cara",
+      "Cara",
+    );
+
+    expect(() => antwortBestaetigen(partie, "cara", "Berlin")).toThrow(
+      "nicht-in-runde",
+    );
+    expect(() => antwortZuruecknehmen(partie, "cara")).toThrow(
+      "nicht-in-runde",
+    );
   });
 });

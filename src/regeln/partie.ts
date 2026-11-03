@@ -160,3 +160,38 @@ export function frageZeigen(partie: Partie): Partie {
 
   return { ...partie, phase: "antworten", einsaetze };
 }
+
+export function antwortBestaetigen(
+  partie: Partie,
+  spielerId: string,
+  text: string,
+): Partie {
+  verlangePhase(partie, "antworten");
+  rundenTeilnehmerFinden(partie, spielerId);
+  const antwort = text.trim();
+  if (antwort === "") {
+    throw new Regelfehler("leere-antwort");
+  }
+
+  return {
+    ...partie,
+    antworten: { ...partie.antworten, [spielerId]: antwort },
+  };
+}
+
+export function antwortZuruecknehmen(
+  partie: Partie,
+  spielerId: string,
+): Partie {
+  verlangePhase(partie, "antworten");
+  rundenTeilnehmerFinden(partie, spielerId);
+
+  const antworten = { ...partie.antworten };
+  delete antworten[spielerId];
+  return { ...partie, antworten };
+}
+
+export function auswertungStarten(partie: Partie): Partie {
+  verlangePhase(partie, "antworten");
+  return { ...partie, phase: "auswertung" };
+}
