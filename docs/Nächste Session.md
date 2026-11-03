@@ -7,11 +7,11 @@ tags: [session, übergabe]
 
 # Nächste Session
 
-Stand vom 2026-11-03. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 0 - Projektvision und CI|Lernjournal Phase 0 - Projektvision und CI]].
+Stand vom 2026-11-03. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 1 - Regelkern|Lernjournal Phase 1 - Regelkern]].
 
 ## Stand bei Sessionende
 
-- **Branch:** `main` (nach dem Merge von PR #4)
+- **Branch:** `main` (nach dem Merge von PR #6)
 - **Offene PRs:** keine
 - **Nicht committet:** nichts
 
@@ -26,18 +26,19 @@ Stand vom 2026-11-03. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
 
 ## Womit es weitergeht
 
-**Phase 0 ist abgeschlossen, als Nächstes kommt Phase 1 – Regelkern.**
+**Phase 1 ist abgeschlossen, als Nächstes kommt Phase 2 – Spielraum online.**
 
 1. Claude fragt zuerst, ob etwas anderes ansteht (neue Ideen, Skills, Tools, Restpunkte). Mögliche Restpunkte:
    - `npm audit` meldete beim Projektstart 15 Schwachstellen in den Entwicklungswerkzeugen (noch nicht behoben).
    - `ubuntu-latest` wechselt laut Hinweis im CI-Lauf schrittweise auf Ubuntu 26, CI im Blick behalten.
-2. `docs/Tools für später.md` prüfen: Für Phase 1 ist nichts vorgemerkt.
-3. Mit `plan-schreiben` den Plan für Phase 1 schreiben. Die Regeln stehen in der Projektvision unter „Spielregeln“, der Code
-   entsteht als reines TypeScript in `src/regeln/`.
-4. Mit `tdd` umsetzen, Test für Test.
+2. `docs/Tools für später.md` prüfen: Für Phase 2 ist `@cloudflare/vitest-plugin` vorgemerkt, dabei auch die Unterstützung von Vitest 5 prüfen.
+3. Du brauchst für die Veröffentlichung ein Cloudflare-Konto und `npx wrangler login` (siehe [[projects/quiz-poker/docs/Arbeitsumgebung|Arbeitsumgebung]]).
+4. Mit `plan-schreiben` den Plan für Phase 2 schreiben. Pflichtpunkte aus dem Review von Phase 1 (Projektvision, „Stolpersteine“):
+   - Musterlösung nur über die Ansicht je Rolle hinausgeben, mit Test.
+   - Spieler-IDs auf dem Server erzeugen, mit Test.
 
 ## Passende Skills
 
-- `plan-schreiben`: Plan für Phase 1 aus den Spielregeln
-- `tdd`: Regelkern testgetrieben bauen
-- `fertig-pruefen`: vor jeder Fertigmeldung
+- `grill-with-docs`: offene Fragen zum Spielraum klären, zum Beispiel zur Oberfläche
+- `plan-schreiben`: Plan für Phase 2
+- `tdd`: Durable Object und WebSockets testgetrieben bauen
