@@ -4,6 +4,8 @@ export type RegelfehlerCode =
   | "nicht-in-runde"
   | "leerer-name"
   | "name-vergeben"
+  | "id-vergeben"
+  | "letzte-runde"
   | "raum-voll"
   | "zu-wenige-spieler"
   | "ungueltiger-einsatz"

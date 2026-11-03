@@ -51,7 +51,7 @@ direkt aufrufen. Die Reihenfolge der Aufgaben folgt dem Ablauf einer Runde.
 **Schnittstellen:**
 
 - Liefert:
-  - `type RegelfehlerCode = "falsche-phase" | "unbekannter-spieler" | "nicht-in-runde" | "leerer-name" | "name-vergeben" | "raum-voll" | "zu-wenige-spieler" | "ungueltiger-einsatz" | "leere-antwort" | "keine-antwort" | "nicht-ausgewertet" | "leeres-quiz"`
+  - `type RegelfehlerCode = "falsche-phase" | "unbekannter-spieler" | "nicht-in-runde" | "leerer-name" | "name-vergeben" | "id-vergeben" | "letzte-runde" | "raum-voll" | "zu-wenige-spieler" | "ungueltiger-einsatz" | "leere-antwort" | "keine-antwort" | "nicht-ausgewertet" | "leeres-quiz"`
   - `class Regelfehler extends Error` mit `constructor(code: RegelfehlerCode)`, `message` ist der Code
   - `START_CHIPS = 100`, `MINDESTEINSATZ = 10`
   - `mindesteinsatzFuer(chips: number): number`
@@ -242,6 +242,18 @@ function aktuelleRunde(partie: Partie): { kategorie: string; frage: Frage };
 - [x] **Schritt 3: `spielerEntfernen` umsetzen und `spielerBeitreten` anpassen.**
 - [x] **Schritt 4: `npm test -- src/regeln/partie.test.ts`, muss bestehen.**
 - [x] **Schritt 5: `npm run check`, dann committen:** „Add late joining and player removal rules“
+
+### Nachtrag aus dem Review von PR #5
+
+Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
+
+- [x] Namen ans Glossar angepasst: `auswertungen`, `antwortAuswerten`, `nicht-ausgewertet`, `rundenSpieler`.
+- [x] Beitritt in der letzten Runde wirft `letzte-runde`, weil es keine nächste Runde mehr gibt. Vor dem Start bleibt er möglich.
+- [x] Eine doppelte ID wirft `id-vergeben` statt `name-vergeben`.
+- [x] `sieger` gilt nur in Phase `beendet`.
+- [x] Tests ergänzt: Auswertung nach der Auflösung gesperrt, Auswertung nur aus der Antwortphase, Nachschub nur bei genau 0,
+  Entfernen mit noch nicht ausgewerteter Antwort, ganze Partie mit eingefrorenen Spielständen.
+- Hingenommen: Ein entfernter Spieler kann neu beitreten und hat wieder 100 Chips.
 
 ### Aufgabe 8: PR und Abschluss von Phase 1
 

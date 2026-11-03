@@ -64,6 +64,14 @@ function rundenSpielerFinden(partie: Partie, spielerId: string): Spieler {
   return spieler;
 }
 
+function istLetzteRunde(partie: Partie): boolean {
+  const kategorie = partie.quiz.kategorien[partie.kategorieIndex];
+  return (
+    partie.frageIndex === kategorie.fragen.length - 1 &&
+    partie.kategorieIndex === partie.quiz.kategorien.length - 1
+  );
+}
+
 function ohneEintrag<T>(
   eintraege: Record<string, T>,
   schluessel: string,
@@ -102,18 +110,22 @@ export function spielerBeitreten(
   if (partie.phase === "beendet") {
     throw new Regelfehler("falsche-phase");
   }
+  if (partie.phase !== "warten" && istLetzteRunde(partie)) {
+    throw new Regelfehler("letzte-runde");
+  }
 
   const sauberName = name.trim();
   if (sauberName === "") {
     throw new Regelfehler("leerer-name");
   }
 
-  const vergeben = partie.spieler.some(
-    (spieler) =>
-      spieler.id === id ||
-      spieler.name.toLowerCase() === sauberName.toLowerCase(),
+  if (partie.spieler.some((spieler) => spieler.id === id)) {
+    throw new Regelfehler("id-vergeben");
+  }
+  const nameVergeben = partie.spieler.some(
+    (spieler) => spieler.name.toLowerCase() === sauberName.toLowerCase(),
   );
-  if (vergeben) {
+  if (nameVergeben) {
     throw new Regelfehler("name-vergeben");
   }
 
@@ -247,7 +259,7 @@ export function aufloesen(partie: Partie): Partie {
             ...spieler,
             chips: chipsNachRunde(
               spieler.chips,
-              partie.einsaetze[spieler.id] ?? 0,
+              partie.einsaetze[spieler.id],
               partie.auswertungen[spieler.id] === true,
             ),
           }
@@ -259,13 +271,12 @@ export function aufloesen(partie: Partie): Partie {
 export function naechsteRunde(partie: Partie): Partie {
   verlangePhase(partie, "aufgeloest");
 
-  const kategorie = partie.quiz.kategorien[partie.kategorieIndex];
-  const weitereFrage = partie.frageIndex + 1 < kategorie.fragen.length;
-  const weitereKategorie =
-    partie.kategorieIndex + 1 < partie.quiz.kategorien.length;
-  if (!weitereFrage && !weitereKategorie) {
+  if (istLetzteRunde(partie)) {
     return { ...partie, phase: "beendet" };
   }
+
+  const kategorie = partie.quiz.kategorien[partie.kategorieIndex];
+  const weitereFrage = partie.frageIndex + 1 < kategorie.fragen.length;
 
   const spieler = partie.spieler.map((kandidat) =>
     kandidat.chips === 0 ? { ...kandidat, chips: MINDESTEINSATZ } : kandidat,
@@ -287,6 +298,7 @@ export function naechsteRunde(partie: Partie): Partie {
 }
 
 export function sieger(partie: Partie): Spieler[] {
+  verlangePhase(partie, "beendet");
   const hoechsterStand = Math.max(
     ...partie.spieler.map((spieler) => spieler.chips),
   );

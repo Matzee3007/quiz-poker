@@ -120,7 +120,7 @@ describe("Spieler beitreten", () => {
       "name-vergeben",
     );
     expect(() => spielerBeitreten(partie, "anna", "Andere")).toThrow(
-      "name-vergeben",
+      "id-vergeben",
     );
   });
 
@@ -318,7 +318,6 @@ describe("Auswertung und Auflösung", () => {
     const aufgeloest = aufloesen(partie);
 
     expect(() => aufloesen(aufgeloest)).toThrow("falsche-phase");
-    expect(chipsVon(aufgeloest, "anna")).toBe(120);
   });
 });
 
@@ -402,10 +401,23 @@ describe("Sieger", () => {
   });
 
   it("nennt bei Gleichstand alle Spieler mit dem höchsten Stand", () => {
-    expect(sieger(gestartetePartie()).map((spieler) => spieler.id)).toEqual([
+    const beide: Record<string, [number, boolean]> = {
+      anna: [10, true],
+      ben: [10, true],
+    };
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, beide));
+    partie = naechsteRunde(rundeSpielen(partie, beide));
+    partie = naechsteRunde(rundeSpielen(partie, beide));
+
+    expect(sieger(partie).map((spieler) => spieler.id)).toEqual([
       "anna",
       "ben",
     ]);
+  });
+
+  it("gilt erst nach dem Ende der Partie", () => {
+    expect(() => sieger(gestartetePartie())).toThrow("falsche-phase");
   });
 });
 
@@ -472,5 +484,111 @@ describe("Spieler entfernen", () => {
     expect(partie.phase).toBe("aufgeloest");
     expect(chipsVon(partie, "anna")).toBe(120);
     expect(chipsVon(partie, "ben")).toBeUndefined();
+  });
+});
+
+describe("Letzte Runde", () => {
+  function letzteRunde() {
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    return naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+  }
+
+  it("lehnt den Beitritt ab, weil es keine nächste Runde mehr gibt", () => {
+    const einsatz = letzteRunde();
+    const aufgeloest = rundeSpielen(einsatz, { anna: [10, true] });
+
+    expect(() => spielerBeitreten(einsatz, "cara", "Cara")).toThrow(
+      "letzte-runde",
+    );
+    expect(() => spielerBeitreten(aufgeloest, "cara", "Cara")).toThrow(
+      "letzte-runde",
+    );
+  });
+
+  it("erlaubt den Beitritt vor dem Start auch bei einem Quiz mit nur einer Frage", () => {
+    const partie = partieErstellen({
+      titel: "Kurz",
+      kategorien: [{ name: "Sport", fragen: [quiz.kategorien[0].fragen[0]] }],
+    });
+
+    expect(spielerBeitreten(partie, "anna", "Anna").spieler).toHaveLength(1);
+  });
+});
+
+describe("Phasen und Grenzen", () => {
+  it("sperrt die Auswertung nach der Auflösung", () => {
+    const partie = rundeSpielen(gestartetePartie(), { anna: [20, true] });
+
+    expect(() => antwortAuswerten(partie, "anna", false)).toThrow(
+      "falsche-phase",
+    );
+  });
+
+  it("startet die Auswertung nur aus der Antwortphase", () => {
+    expect(() => auswertungStarten(gestartetePartie())).toThrow(
+      "falsche-phase",
+    );
+  });
+
+  it("gibt Nachschub nur bei genau 0 Chips, mit 5 Chips gilt der Rest als Mindesteinsatz", () => {
+    const partie = naechsteRunde(
+      rundeSpielen(gestartetePartie(), { anna: [95, false] }),
+    );
+
+    expect(chipsVon(partie, "anna")).toBe(5);
+    expect(() => einsatzSetzen(partie, "anna", 4)).toThrow(
+      "ungueltiger-einsatz",
+    );
+    expect(einsatzSetzen(partie, "anna", 5).einsaetze).toEqual({ anna: 5 });
+  });
+
+  it("löst nach dem Entfernen eines Spielers mit noch nicht ausgewerteter Antwort auf", () => {
+    let partie = antwortAuswerten(partieInAuswertung(), "anna", true);
+    partie = aufloesen(spielerEntfernen(partie, "ben"));
+
+    expect(partie.phase).toBe("aufgeloest");
+    expect(chipsVon(partie, "anna")).toBe(120);
+  });
+});
+
+describe("Unveränderte Eingabe", () => {
+  function tiefEingefroren<T>(wert: T): T {
+    if (typeof wert === "object" && wert !== null) {
+      Object.values(wert).forEach(tiefEingefroren);
+      Object.freeze(wert);
+    }
+    return wert;
+  }
+
+  it("lässt sich mit eingefrorenen Spielständen vollständig durchspielen", () => {
+    const schritte: ((partie: Partie) => Partie)[] = [
+      (partie) => spielerBeitreten(partie, "anna", "Anna"),
+      (partie) => spielerBeitreten(partie, "ben", "Ben"),
+      (partie) => spielerBeitreten(partie, "cara", "Cara"),
+      partieStarten,
+      (partie) => spielerEntfernen(partie, "cara"),
+      (partie) => einsatzSetzen(partie, "anna", 100),
+      (partie) => einsatzSetzen(partie, "ben", 20),
+      frageZeigen,
+      (partie) => antwortBestaetigen(partie, "anna", "Berlin"),
+      (partie) => antwortZuruecknehmen(partie, "anna"),
+      (partie) => antwortBestaetigen(partie, "anna", "Paris"),
+      (partie) => antwortBestaetigen(partie, "ben", "Rom"),
+      auswertungStarten,
+      (partie) => antwortAuswerten(partie, "anna", false),
+      (partie) => antwortAuswerten(partie, "ben", true),
+      aufloesen,
+      naechsteRunde,
+    ];
+
+    let partie = tiefEingefroren(partieErstellen(quiz));
+    for (const schritt of schritte) {
+      partie = tiefEingefroren(schritt(partie));
+    }
+
+    expect(partie.phase).toBe("einsatz");
+    expect(chipsVon(partie, "anna")).toBe(10);
+    expect(chipsVon(partie, "ben")).toBe(120);
   });
 });
