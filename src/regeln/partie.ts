@@ -1,4 +1,9 @@
-import { chipsNachRunde, istGueltigerEinsatz, START_CHIPS } from "./chips";
+import {
+  chipsNachRunde,
+  istGueltigerEinsatz,
+  MINDESTEINSATZ,
+  START_CHIPS,
+} from "./chips";
 import { Regelfehler } from "./fehler";
 
 const MINDESTSPIELER = 2;
@@ -238,4 +243,41 @@ export function aufloesen(partie: Partie): Partie {
         : spieler,
     ),
   };
+}
+
+export function naechsteRunde(partie: Partie): Partie {
+  verlangePhase(partie, "aufgeloest");
+
+  const kategorie = partie.quiz.kategorien[partie.kategorieIndex];
+  const weitereFrage = partie.frageIndex + 1 < kategorie.fragen.length;
+  const weitereKategorie =
+    partie.kategorieIndex + 1 < partie.quiz.kategorien.length;
+  if (!weitereFrage && !weitereKategorie) {
+    return { ...partie, phase: "beendet" };
+  }
+
+  const spieler = partie.spieler.map((kandidat) =>
+    kandidat.chips === 0 ? { ...kandidat, chips: MINDESTEINSATZ } : kandidat,
+  );
+
+  return {
+    ...partie,
+    phase: "einsatz",
+    kategorieIndex: weitereFrage
+      ? partie.kategorieIndex
+      : partie.kategorieIndex + 1,
+    frageIndex: weitereFrage ? partie.frageIndex + 1 : 0,
+    spieler,
+    rundenTeilnehmer: spieler.map((kandidat) => kandidat.id),
+    einsaetze: {},
+    antworten: {},
+    bewertungen: {},
+  };
+}
+
+export function sieger(partie: Partie): Spieler[] {
+  const hoechsterStand = Math.max(
+    ...partie.spieler.map((spieler) => spieler.chips),
+  );
+  return partie.spieler.filter((spieler) => spieler.chips === hoechsterStand);
 }

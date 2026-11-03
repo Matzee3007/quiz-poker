@@ -8,8 +8,10 @@ import {
   auswertungStarten,
   einsatzSetzen,
   frageZeigen,
+  naechsteRunde,
   partieErstellen,
   partieStarten,
+  sieger,
   spielerBeitreten,
   type Partie,
   type Quiz,
@@ -53,6 +55,26 @@ function partieInAuswertung(einsatzAnna = 20, einsatzBen = 30) {
 
 function chipsVon(partie: Partie, id: string) {
   return partie.spieler.find((spieler) => spieler.id === id)?.chips;
+}
+
+/** Spielt die aktuelle Runde bis zur Auflösung: Spieler-ID → [Einsatz, richtig]. */
+function rundeSpielen(
+  start: Partie,
+  ergebnisse: Record<string, [number, boolean]>,
+) {
+  let partie = start;
+  for (const [id, [einsatz]] of Object.entries(ergebnisse)) {
+    partie = einsatzSetzen(partie, id, einsatz);
+  }
+  partie = frageZeigen(partie);
+  for (const id of Object.keys(ergebnisse)) {
+    partie = antwortBestaetigen(partie, id, "Antwort");
+  }
+  partie = auswertungStarten(partie);
+  for (const [id, [, richtig]] of Object.entries(ergebnisse)) {
+    partie = antwortBewerten(partie, id, richtig);
+  }
+  return aufloesen(partie);
 }
 
 function gestartetePartie() {
@@ -296,5 +318,92 @@ describe("Auswertung und Auflösung", () => {
 
     expect(() => aufloesen(aufgeloest)).toThrow("falsche-phase");
     expect(chipsVon(aufgeloest, "anna")).toBe(120);
+  });
+});
+
+describe("Nächste Runde", () => {
+  it("zeigt die nächste Frage und beginnt ohne Einsätze, Antworten und Bewertungen", () => {
+    const partie = naechsteRunde(
+      rundeSpielen(gestartetePartie(), {
+        anna: [20, true],
+        ben: [30, false],
+      }),
+    );
+
+    expect(partie.phase).toBe("einsatz");
+    expect(aktuelleRunde(partie).frage.text).toBe("Sportfrage 2");
+    expect(partie.einsaetze).toEqual({});
+    expect(partie.antworten).toEqual({});
+    expect(partie.bewertungen).toEqual({});
+  });
+
+  it("wechselt nach der letzten Frage in die nächste Kategorie", () => {
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+
+    expect(aktuelleRunde(partie)).toEqual({
+      kategorie: "Gaming",
+      frage: { text: "Gamingfrage 1", musterloesung: "Lösung G1" },
+    });
+  });
+
+  it("gilt nur nach der Auflösung", () => {
+    expect(() => naechsteRunde(gestartetePartie())).toThrow("falsche-phase");
+  });
+
+  it("gibt Spielern mit 0 Chips zu Beginn der nächsten Runde den Mindesteinsatz", () => {
+    const partie = naechsteRunde(
+      rundeSpielen(gestartetePartie(), { anna: [100, false] }),
+    );
+
+    expect(chipsVon(partie, "anna")).toBe(10);
+  });
+
+  it("beendet die Partie nach der letzten Frage ohne Nachschub", () => {
+    let partie = gestartetePartie();
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [10, true] }));
+    partie = naechsteRunde(rundeSpielen(partie, { anna: [120, false] }));
+
+    expect(partie.phase).toBe("beendet");
+    expect(chipsVon(partie, "anna")).toBe(0);
+  });
+});
+
+describe("Sieger", () => {
+  it("spielt eine ganze Partie und findet den Spieler mit den meisten Chips", () => {
+    let partie = gestartetePartie();
+    partie = rundeSpielen(partie, { anna: [20, true], ben: [30, false] });
+    expect([chipsVon(partie, "anna"), chipsVon(partie, "ben")]).toEqual([
+      120, 70,
+    ]);
+
+    partie = rundeSpielen(naechsteRunde(partie), {
+      anna: [120, false],
+      ben: [10, true],
+    });
+    expect([chipsVon(partie, "anna"), chipsVon(partie, "ben")]).toEqual([
+      0, 80,
+    ]);
+
+    partie = rundeSpielen(naechsteRunde(partie), {
+      anna: [10, true],
+      ben: [20, true],
+    });
+    partie = naechsteRunde(partie);
+
+    expect(partie.phase).toBe("beendet");
+    expect([chipsVon(partie, "anna"), chipsVon(partie, "ben")]).toEqual([
+      20, 100,
+    ]);
+    expect(sieger(partie).map((spieler) => spieler.id)).toEqual(["ben"]);
+  });
+
+  it("nennt bei Gleichstand alle Spieler mit dem höchsten Stand", () => {
+    expect(sieger(gestartetePartie()).map((spieler) => spieler.id)).toEqual([
+      "anna",
+      "ben",
+    ]);
   });
 });
