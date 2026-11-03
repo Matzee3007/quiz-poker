@@ -50,10 +50,12 @@ quiz-poker/
 │       ├── chips.ts    Startchips, Einsatzgrenzen, Gewinn und Verlust
 │       ├── fehler.ts   Regelfehler mit Code
 │       ├── partie.ts   Spielstand und alle Spielaktionen einer Partie
-│       └── raumcode.ts Raumcode erzeugen und prüfen
+│       ├── raumcode.ts Raumcode erzeugen und prüfen
+│       └── raumgrenze.ts  Höchstens 30 neue Spielräume pro Stunde
 ├── worker/             Server (Cloudflare Worker)
 │   ├── index.ts        beantwortet Anfragen an /api/*
 │   ├── spielraum.ts    Durable Object je Spielraum: Verbindungen und Speicher
+│   ├── raumzaehler.ts  Durable Object: Grenze für neue Spielräume
 │   ├── testhilfen.ts   Hilfen für Tests mit WebSockets
 │   └── *.test.ts       Tests des Workers
 ├── docs/               Doku, zugleich Teil des Obsidian-Vaults

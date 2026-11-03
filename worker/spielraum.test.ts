@@ -6,6 +6,7 @@ import {
 import { env, exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { istGueltigerRaumcode } from "../src/regeln/raumcode";
+import worker from "./index";
 import type { Spielraum } from "./spielraum";
 import type { QuizMasterAnsicht, SpielerAnsicht } from "../src/regeln/ansicht";
 import {
@@ -46,6 +47,26 @@ describe("Spielraum eröffnen", () => {
 
     expect(zweiter.status).toBe(201);
     expect(zweiter.daten.raumcode).not.toBe(erster.daten.raumcode);
+  });
+});
+
+describe("Grenze für neue Spielräume", () => {
+  it("antwortet über der Grenze mit 429, ohne einen Raum anzulegen", async () => {
+    const antwort = await worker.fetch(
+      new Request("https://quiz-poker.test/api/raeume", { method: "POST" }),
+      { ...env, RAEUME_PRO_STUNDE: "0" },
+    );
+
+    expect(antwort.status).toBe(429);
+    expect(await antwort.json()).toEqual({ code: "zu-viele-raeume" });
+  });
+
+  it("zählt im Zähler bis zur Grenze", async () => {
+    const zaehler = env.RAUMZAEHLER.getByName("test-grenze");
+
+    expect(await zaehler.raumZulassen(2)).toBe(true);
+    expect(await zaehler.raumZulassen(2)).toBe(true);
+    expect(await zaehler.raumZulassen(2)).toBe(false);
   });
 });
 

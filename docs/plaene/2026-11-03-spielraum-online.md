@@ -34,9 +34,9 @@ Vitest `^4.1`), Svelte 5.
 ## Schnittstellen zwischen Gerät und Server
 
 ```text
-POST /api/raeume                        → 201 { raumcode, token }
+POST /api/raeume                        → 201 { raumcode, token } | 429 { code: "zu-viele-raeume" }
 POST /api/raeume/:code/spieler { name } → 201 { token } | 404 | 409 { code: "name-vergeben" } | 422 { code }
-POST /api/raeume/:code/rueckkehr { name } → 202 { token } | 404 | 422 { code: "unbekannter-spieler" }
+POST /api/raeume/:code/rueckkehr { name } → 202 { token } | 404 | 409 { code: "anfrage-laeuft" } | 422 { code: "unbekannter-spieler" | "ungueltige-nachricht" }
 GET  /api/raeume/:code/verbindung?token=… (WebSocket) → bei falschem Token Schließcode 4001
 
 Gerät → Server: { typ: "partie-starten" | "frage-zeigen" | "auswertung-starten" | "aufloesen" | "naechste-runde" | "raum-schliessen" }
@@ -190,7 +190,7 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
   - `POST …/rueckkehr` mit bekanntem Namen liefert Token, Verbindung damit bekommt nur `wartet-auf-bestaetigung`, keine Ansicht (Schwerpunkt 5). Der Quiz-Master sieht die Anfrage.
   - `rueckkehr-bestaetigen`: Neues Gerät bekommt die Ansicht des Spielers mit seinem Chipstand, altes Token schließt mit 4003 und gilt nicht mehr.
   - `rueckkehr-ablehnen`: Neues Gerät wird mit 4001 geschlossen.
-  - Eine Anfrage gibt es je Spieler nur einmal, eine neue ersetzt die alte.
+  - Die erste Anfrage gilt, solange ihr Gerät verbunden ist. Eine zweite liefert 409 `anfrage-laeuft`. Anfragen ohne verbundenes Gerät werden weder angezeigt noch bestätigt, sondern ersetzt.
   - `spieler-entfernen` schließt die Verbindung mit 4003, die anderen sehen ihn nicht mehr, das Token gilt nicht mehr.
   - `raum-schliessen` schließt alle mit 4002, und ein neuer Beitritt liefert 404.
   - Jede Aktion setzt den Alarm auf 24 Stunden. `runDurableObjectAlarm` löscht den Stand und schließt mit 4002.
@@ -198,6 +198,16 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
 - [x] **Schritt 3: `npm run dev` starten und per `curl` gegen `/api/raeume` prüfen, ob der Worker im Dev-Server antwortet.**
 - [x] **Schritt 4: `CLAUDE.md` Repo-Struktur ergänzen, `npm run check`, committen, PR öffnen:** „Add online game room server“
 - [ ] **Schritt 5: `/code-review`, `plan-pruefer` für die Aufgaben 1 bis 7, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
+
+### Nachtrag aus dem Review von PR #7
+
+Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
+
+- [x] Ein Spielraum-Zähler als eigenes Durable Object `Raumzaehler` lässt höchstens 30 neue Räume pro Stunde zu. Das Rate Limit von Cloudflare ist für den kostenlosen Tarif nicht bestätigt, die Doku empfiehlt für strikte Grenzen ohnehin ein Durable Object.
+- [x] Ein vergebener Name wird vor den Phasen geprüft, die Rückkehr ist also auch in der letzten Runde möglich.
+- [x] Verbindungen, deren Token nicht mehr gilt, lösen nichts mehr aus. Antworten gehen nur an offene Verbindungen, sonst wirft `send` einen Fehler (per Test belegt).
+- [x] `webSocketError` behandelt ein Verbindungsende wie `webSocketClose`, Stand und Löschfrist werden gemeinsam geschrieben, Aktionen laufen durch eine lückenlose `switch`-Prüfung.
+- [x] Tests ergänzt: Alarm nach einer Aktion, wartendes Gerät bei Änderungen, Quiz-Master-Ansicht in allen Phasen, eigene Antwort in der Auswertung, Stand unverändert.
 
 ## PR 2: Oberfläche und Veröffentlichung
 

@@ -33,6 +33,11 @@ npm install -D @cloudflare/vite-plugin wrangler
 Stand 2026-11-02 laut [Preisseite](https://developers.cloudflare.com/durable-objects/platform/pricing/): nur Durable
 Objects mit SQLite-Speicher, 100.000 Anfragen pro Tag. Eingehende WebSocket-Nachrichten zählen 20:1, ausgehende gar nicht.
 
+## Grenze für neue Spielräume
+
+Die Klasse `Raumzaehler` (`worker/raumzaehler.ts`) begrenzt neue Räume über die Variable `RAEUME_PRO_STUNDE` in `wrangler.jsonc`. Das
+Rate-Limiting-Binding von Cloudflare nutzen wir nicht: Die Doku bestätigt es nicht für den kostenlosen Tarif, es zählt nur ungefähr und je Standort.
+
 ## Befehle
 
 ```bash

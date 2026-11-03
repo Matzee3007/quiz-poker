@@ -67,9 +67,10 @@ Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
   vorher nur „hat gesetzt“ oder „bereit“. Der Quiz-Master sieht immer alles. Später Einsteigende sehen dasselbe wie Spieler, ohne
   Eingabefelder. Das regelt eine getestete reine Funktion in `src/regeln/`.
 - **Gerät verloren:** Ein Spieler gibt am neuen Gerät Raumcode und Namen ein, der Quiz-Master bestätigt, danach gilt nur noch das neue
-  Gerät. Verliert der Quiz-Master sein Gerät, ist die Partie in Phase 2 verloren.
+  Gerät. Die erste Anfrage gilt, solange ihr Gerät verbunden ist, und der Quiz-Master sieht nur Anfragen verbundener Geräte. Verliert der Quiz-Master sein Gerät, ist die Partie in Phase 2 verloren.
 - **Ende:** Ein Raum wird gelöscht, wenn der Quiz-Master ihn schließt oder 24 Stunden lang keine Aktion stattfand.
-- **Grenzen:** Namen höchstens 20, Antworten höchstens 200 Zeichen.
+- **Grenzen:** Namen höchstens 20, Antworten höchstens 200 Zeichen. Höchstens 30 neue Spielräume pro Stunde, damit ein Skript nicht das
+  Tageslimit aufbraucht. Laufende Partien sind davon nicht betroffen. Beitritte und Aktionen in einem Raum sind nicht begrenzt.
 - **Beispiel-Quiz:** 3 Kategorien mit je 3 Runden, selbst formulierte Fragen.
 - **Veröffentlichen:** per Hand mit `npm run deploy` auf der Adresse `quiz-poker.<name>.workers.dev`.
 

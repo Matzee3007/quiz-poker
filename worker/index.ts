@@ -1,10 +1,18 @@
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
 
+export { Raumzaehler } from "./raumzaehler";
 export { Spielraum } from "./spielraum";
 
 const RAUMCODE_VERSUCHE = 10;
 
 async function raumEroeffnen(env: Env): Promise<Response> {
+  const zugelassen = await env.RAUMZAEHLER.getByName("global").raumZulassen(
+    Number(env.RAEUME_PRO_STUNDE),
+  );
+  if (!zugelassen) {
+    return Response.json({ code: "zu-viele-raeume" }, { status: 429 });
+  }
+
   for (let versuch = 0; versuch < RAUMCODE_VERSUCHE; versuch++) {
     const raumcode = raumcodeErzeugen();
     const token = await env.SPIELRAUM.getByName(raumcode).eroeffnen();
