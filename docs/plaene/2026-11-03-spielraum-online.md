@@ -109,7 +109,7 @@ function spielerAnsicht(partie: Partie, spielerId: string, verbundeneIds: string
 function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnfragen: { spielerId: string; name: string }[]): QuizMasterAnsicht;
 ```
 
-- [ ] **Schritt 1: Tests schreiben, rot**
+- [x] **Schritt 1: Tests schreiben, rot**
   - Spieler in `warten`: `kategorie`, `frage`, `musterloesung` sind `null`.
   - Spieler in `einsatz`: `kategorie` gesetzt, `frage` und `musterloesung` `null`, `rundeInKategorie` 1 von 2. Fremder `einsatz` ist `null`, `hatGesetzt` stimmt, eigener Einsatz ist sichtbar.
   - Spieler in `antworten` und `auswertung`: `frage` gesetzt, `musterloesung` `null`, fremde `antwort` `null`, `istBereit` stimmt, eigene Antwort sichtbar, `richtig` überall `null`.
@@ -118,8 +118,8 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
   - Quiz-Master sieht in jeder gestarteten Phase Frage, Musterlösung, alle Einsätze und Antworten.
   - `spieltMit` ist für später Einsteigende `false`, `verbunden` folgt `verbundeneIds`.
   - `sieger` ist bis zum Ende leer, in `beendet` enthält es die IDs.
-- [ ] **Schritt 2: Umsetzen, `npm test -- src/regeln/ansicht.test.ts`, grün.**
-- [ ] **Schritt 3: `npm run check`, committen:** „Add role based views“
+- [x] **Schritt 2: Umsetzen, `npm test -- src/regeln/ansicht.test.ts`, grün.**
+- [x] **Schritt 3: `npm run check`, committen:** „Add role based views“
 
 ### Aufgabe 4: Nachrichten und Beispiel-Quiz
 
