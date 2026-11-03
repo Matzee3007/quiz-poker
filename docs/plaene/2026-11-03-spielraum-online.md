@@ -197,7 +197,7 @@ function quizMasterAnsicht(partie: Partie, verbundeneIds: string[], rueckkehrAnf
 - [x] **Schritt 2: Umsetzen, `npm test -- worker`, grün.**
 - [x] **Schritt 3: `npm run dev` starten und per `curl` gegen `/api/raeume` prüfen, ob der Worker im Dev-Server antwortet.**
 - [x] **Schritt 4: `CLAUDE.md` Repo-Struktur ergänzen, `npm run check`, committen, PR öffnen:** „Add online game room server“
-- [ ] **Schritt 5: `/code-review`, `plan-pruefer` für die Aufgaben 1 bis 7, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
+- [x] **Schritt 5: `/code-review`, `plan-pruefer` für die Aufgaben 1 bis 7, Funde mit dem Entwickler durchgehen, bei grüner CI mergen.**
 
 ### Nachtrag aus dem Review von PR #7
 
@@ -220,10 +220,10 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 - Nutzt: HTTP-Wege und Nachrichten oben
 - Liefert: `verbindungOeffnen(raumcode: string, token: string)` mit `ansicht`, `fehler`, `zustand` als Runes und `senden(aktion: Aktion): void`; Token in `localStorage` unter `quiz-poker:<RAUMCODE>`
 
-- [ ] **Schritt 1: Oberfläche nach Stil C bauen:** Start mit „Spielraum eröffnen“ und „Spielraum beitreten“. `/raum/ABCD` zeigt nur noch das Namensfeld. Warten mit Raumcode, Link, Spielerliste und beim Quiz-Master „Partie starten“ ab 2 Spielern.
-- [ ] **Schritt 2: Verhalten:** Beim Abbruch neu verbinden nach 1, 2, 4, höchstens 10 Sekunden. Bei 4001 Token löschen und zum Start, bei 4002 „Spielraum geschlossen“, bei 4003 „Auf einem anderen Gerät geöffnet oder entfernt“, kein neuer Versuch. Bei `name-vergeben` fragen, ob der Spieler zurückkehren möchte, dann `…/rueckkehr`, danach „Warten auf Bestätigung“.
-- [ ] **Schritt 3: Prüfen mit Skill `run`:** `npm run dev`, zwei getrennte Browser-Profile, weil `localStorage` je Profil gilt. Raum eröffnen, beitreten, Spieler erscheint, Seite neu laden, Stand bleibt.
-- [ ] **Schritt 4: `npm run check`, committen:** „Add start and waiting views“
+- [x] **Schritt 1: Oberfläche nach Stil C bauen:** Start mit „Spielraum eröffnen“ und „Spielraum beitreten“. `/raum/ABCD` zeigt nur noch das Namensfeld. Warten mit Raumcode, Link, Spielerliste und beim Quiz-Master „Partie starten“ ab 2 Spielern.
+- [x] **Schritt 2: Verhalten:** Beim Abbruch neu verbinden nach 1, 2, 4, höchstens 10 Sekunden. Bei 4001 Token löschen und zum Start, bei 4002 „Spielraum geschlossen“, bei 4003 „Auf einem anderen Gerät geöffnet oder entfernt“, kein neuer Versuch. Bei `name-vergeben` fragen, ob der Spieler zurückkehren möchte, dann `…/rueckkehr`, danach „Warten auf Bestätigung“.
+- [x] **Schritt 3: Prüfen mit Skill `run`:** `npm run dev`, zwei getrennte Browser-Profile, weil `localStorage` je Profil gilt. Raum eröffnen, beitreten, Spieler erscheint, Seite neu laden, Stand bleibt.
+- [x] **Schritt 4: `npm run check`, committen:** „Add start and waiting views“
 
 ### Aufgabe 9: Spielansichten
 
