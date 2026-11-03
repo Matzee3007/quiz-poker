@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   aktuelleRunde,
+  einsatzSetzen,
+  frageZeigen,
   partieErstellen,
   partieStarten,
   spielerBeitreten,
@@ -113,5 +115,46 @@ describe("Partie starten", () => {
       kategorie: "Sport",
       frage: { text: "Sportfrage 1", musterloesung: "Lösung S1" },
     });
+  });
+});
+
+describe("Einsatzphase", () => {
+  it("speichert den Einsatz, ein zweiter ersetzt ihn", () => {
+    const einmal = einsatzSetzen(gestartetePartie(), "anna", 20);
+    const zweimal = einsatzSetzen(einmal, "anna", 50);
+
+    expect(einmal.einsaetze).toEqual({ anna: 20 });
+    expect(zweimal.einsaetze).toEqual({ anna: 50 });
+  });
+
+  it("lehnt ungültige Einsätze und unbekannte Spieler ab", () => {
+    const partie = gestartetePartie();
+
+    expect(() => einsatzSetzen(partie, "anna", 9)).toThrow(
+      "ungueltiger-einsatz",
+    );
+    expect(() => einsatzSetzen(partie, "niemand", 20)).toThrow(
+      "unbekannter-spieler",
+    );
+  });
+
+  it("lehnt Spieler ab, die nicht in der Runde sind", () => {
+    const partie = spielerBeitreten(gestartetePartie(), "cara", "Cara");
+
+    expect(() => einsatzSetzen(partie, "cara", 20)).toThrow("nicht-in-runde");
+  });
+
+  it("zeigt die Frage auch ohne alle Einsätze, ein fehlender zählt als 0", () => {
+    const partie = frageZeigen(einsatzSetzen(gestartetePartie(), "anna", 20));
+
+    expect(partie.phase).toBe("antworten");
+    expect(partie.einsaetze).toEqual({ anna: 20, ben: 0 });
+  });
+
+  it("sperrt den Einsatz, sobald die Frage gestellt ist", () => {
+    const partie = frageZeigen(gestartetePartie());
+
+    expect(() => einsatzSetzen(partie, "anna", 20)).toThrow("falsche-phase");
+    expect(() => frageZeigen(partie)).toThrow("falsche-phase");
   });
 });

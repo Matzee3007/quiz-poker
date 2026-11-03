@@ -1,4 +1,4 @@
-import { START_CHIPS } from "./chips";
+import { istGueltigerEinsatz, START_CHIPS } from "./chips";
 import { Regelfehler } from "./fehler";
 
 const MINDESTSPIELER = 2;
@@ -46,6 +46,17 @@ function verlangePhase(partie: Partie, phase: Phase): void {
   if (partie.phase !== phase) {
     throw new Regelfehler("falsche-phase");
   }
+}
+
+function rundenTeilnehmerFinden(partie: Partie, spielerId: string): Spieler {
+  const spieler = partie.spieler.find((kandidat) => kandidat.id === spielerId);
+  if (!spieler) {
+    throw new Regelfehler("unbekannter-spieler");
+  }
+  if (!partie.rundenTeilnehmer.includes(spielerId)) {
+    throw new Regelfehler("nicht-in-runde");
+  }
+  return spieler;
 }
 
 export function partieErstellen(quiz: Quiz): Partie {
@@ -120,4 +131,32 @@ export function aktuelleRunde(partie: Partie): {
     kategorie: kategorie.name,
     frage: kategorie.fragen[partie.frageIndex],
   };
+}
+
+export function einsatzSetzen(
+  partie: Partie,
+  spielerId: string,
+  einsatz: number,
+): Partie {
+  verlangePhase(partie, "einsatz");
+  const spieler = rundenTeilnehmerFinden(partie, spielerId);
+  if (!istGueltigerEinsatz(einsatz, spieler.chips)) {
+    throw new Regelfehler("ungueltiger-einsatz");
+  }
+
+  return {
+    ...partie,
+    einsaetze: { ...partie.einsaetze, [spielerId]: einsatz },
+  };
+}
+
+export function frageZeigen(partie: Partie): Partie {
+  verlangePhase(partie, "einsatz");
+
+  const einsaetze: Record<string, number> = {};
+  for (const id of partie.rundenTeilnehmer) {
+    einsaetze[id] = partie.einsaetze[id] ?? 0;
+  }
+
+  return { ...partie, phase: "antworten", einsaetze };
 }
