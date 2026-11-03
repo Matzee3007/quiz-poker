@@ -1,6 +1,6 @@
 ---
 titel: "Plan: Regelkern"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-03
 tags: [plan, regeln, phase-1, tdd]
 ---
@@ -268,9 +268,9 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 - Liefert: `src/regeln/partie.ts` als Grundlage für das Durable Object in Phase 2
 
 - [x] **Schritt 1: `CLAUDE.md` ergänzen, `npm run check`, committen, pushen und PR öffnen.** „Document rules module“
-- [ ] **Schritt 2: `/code-review`, Funde mit dem Entwickler durchgehen.**
-- [ ] **Schritt 3: Agent `plan-pruefer` prüft den Branch gegen diesen Plan.**
-- [ ] **Schritt 4: `gh pr checks <nr>` grün und `MERGEABLE`, dann mergen.**
-- [ ] **Schritt 5: Phase abschließen mit den Skills `journal` und `naechste-session`.**
+- [x] **Schritt 2: `/code-review`, Funde mit dem Entwickler durchgehen.**
+- [x] **Schritt 3: Agent `plan-pruefer` prüft den Branch gegen diesen Plan.**
+- [x] **Schritt 4: `gh pr checks <nr>` grün und `MERGEABLE`, dann mergen.**
+- [x] **Schritt 5: Phase abschließen mit den Skills `journal` und `naechste-session`.**
 
 Erwartet: `git status --short` leer, `gh pr list --state open` leer, Branch `main`.
