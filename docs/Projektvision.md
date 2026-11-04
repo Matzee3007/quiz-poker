@@ -72,7 +72,7 @@ Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
 - **Grenzen:** Namen höchstens 20, Antworten höchstens 200 Zeichen. Höchstens 30 neue Spielräume pro Stunde, damit ein Skript nicht das
   Tageslimit aufbraucht. Laufende Partien sind davon nicht betroffen. Beitritte und Aktionen in einem Raum sind nicht begrenzt.
 - **Beispiel-Quiz:** 3 Kategorien mit je 3 Runden, selbst formulierte Fragen.
-- **Veröffentlichen:** per Hand mit `npm run deploy` auf der Adresse `quiz-poker.<name>.workers.dev`.
+- **Veröffentlichen:** per Hand mit `npm run deploy` auf der Adresse `https://quiz-poker.quiz-poker.workers.dev`.
 
 ## Quiz-Sammlung
 
@@ -135,7 +135,7 @@ abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 - [x] **Phase 0 – Fundament:** Repo und `CLAUDE.md` stehen, Stack eingerichtet, erster Test grün,
   Projektvision mit `/grill-with-docs` geschärft, Phasen 1 bis 4 geplant
 - [x] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
-- [ ] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
+- [x] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
   Spieler, Rückkehr nach Abbruch, ein fest eingebautes Beispiel-Quiz, erste Veröffentlichung bei Cloudflare
 - [ ] **Phase 3 – Quiz-Sammlung:** Konten, Editor, D1, öffentliche und private Quizze, Kopien, Schutzregeln
 - [ ] **Phase 4 – Spieleabend:** echter Test mit Freunden, Feinschliff (z. B. fürs Handy)
