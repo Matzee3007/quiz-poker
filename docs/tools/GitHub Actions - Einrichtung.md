@@ -20,8 +20,9 @@ Workflow `.github/workflows/ci.yml`, Job `check`, bei jedem Pull Request und jed
 3. `npm run check`: Linter, Format, Typen, Tests und Build, also dieselben Prüfungen wie lokal.
 
 Ein Lauf ohne npm-Cache dauert etwa eine Minute, davon rund 40 Sekunden für `npm ci`. Mit Cache waren es 33 Sekunden, davon
-6 für `npm ci`. Der Workflow darf nur lesen, bricht nach 10 Minuten ab
-und ersetzt ältere Läufe desselben Branches. Er braucht keine Secrets und kein Cloudflare-Konto.
+6 für `npm ci`. Der Workflow darf nur lesen und bricht nach 10 Minuten ab. Ein neuer Push in einen PR ersetzt dessen älteren
+Lauf, auf `main` läuft jeder Commit in einer eigenen `concurrency`-Gruppe bis zum Ende. Er braucht keine Secrets und kein
+Cloudflare-Konto.
 
 ## Wie haben wir es eingerichtet?
 
@@ -56,3 +57,10 @@ gh run view <id> --log-failed  # nur die Log-Zeilen der fehlgeschlagenen Schritt
 
 - Ursache: Die Datei war nicht nach Prettier formatiert, `prettier . --check` in `npm run format:check` schlägt fehl.
 - Lösung: lokal `npm run format`, dann committen. Hier wurde die Probedatei gelöscht.
+
+**Lauf auf `main` endet als `cancelled`, der Merge-Commit bleibt ungeprüft** (in musik-app aufgetreten, hier vorbeugend
+behoben am 2026-11-04):
+
+- Ursache: Alle Läufe von `main` lagen in einer `concurrency`-Gruppe. Bei schnellen Merges verdrängte ein neuer wartender
+  Lauf den alten.
+- Lösung: Auf `main` eine Gruppe je Commit (`github.sha`) und kein `cancel-in-progress`.
