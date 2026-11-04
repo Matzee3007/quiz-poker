@@ -3,6 +3,12 @@ import type { Quiz } from "./regeln/partie";
 export type Eroeffnung =
   { ok: true; raumcode: string; token: string } | { ok: false; code: string };
 
+/** Liest den Fehlercode aus der Antwort des Servers, leer ohne lesbares JSON. */
+export async function fehlercodeLesen(antwort: Response): Promise<string> {
+  const daten = (await antwort.json().catch(() => ({}))) as { code?: string };
+  return daten.code ?? "";
+}
+
 /** Ohne Quiz eröffnet der Server den Spielraum mit dem Beispiel-Quiz. */
 export async function raumEroeffnen(quiz?: Quiz): Promise<Eroeffnung> {
   try {
@@ -10,14 +16,11 @@ export async function raumEroeffnen(quiz?: Quiz): Promise<Eroeffnung> {
       method: "POST",
       body: quiz ? JSON.stringify({ quiz }) : undefined,
     });
-    const daten = (await antwort.json().catch(() => ({}))) as {
-      raumcode?: string;
-      token?: string;
-      code?: string;
-    };
-    return antwort.ok && daten.raumcode && daten.token
-      ? { ok: true, raumcode: daten.raumcode, token: daten.token }
-      : { ok: false, code: daten.code ?? "" };
+    if (!antwort.ok) {
+      return { ok: false, code: await fehlercodeLesen(antwort) };
+    }
+    const daten = (await antwort.json()) as { raumcode: string; token: string };
+    return { ok: true, raumcode: daten.raumcode, token: daten.token };
   } catch {
     return { ok: false, code: "keine-verbindung" };
   }

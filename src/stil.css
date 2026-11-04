@@ -123,6 +123,11 @@ label {
   padding: 14px 32px;
 }
 
+.kopf .matt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .logo {
   flex: none;
   color: var(--gold);
@@ -132,6 +137,7 @@ label {
 }
 
 .kopf .rest {
+  flex: none;
   margin-left: auto;
   display: flex;
   gap: 20px;
@@ -193,6 +199,7 @@ label {
   font-weight: 700;
   line-height: 1.25;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .loesung {
@@ -389,6 +396,11 @@ th.zahl {
   border-radius: 0 var(--radius) var(--radius) 0;
   padding: 10px 14px;
   font-size: 15px;
+}
+
+/* Ohne eigene Box: Das Fieldset dient nur dem Sperren aller Felder und Knöpfe. */
+.editor-sperre {
+  display: contents;
 }
 
 .editor-raster {

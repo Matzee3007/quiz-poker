@@ -185,9 +185,15 @@ it("nimmt das Beispiel-Quiz an", () => {
 
 - [x] **Schritt 1: Doku ergänzen und committen**: `git commit -m "Document one-off quiz"`.
 - [x] **Schritt 2: Agent `plan-pruefer`** prüft den Branch gegen diesen Plan, Funde beheben.
-- [ ] **Schritt 3: PR und `/code-review`**: Funde mit dem Entwickler durchgehen. Kein `/security-review`, das gilt erst ab den Konten.
+- [x] **Schritt 3: PR und `/code-review`**: Funde mit dem Entwickler durchgehen. Kein `/security-review`, das gilt erst ab den Konten.
 - [ ] **Schritt 4: Merge** nach grüner CI (`gh pr checks <nr> --watch`).
 - [ ] **Schritt 5: Veröffentlichen** nach Rückfrage beim Entwickler: `npm run deploy`, dann unter `https://quiz-poker.quiz-poker.workers.dev` ein kurzes Einmal-Quiz eröffnen und mit 2 Spielern bis zum Ende spielen.
+
+## Ergebnis des Reviews
+
+Behoben: Sperre während des Eröffnens, Zeilenumbrüche in Fragen, Prüfung von `Content-Length` vor dem Lesen, `rundeNummer` als eindeutiger Schlüssel der Runde, langer Kategoriename im Kopf, doppeltes Lesen des Fehlercodes. Der Titel steht jetzt im Warteraum.
+
+Bewusst offen: Editor in mehreren Tabs (der letzte überschreibt), gesperrter Browser-Speicher, Regel für leere Felder an mehreren Stellen. Fehlt `Content-Length`, liest der Server die Anfrage weiter ganz, bevor er die Größe prüft.
 
 ## Danach
 

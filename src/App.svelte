@@ -210,7 +210,7 @@
       senden={(aktion) => verbindung?.senden(aktion)}
     />
   {:else}
-    {#key `${verbindung.ansicht.kategorie}-${verbindung.ansicht.rundeInKategorie}`}
+    {#key verbindung.ansicht.rundeNummer}
       <SpielerRunde
         ansicht={verbindung.ansicht}
         senden={(aktion) => verbindung?.senden(aktion)}

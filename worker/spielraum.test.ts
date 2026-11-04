@@ -239,6 +239,22 @@ describe("Spielraum mit Einmal-Quiz", () => {
     expect(daten.code).toBe("anfrage-zu-gross");
   });
 
+  it("liest eine laut Content-Length zu große Anfrage gar nicht erst", async () => {
+    const lesen = vi.fn();
+    const anfrage = {
+      url: "https://quiz-poker.test/api/raeume",
+      method: "POST",
+      headers: new Headers({ "Content-Length": String(100 * 1024 * 1024) }),
+      arrayBuffer: lesen,
+    } as unknown as Request;
+
+    const antwort = await worker.fetch(anfrage, env);
+
+    expect(antwort.status).toBe(413);
+    expect(await antwort.json()).toEqual({ code: "anfrage-zu-gross" });
+    expect(lesen).not.toHaveBeenCalled();
+  });
+
   it("zählt die Größe der Anfrage in Bytes, nicht in Zeichen", async () => {
     // 100.000 Zeichen, aber 300.000 Bytes: Das „€“ belegt in UTF-8 drei Bytes.
     const { status, daten } = await post("/api/raeume", {

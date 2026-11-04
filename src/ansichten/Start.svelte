@@ -1,6 +1,6 @@
 <script lang="ts">
   import { meldungFuer } from "../meldungen";
-  import { raumEroeffnen } from "../raumEroeffnen";
+  import { fehlercodeLesen, raumEroeffnen } from "../raumEroeffnen";
   import { istGueltigerRaumcode } from "../regeln/raumcode";
   import { rueckkehrOffen, tokenLesen } from "../verbindung.svelte";
 
@@ -20,11 +20,6 @@
   let eroeffnetGerade = $state(false);
 
   const code = $derived((raumcode ?? eingabeCode).trim().toUpperCase());
-
-  async function codeLesen(antwort: Response): Promise<string> {
-    const daten = (await antwort.json().catch(() => ({}))) as { code?: string };
-    return daten.code ?? "";
-  }
 
   async function eroeffnen() {
     fehler = null;
@@ -62,7 +57,7 @@
         return;
       }
 
-      const fehlercode = await codeLesen(antwort);
+      const fehlercode = await fehlercodeLesen(antwort);
       rueckkehrAnbieten = fehlercode === "name-vergeben";
       fehler = meldungFuer(fehlercode);
     } catch {
@@ -104,7 +99,9 @@
             <p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p>
           </div>
           <div class="weg">
-            <button onclick={onEditor}>Eigenes Quiz erstellen</button>
+            <button disabled={eroeffnetGerade} onclick={onEditor}
+              >Eigenes Quiz erstellen</button
+            >
             <p class="matt klein">
               Kategorien und Fragen selbst schreiben, ohne Konto. Das
               Einmal-Quiz gilt nur für diesen Spielraum.

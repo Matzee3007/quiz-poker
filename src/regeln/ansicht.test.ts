@@ -57,6 +57,38 @@ function aufgeloestePartie(): Partie {
   );
 }
 
+describe("Gemeinsame Angaben der Ansicht", () => {
+  it("zeigt den Titel des Quiz schon vor dem Start, beiden Rollen", () => {
+    expect(spielerAnsicht(wartendePartie(), "anna", []).quizTitel).toBe(
+      "Testquiz",
+    );
+    expect(quizMasterAnsicht(wartendePartie(), [], []).quizTitel).toBe(
+      "Testquiz",
+    );
+  });
+
+  it("zählt die Runde über alle Kategorien, auch bei gleichen Namen", () => {
+    const musik = {
+      name: "Musik",
+      fragen: [{ text: "F", musterloesung: "L" }],
+    };
+    let partie = partieErstellen({ titel: "T", kategorien: [musik, musik] });
+    partie = spielerBeitreten(partie, "anna", "Anna");
+    partie = spielerBeitreten(partie, "ben", "Ben");
+    partie = partieStarten(partie);
+    const erste = spielerAnsicht(partie, "anna", []);
+
+    partie = aufloesen(auswertungStarten(frageZeigen(partie)));
+    partie = naechsteRunde(partie);
+    const zweite = spielerAnsicht(partie, "anna", []);
+
+    expect(erste.rundeNummer).toBe(1);
+    expect(zweite.rundeNummer).toBe(2);
+    expect(zweite.kategorie).toBe(erste.kategorie);
+    expect(zweite.rundeInKategorie).toBe(erste.rundeInKategorie);
+  });
+});
+
 describe("Ansicht eines Spielers", () => {
   it("zeigt vor dem Start weder Kategorie noch Frage noch Lösung", () => {
     const ansicht = spielerAnsicht(wartendePartie(), "anna", []);

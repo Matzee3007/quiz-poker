@@ -106,161 +106,162 @@
   }
 </script>
 
-<div class="editor-raster">
-  <aside class="editor-leiste">
-    <h1 class="editor-titel">Einmal-Quiz erstellen</h1>
-    <EditorFeld
-      id="quiz-titel"
-      label="Titel des Quiz"
-      max={QUIZ_GRENZEN.titel}
-      {leereZeigen}
-      bind:wert={entwurf.titel}
-    />
-
-    <div class="reihe zwischen">
-      <span class="ueberschrift">Kategorien</span>
-      <span class="zaehler"
-        ><b>{entwurf.kategorien.length}</b> von {QUIZ_GRENZEN.kategorien}</span
-      >
-    </div>
-    <div class="editor-liste">
-      {#each entwurf.kategorien as k, index (k)}
-        <div class="editor-zeile" class:an={index === gewaehlt}>
-          <button
-            class="editor-wahl"
-            aria-current={index === gewaehlt}
-            onclick={() => (gewaehlt = index)}
-          >
-            <b class:leer={k.name.trim() === ""}
-              >{k.name.trim() || `Kategorie ${index + 1}`}</b
-            >
-            <small
-              >{k.fragen.length} von {QUIZ_GRENZEN.fragenJeKategorie} Fragen</small
-            >
-            {#if leereZeigen && leereFelder(k) > 0}
-              <span class="leer-tag">
-                {leereFelder(k)}
-                {leereFelder(k) === 1 ? "leeres Feld" : "leere Felder"}
-              </span>
-            {/if}
-          </button>
-          <div class="editor-pfeile">
-            <button
-              class="sym"
-              aria-label="Kategorie {index + 1} nach oben"
-              disabled={index === 0}
-              onclick={() => kategorieVerschieben(index, -1)}>↑</button
-            >
-            <button
-              class="sym"
-              aria-label="Kategorie {index + 1} nach unten"
-              disabled={index === entwurf.kategorien.length - 1}
-              onclick={() => kategorieVerschieben(index, 1)}>↓</button
-            >
-          </div>
-        </div>
-      {/each}
-    </div>
-    <div>
-      <button
-        disabled={entwurf.kategorien.length >= QUIZ_GRENZEN.kategorien}
-        onclick={kategorieHinzufuegen}>Kategorie hinzufügen</button
-      >
-    </div>
-    <p class="notiz">
-      Dein Entwurf liegt nur in diesem Browser und wird gelöscht, sobald du den
-      Spielraum eröffnest. Das Einmal-Quiz besteht nur so lange wie sein
-      Spielraum.
-    </p>
-  </aside>
-
-  <main class="editor-haupt">
-    <div class="editor-katkopf">
+<!-- Gesperrt, solange die Anfrage läuft: Ihr Ergebnis führt in den Raum und löscht den Entwurf. -->
+<fieldset class="editor-sperre" disabled={eroeffnetGerade}>
+  <div class="editor-raster">
+    <aside class="editor-leiste">
+      <h1 class="editor-titel">Einmal-Quiz erstellen</h1>
       <EditorFeld
-        id="kategorie-name"
-        label="Name der Kategorie {gewaehlt + 1}"
-        max={QUIZ_GRENZEN.kategorieName}
+        id="quiz-titel"
+        label="Titel des Quiz"
+        max={QUIZ_GRENZEN.titel}
         {leereZeigen}
-        bind:wert={kategorie.name}
+        bind:wert={entwurf.titel}
       />
-      <button
-        class="text"
-        disabled={entwurf.kategorien.length === 1}
-        onclick={kategorieLoeschen}>Kategorie löschen</button
-      >
-    </div>
 
-    <div class="reihe zwischen">
-      <span class="ueberschrift">Fragen</span>
-      <span class="zaehler"
-        ><b>{kategorie.fragen.length}</b> von {QUIZ_GRENZEN.fragenJeKategorie} Fragen</span
-      >
-    </div>
-
-    {#each kategorie.fragen as frage, index (frage)}
-      <section class="frage-block">
-        <div class="frage-kopf">
-          <b>Frage {index + 1}</b>
-          <div class="knoepfe">
+      <div class="reihe zwischen">
+        <span class="ueberschrift">Kategorien</span>
+        <span class="zaehler"
+          ><b>{entwurf.kategorien.length}</b> von {QUIZ_GRENZEN.kategorien}</span
+        >
+      </div>
+      <div class="editor-liste">
+        {#each entwurf.kategorien as k, index (k)}
+          <div class="editor-zeile" class:an={index === gewaehlt}>
             <button
-              class="sym"
-              aria-label="Frage {index + 1} nach oben"
-              disabled={index === 0}
-              onclick={() =>
-                (kategorie.fragen = verschieben(kategorie.fragen, index, -1))}
-              >↑</button
+              class="editor-wahl"
+              aria-current={index === gewaehlt}
+              onclick={() => (gewaehlt = index)}
             >
-            <button
-              class="sym"
-              aria-label="Frage {index + 1} nach unten"
-              disabled={index === kategorie.fragen.length - 1}
-              onclick={() =>
-                (kategorie.fragen = verschieben(kategorie.fragen, index, 1))}
-              >↓</button
-            >
-            <button
-              class="text"
-              disabled={kategorie.fragen.length === 1}
-              onclick={() => kategorie.fragen.splice(index, 1)}
-              >Frage löschen</button
-            >
+              <b class:leer={k.name.trim() === ""}
+                >{k.name.trim() || `Kategorie ${index + 1}`}</b
+              >
+              <small
+                >{k.fragen.length} von {QUIZ_GRENZEN.fragenJeKategorie} Fragen</small
+              >
+              {#if leereZeigen && leereFelder(k) > 0}
+                <span class="leer-tag">
+                  {leereFelder(k)}
+                  {leereFelder(k) === 1 ? "leeres Feld" : "leere Felder"}
+                </span>
+              {/if}
+            </button>
+            <div class="editor-pfeile">
+              <button
+                class="sym"
+                aria-label="Kategorie {index + 1} nach oben"
+                disabled={index === 0}
+                onclick={() => kategorieVerschieben(index, -1)}>↑</button
+              >
+              <button
+                class="sym"
+                aria-label="Kategorie {index + 1} nach unten"
+                disabled={index === entwurf.kategorien.length - 1}
+                onclick={() => kategorieVerschieben(index, 1)}>↓</button
+              >
+            </div>
           </div>
-        </div>
-        <EditorFeld
-          id="frage-{gewaehlt}-{index}"
-          label="Fragetext"
-          max={QUIZ_GRENZEN.frage}
-          lang
-          {leereZeigen}
-          bind:wert={frage.text}
-        />
-        <EditorFeld
-          id="loesung-{gewaehlt}-{index}"
-          label="Musterlösung"
-          max={QUIZ_GRENZEN.musterloesung}
-          {leereZeigen}
-          bind:wert={frage.musterloesung}
-        />
-      </section>
-    {/each}
+        {/each}
+      </div>
+      <div>
+        <button
+          disabled={entwurf.kategorien.length >= QUIZ_GRENZEN.kategorien}
+          onclick={kategorieHinzufuegen}>Kategorie hinzufügen</button
+        >
+      </div>
+      <p class="notiz">
+        Dein Entwurf liegt nur in diesem Browser und wird gelöscht, sobald du
+        den Spielraum eröffnest. Das Einmal-Quiz besteht nur so lange wie sein
+        Spielraum.
+      </p>
+    </aside>
 
-    <div>
-      <button
-        disabled={kategorie.fragen.length >= QUIZ_GRENZEN.fragenJeKategorie}
-        onclick={frageHinzufuegen}>Frage hinzufügen</button
-      >
-    </div>
-  </main>
-</div>
+    <main class="editor-haupt">
+      <div class="editor-katkopf">
+        <EditorFeld
+          id="kategorie-name"
+          label="Name der Kategorie {gewaehlt + 1}"
+          max={QUIZ_GRENZEN.kategorieName}
+          {leereZeigen}
+          bind:wert={kategorie.name}
+        />
+        <button
+          class="text"
+          disabled={entwurf.kategorien.length === 1}
+          onclick={kategorieLoeschen}>Kategorie löschen</button
+        >
+      </div>
 
-<div class="editor-fuss">
-  <button class="text" onclick={onZurueck}>Zurück zum Start</button>
-  {#if fehler}
-    <p class="hinweis fehler" role="alert">{fehler}</p>
-  {:else if leereZeigen && hatLeereFelder}
-    <p class="hinweis fehler" role="alert">{meldungFuer("leeres-feld")}</p>
-  {/if}
-  <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
-    >Spielraum eröffnen</button
-  >
-</div>
+      <div class="reihe zwischen">
+        <span class="ueberschrift">Fragen</span>
+        <span class="zaehler"
+          ><b>{kategorie.fragen.length}</b> von {QUIZ_GRENZEN.fragenJeKategorie} Fragen</span
+        >
+      </div>
+
+      {#each kategorie.fragen as frage, index (frage)}
+        <section class="frage-block">
+          <div class="frage-kopf">
+            <b>Frage {index + 1}</b>
+            <div class="knoepfe">
+              <button
+                class="sym"
+                aria-label="Frage {index + 1} nach oben"
+                disabled={index === 0}
+                onclick={() =>
+                  (kategorie.fragen = verschieben(kategorie.fragen, index, -1))}
+                >↑</button
+              >
+              <button
+                class="sym"
+                aria-label="Frage {index + 1} nach unten"
+                disabled={index === kategorie.fragen.length - 1}
+                onclick={() =>
+                  (kategorie.fragen = verschieben(kategorie.fragen, index, 1))}
+                >↓</button
+              >
+              <button
+                class="text"
+                disabled={kategorie.fragen.length === 1}
+                onclick={() => kategorie.fragen.splice(index, 1)}
+                >Frage löschen</button
+              >
+            </div>
+          </div>
+          <EditorFeld
+            id="frage-{gewaehlt}-{index}"
+            label="Fragetext"
+            max={QUIZ_GRENZEN.frage}
+            lang
+            {leereZeigen}
+            bind:wert={frage.text}
+          />
+          <EditorFeld
+            id="loesung-{gewaehlt}-{index}"
+            label="Musterlösung"
+            max={QUIZ_GRENZEN.musterloesung}
+            {leereZeigen}
+            bind:wert={frage.musterloesung}
+          />
+        </section>
+      {/each}
+
+      <div>
+        <button
+          disabled={kategorie.fragen.length >= QUIZ_GRENZEN.fragenJeKategorie}
+          onclick={frageHinzufuegen}>Frage hinzufügen</button
+        >
+      </div>
+    </main>
+  </div>
+
+  <div class="editor-fuss">
+    <button class="text" onclick={onZurueck}>Zurück zum Start</button>
+    {#if fehler}
+      <p class="hinweis fehler" role="alert">{fehler}</p>
+    {:else if leereZeigen && hatLeereFelder}
+      <p class="hinweis fehler" role="alert">{meldungFuer("leeres-feld")}</p>
+    {/if}
+    <button class="haupt" onclick={eroeffnen}>Spielraum eröffnen</button>
+  </div>
+</fieldset>

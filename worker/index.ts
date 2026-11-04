@@ -25,6 +25,10 @@ function quizAusAnfrage(
 }
 
 async function raumEroeffnen(anfrage: Request, env: Env): Promise<Response> {
+  // Die Angabe spart das Lesen großer Anfragen. Sie kann fehlen, deshalb zählt danach die echte Größe.
+  if (Number(anfrage.headers.get("Content-Length")) > ANFRAGE_HOECHSTGROESSE) {
+    return Response.json({ code: "anfrage-zu-gross" }, { status: 413 });
+  }
   const inhalt = await anfrage.arrayBuffer();
   if (inhalt.byteLength > ANFRAGE_HOECHSTGROESSE) {
     return Response.json({ code: "anfrage-zu-gross" }, { status: 413 });
