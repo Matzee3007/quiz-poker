@@ -33,6 +33,8 @@ Stand vom 2026-11-04. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
 - Grenzen für Beitritte und Aktionen innerhalb eines Raums. Bisher sind nur neue Räume begrenzt.
 - `npm audit` meldete beim Projektstart 15 Schwachstellen in den Entwicklungswerkzeugen.
 - `ubuntu-latest` wechselt laut Hinweis im CI-Lauf schrittweise auf Ubuntu 26.
+- Verweis auf den Launcher anpassen: `docs/Projektvision.md` nennt ihn „im Ecosystem vorgemerkt“, seit 2026-11-04 ist er das Projekt
+  `launcher` und bekommt in seiner Phase 1 eine Kachel für dieses Spiel. Die offene Frage „Wie startet das Spiel im Launcher genau?“ ist damit beantwortet: über die Web-Adresse im Standardbrowser.
 
 Vor Phase 3 prüfen: Better Auth mit D1, E-Mail-Dienst, Cloudflare Security Audit Skill aus den Tools für später des Ecosystems, Impressum und Datenschutz.
 
