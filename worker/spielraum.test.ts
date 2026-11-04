@@ -78,25 +78,43 @@ describe("Spielraum mit Einmal-Quiz", () => {
   });
 
   it("verrät dem Spieler die Musterlösung erst bei der Auflösung und spielt bis zum Ende", async () => {
-    const { quizMaster, anna, ben, annaId } =
-      await raumMitAnnaUndBen(einmalQuiz);
-    const gesehen = new Map<string, string>();
-    const annaIn = (phase: string) =>
-      anna.ansicht<SpielerAnsicht>((a) => {
-        gesehen.set(a.phase, (gesehen.get(a.phase) ?? "") + JSON.stringify(a));
-        return a.phase === phase;
-      });
+    const { raumcode, token } = await raumEroeffnen(einmalQuiz);
+    const annaToken = await spielerAnlegen(raumcode, "Anna");
+    const benToken = await spielerAnlegen(raumcode, "Ben");
+    const quizMaster = await verbinden(raumcode, token);
+    const anna = await verbinden(raumcode, annaToken);
+    const ben = await verbinden(raumcode, benToken);
 
+    // Liest jede Nachricht an Anna roh mit, von der ersten an und jeden Typ.
+    const gesehen = new Map<string, string>();
+    let aktuellePhase = "warten";
+    const annaBis = async (phase: string) => {
+      for (;;) {
+        const nachricht = await anna.naechste();
+        if (nachricht.typ === "ansicht") {
+          aktuellePhase = nachricht.ansicht.phase;
+        }
+        gesehen.set(
+          aktuellePhase,
+          (gesehen.get(aktuellePhase) ?? "") + JSON.stringify(nachricht),
+        );
+        if (nachricht.typ === "ansicht" && nachricht.ansicht.phase === phase) {
+          return nachricht.ansicht as SpielerAnsicht;
+        }
+      }
+    };
+
+    const { ichId: annaId } = await annaBis("warten");
     quizMaster.senden({ typ: "partie-starten" });
-    await annaIn("einsatz");
+    await annaBis("einsatz");
     quizMaster.senden({ typ: "frage-zeigen" });
-    await annaIn("antworten");
+    await annaBis("antworten");
     anna.senden({ typ: "antwort-bestaetigen", text: "Keanu" });
     await quizMaster.ansicht<QuizMasterAnsicht>((a) =>
       a.spieler.some((s) => s.id === annaId && s.istBereit),
     );
     quizMaster.senden({ typ: "auswertung-starten" });
-    await annaIn("auswertung");
+    await annaBis("auswertung");
     quizMaster.senden({
       typ: "antwort-auswerten",
       spielerId: annaId,
@@ -106,7 +124,7 @@ describe("Spielraum mit Einmal-Quiz", () => {
       a.spieler.some((s) => s.id === annaId && s.richtig === true),
     );
     quizMaster.senden({ typ: "aufloesen" });
-    await annaIn("aufgeloest");
+    await annaBis("aufgeloest");
     quizMaster.senden({ typ: "naechste-runde" });
     const ende = await ben.ansicht<SpielerAnsicht>(
       (a) => a.phase === "beendet",
@@ -114,12 +132,14 @@ describe("Spielraum mit Einmal-Quiz", () => {
 
     expect(ende.phase).toBe("beendet");
     for (const phase of ["warten", "einsatz", "antworten", "auswertung"]) {
-      expect(gesehen.get(phase) ?? "").not.toContain("Der Auserwählte");
+      // Ohne Nachricht in dieser Phase wäre die Prüfung darunter wertlos.
+      expect(gesehen.get(phase)).toBeTruthy();
+      expect(gesehen.get(phase)).not.toContain("Der Auserwählte");
     }
     expect(gesehen.get("aufgeloest")).toContain("Der Auserwählte");
   });
 
-  it("spielt ein Quiz an allen Grenzen", async () => {
+  it("spielt ein Quiz an allen Grenzen bis zum Ende", async () => {
     const fragen = Array(10).fill({
       text: "f".repeat(300),
       musterloesung: "l".repeat(100),
@@ -127,15 +147,25 @@ describe("Spielraum mit Einmal-Quiz", () => {
     const kategorien = Array(10).fill({ name: "k".repeat(50), fragen });
     const quiz = { titel: "t".repeat(100), kategorien };
 
-    const { quizMaster, anna } = await raumMitAnnaUndBen(quiz);
-    quizMaster.senden({ typ: "partie-starten" });
-    const qmEinsatz = await quizMaster.ansicht<QuizMasterAnsicht>(
-      (a) => a.phase === "einsatz",
-    );
-    await anna.ansicht((a) => a.phase === "einsatz");
+    const { quizMaster } = await raumMitAnnaUndBen(quiz);
+    const qmIn = (phase: string) =>
+      quizMaster.ansicht<QuizMasterAnsicht>((a) => a.phase === phase);
 
-    expect(qmEinsatz.rundenInKategorie).toBe(10);
-    expect(qmEinsatz.frage).toBe("f".repeat(300));
+    quizMaster.senden({ typ: "partie-starten" });
+    const erste = await qmIn("einsatz");
+    expect(erste.rundenInKategorie).toBe(10);
+    expect(erste.frage).toBe("f".repeat(300));
+
+    for (let runde = 1; runde <= 100; runde++) {
+      quizMaster.senden({ typ: "frage-zeigen" });
+      await qmIn("antworten");
+      quizMaster.senden({ typ: "auswertung-starten" });
+      await qmIn("auswertung");
+      quizMaster.senden({ typ: "aufloesen" });
+      await qmIn("aufgeloest");
+      quizMaster.senden({ typ: "naechste-runde" });
+      await qmIn(runde === 100 ? "beendet" : "einsatz");
+    }
   });
 
   it("speichert fremde Felder nicht", async () => {
@@ -203,6 +233,17 @@ describe("Spielraum mit Einmal-Quiz", () => {
     const { status, daten } = await post("/api/raeume", {
       quiz: einmalQuiz,
       fuellung: "x".repeat(256 * 1024),
+    });
+
+    expect(status).toBe(413);
+    expect(daten.code).toBe("anfrage-zu-gross");
+  });
+
+  it("zählt die Größe der Anfrage in Bytes, nicht in Zeichen", async () => {
+    // 100.000 Zeichen, aber 300.000 Bytes: Das „€“ belegt in UTF-8 drei Bytes.
+    const { status, daten } = await post("/api/raeume", {
+      quiz: einmalQuiz,
+      fuellung: "€".repeat(100_000),
     });
 
     expect(status).toBe(413);

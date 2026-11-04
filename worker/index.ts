@@ -25,11 +25,11 @@ function quizAusAnfrage(
 }
 
 async function raumEroeffnen(anfrage: Request, env: Env): Promise<Response> {
-  const text = await anfrage.text();
-  if (text.length > ANFRAGE_HOECHSTGROESSE) {
+  const inhalt = await anfrage.arrayBuffer();
+  if (inhalt.byteLength > ANFRAGE_HOECHSTGROESSE) {
     return Response.json({ code: "anfrage-zu-gross" }, { status: 413 });
   }
-  const pruefung = quizAusAnfrage(text);
+  const pruefung = quizAusAnfrage(new TextDecoder().decode(inhalt));
   if (!pruefung.ok) {
     return Response.json({ code: pruefung.code }, { status: 422 });
   }

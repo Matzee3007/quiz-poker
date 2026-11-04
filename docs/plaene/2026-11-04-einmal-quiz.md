@@ -164,7 +164,7 @@ it("nimmt das Beispiel-Quiz an", () => {
 
 **Freigabe aus dem Mock (2026-11-04):** Variante 2, zwei Spalten, die Leiste mit „Spielraum eröffnen“ bleibt beim Scrollen stehen. Der Hinweis sagt ausdrücklich, dass der Entwurf nach dem Eröffnen gelöscht wird. Die letzte Frage und die letzte Kategorie lassen sich nicht löschen. Rückfrage nur beim Löschen einer Kategorie mit Inhalt. Neue leere Felder werden nicht sofort rot. Jedes Feld zeigt einen Zeichenzähler.
 
-**Abweichungen beim Bau:** Zusätzlich `src/ansichten/EditorFeld.svelte` (das Feld kommt viermal vor) und `src/raumEroeffnen.ts` (Anfrage aus Startseite und Editor). Der Browser-Test fand einen Fehler: Eine lange Musterlösung drückte die Frage in `Aufloesung.svelte` und `QuizMasterRunde.svelte` zu einer schmalen Spalte zusammen, beide nutzen jetzt die Klasse `frage-loesung` mit festen Spalten. „Server gestoppt“ wurde durch eine blockierte Anfrage im Browser nachgestellt.
+**Abweichungen beim Bau:** Zusätzlich `src/ansichten/EditorFeld.svelte` (das Feld kommt viermal vor) und `src/raumEroeffnen.ts` (Anfrage aus Startseite und Editor). Der Browser-Test fand einen Fehler: Eine lange Musterlösung drückte die Frage in `Aufloesung.svelte` und `QuizMasterRunde.svelte` zu einer schmalen Spalte zusammen, beide nutzen jetzt die Klasse `frage-loesung` mit festen Spalten. „Server gestoppt“ wurde durch eine blockierte Anfrage im Browser nachgestellt. Ebenfalls zusätzlich: `quizFormLesen` aus `quizpruefung.ts` liest auch den Entwurf, `Start` hat die Prop `onEditor`, `raumMitAnnaUndBen` nimmt ein Quiz.
 
 - [x] **Schritt 1: Startseite**: Karte „Spielraum eröffnen“ mit „Beispiel-Quiz spielen“ (wie bisher) und „Eigenes Quiz erstellen“ (führt zu `/quiz-erstellen`).
 - [x] **Schritt 2: `App.svelte`**: Bei `/quiz-erstellen` zeigt sie den Editor. Die Zurück-Taste des Browsers führt über `onpopstate` zurück.
@@ -184,7 +184,7 @@ it("nimmt das Beispiel-Quiz an", () => {
 **Dateien:** Ändern `CLAUDE.md` (Repo-Struktur), `docs/tools/Svelte und Vite.md` falls etwas Neues auftrat, `docs/Projektvision.md` nur bei Abweichungen
 
 - [x] **Schritt 1: Doku ergänzen und committen**: `git commit -m "Document one-off quiz"`.
-- [ ] **Schritt 2: Agent `plan-pruefer`** prüft den Branch gegen diesen Plan, Funde beheben.
+- [x] **Schritt 2: Agent `plan-pruefer`** prüft den Branch gegen diesen Plan, Funde beheben.
 - [ ] **Schritt 3: PR und `/code-review`**: Funde mit dem Entwickler durchgehen. Kein `/security-review`, das gilt erst ab den Konten.
 - [ ] **Schritt 4: Merge** nach grüner CI (`gh pr checks <nr> --watch`).
 - [ ] **Schritt 5: Veröffentlichen** nach Rückfrage beim Entwickler: `npm run deploy`, dann unter `https://quiz-poker.quiz-poker.workers.dev` ein kurzes Einmal-Quiz eröffnen und mit 2 Spielern bis zum Ende spielen.
