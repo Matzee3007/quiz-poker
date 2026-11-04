@@ -1,6 +1,6 @@
 ---
 titel: "Plan: Spielraum online"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-03
 tags: [plan, phase-2, durable-objects, websockets, svelte]
 ---
@@ -263,9 +263,9 @@ Mit dem Entwickler abgestimmt, gilt vor den Angaben der Aufgaben oben:
 
 **Dateien:** Ändern `docs/tools/Cloudflare Workers und Durable Objects.md`, `docs/Arbeitsumgebung.md`, Journal, Roadmap, Übergabe, dieser Plan
 
-- [ ] **Schritt 1: Der Entwickler legt ein Cloudflare-Konto an und führt `npx wrangler login` aus.** Das kann nur er.
-- [ ] **Schritt 2: Der Entwickler führt `npm run deploy` von `main` aus,** nachdem Claude die Folgen erklärt hat: Die Seite ist dann öffentlich erreichbar.
-- [ ] **Schritt 3: Prüfen:** Unter der echten Adresse `/api/health` abrufen und eine Partie mit zwei Browser-Profilen spielen. Danach Adresse in die Doku.
-- [ ] **Schritt 4: Phase abschließen mit den Skills `journal` und `naechste-session`,** Roadmap abhaken.
+- [x] **Schritt 1: Der Entwickler legt ein Cloudflare-Konto an und führt `npx wrangler login` aus.** Das kann nur er.
+- [x] **Schritt 2: Der Entwickler führt `npm run deploy` von `main` aus,** nachdem Claude die Folgen erklärt hat: Die Seite ist dann öffentlich erreichbar.
+- [x] **Schritt 3: Prüfen:** Unter der echten Adresse `/api/health` abrufen und eine Partie mit zwei Browser-Profilen spielen. Danach Adresse in die Doku.
+- [x] **Schritt 4: Phase abschließen mit den Skills `journal` und `naechste-session`,** Roadmap abhaken.
 
 Erwartet: `git status --short` leer, `gh pr list --state open` leer, Branch `main`, Partie über die öffentliche Adresse gespielt.

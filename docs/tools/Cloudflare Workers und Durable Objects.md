@@ -33,6 +33,11 @@ npm install -D @cloudflare/vite-plugin wrangler
 Stand 2026-11-02 laut [Preisseite](https://developers.cloudflare.com/durable-objects/platform/pricing/): nur Durable
 Objects mit SQLite-Speicher, 100.000 Anfragen pro Tag. Eingehende WebSocket-Nachrichten zählen 20:1, ausgehende gar nicht.
 
+## Adresse
+
+`https://quiz-poker.quiz-poker.workers.dev`: vorne der Name des Workers aus `wrangler.jsonc`, dahinter die Subdomain des Kontos.
+Das erste `npm run deploy` hat die Subdomain angelegt, ändern lässt sie sich im Dashboard unter Workers, Subdomain.
+
 ## Grenze für neue Spielräume
 
 Die Klasse `Raumzaehler` (`worker/raumzaehler.ts`) begrenzt neue Räume über die Variable `RAEUME_PRO_STUNDE` in `wrangler.jsonc`. Das
@@ -43,15 +48,24 @@ Rate-Limiting-Binding von Cloudflare nutzen wir nicht: Die Doku bestätigt es ni
 **Schließ-Signal kommt im Browser erst nach rund 10 Sekunden an** (2026-11-03, Phase 2, lokal mit `npm run dev`):
 
 - Wo: Ein vom Quiz-Master entfernter Spieler sah noch rund 10 Sekunden lang das Spiel, in den Tests fiel das nicht auf.
-- Ursache: nicht geklärt. Der Server ruft `close()` sofort auf, der Browser meldet das Schließen erst später. Ob das auch bei Cloudflare passiert, ist nicht geprüft.
+- Ursache: nicht geklärt. Der Server ruft `close()` sofort auf, der Browser meldet das Schließen erst später. Bei Cloudflare trat es nicht auf: Im Testlauf vom 2026-11-04 kam das Signal nach 94 ms an (Node.js als Gegenstelle, kein Browser).
 - Lösung: Der Server schickt vor dem Schließen die Nachricht `{ typ: "beendet", code }`, die Oberfläche reagiert darauf sofort.
 - Prüfen: Spieler im Browser entfernen, die Meldung erscheint sofort.
+
+**`curl: (35) ... sslv3 alert handshake failure` direkt nach dem ersten Deploy** (2026-11-04, Phase 2):
+
+- Wo: Abruf von `/api/health` unter der neuen Adresse, unmittelbar nach dem ersten `npm run deploy`.
+- Ursache: nicht endgültig geklärt. Die `workers.dev`-Subdomain war gerade erst angelegt, `wrangler` meldet dazu „It may take a few minutes for DNS records to update“.
+- Lösung: warten, nach rund 3 Minuten kam die Antwort.
+- Prüfen: `/usr/bin/curl -sS 'https://quiz-poker.quiz-poker.workers.dev/api/health'` liefert `{"status":"ok"}`.
 
 ## Befehle
 
 ```bash
 npm run dev       # Worker und Oberfläche lokal starten
+npx wrangler login   # wrangler im Browser mit dem Konto verbinden (einmalig)
 npm run deploy    # bauen und hochladen, braucht Konto und wrangler login
+npx wrangler whoami  # zeigt, ob und womit wrangler angemeldet ist
 ```
 
 ## Fehler

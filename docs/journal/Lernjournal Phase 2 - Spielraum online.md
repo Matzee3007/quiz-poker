@@ -1,6 +1,6 @@
 ---
 titel: Lernjournal Phase 2 - Spielraum online
-status: aktiv
+status: abgeschlossen
 phase: 2
 erstellt: 2026-11-03
 tags: [lernjournal, phase-2, durable-objects, websockets, svelte, playwright]

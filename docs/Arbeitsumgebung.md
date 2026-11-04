@@ -13,7 +13,7 @@ Die Einrichtung des Rechners für alle Projekte (Terminal, Statuszeile, `install
 ## Voraussetzungen
 
 - Node.js 24 LTS mit npm 11 (Einrichtung siehe `STACKS.md` im Ecosystem, Abschnitt Next.js)
-- Für die Veröffentlichung ab Phase 2: ein Cloudflare-Konto und `npx wrangler login`
+- Für die Veröffentlichung: ein Cloudflare-Konto und `npx wrangler login`. Die Seite läuft unter `https://quiz-poker.quiz-poker.workers.dev`.
 
 ## Umgebungsvariablen
 
