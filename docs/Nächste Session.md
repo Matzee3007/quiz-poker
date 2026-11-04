@@ -49,6 +49,8 @@ Danach beginnt Phase 3. Claude fragt vorher, ob etwas anderes ansteht. Restpunkt
 
 Vor Phase 3 prüfen: Better Auth mit D1, E-Mail-Dienst, Cloudflare Security Audit Skill aus den Tools für später des Ecosystems, Impressum und Datenschutz.
 
+**Aus tages-dashboard (2026-11-04), klein, ein PR mit `/code-review`: CI-Falle beheben.** `.github/workflows/ci.yml` hat `group: ci-${{ github.ref }}` mit `cancel-in-progress: true`. Bei zwei schnellen Merges bleibt ein Merge-Commit auf `main` ungeprüft. Lösung: `group: ci-${{ github.event.pull_request.number || github.sha }}` und `cancel-in-progress: ${{ github.event_name == 'pull_request' }}`.
+
 ## Passende Skills
 
 - `fertig-pruefen`: bevor die Veröffentlichung als fertig gilt
