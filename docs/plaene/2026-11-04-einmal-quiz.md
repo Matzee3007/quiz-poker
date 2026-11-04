@@ -183,7 +183,7 @@ it("nimmt das Beispiel-Quiz an", () => {
 
 **Dateien:** Ändern `CLAUDE.md` (Repo-Struktur), `docs/tools/Svelte und Vite.md` falls etwas Neues auftrat, `docs/Projektvision.md` nur bei Abweichungen
 
-- [ ] **Schritt 1: Doku ergänzen und committen**: `git commit -m "Document one-off quiz"`.
+- [x] **Schritt 1: Doku ergänzen und committen**: `git commit -m "Document one-off quiz"`.
 - [ ] **Schritt 2: Agent `plan-pruefer`** prüft den Branch gegen diesen Plan, Funde beheben.
 - [ ] **Schritt 3: PR und `/code-review`**: Funde mit dem Entwickler durchgehen. Kein `/security-review`, das gilt erst ab den Konten.
 - [ ] **Schritt 4: Merge** nach grüner CI (`gh pr checks <nr> --watch`).
