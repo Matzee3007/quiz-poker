@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mock Editor – Quiz-Poker</title>
+<style>
+/* ---------- aus src/stil.css übernommen (Stil C) ---------- */
+:root{--grund:#0c0e13;--flaeche:#12151c;--knopf:#1c212b;--schrift:#eef0f4;--matt:#a3a9b6;--linie:#262b36;--linie-stark:#3b4252;--gold:#e8bb4f;--gold-schrift:#17120a;--gruen:#2fd98c;--rot:#ff5c6c;--radius:6px}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.45;min-width:1100px}
+h1,h2,p{margin:0}
+button,input,textarea{font:inherit;color:inherit}
+button{background:var(--knopf);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:9px 16px;cursor:pointer;font-weight:600}
+button:hover:not(:disabled){border-color:var(--gold)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button.haupt{background:var(--gold);border-color:var(--gold);color:var(--gold-schrift)}
+button.text{background:none;border:none;color:var(--matt);padding:4px;font-weight:400;text-decoration:underline}
+input,textarea{background:var(--grund);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:10px 12px;width:100%}
+label{display:block;color:var(--matt);font-size:14px;margin-bottom:6px}
+.kopf{display:flex;align-items:center;gap:24px;background:var(--flaeche);border-bottom:1px solid var(--linie);padding:14px 32px}
+.logo{color:var(--gold);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.kopf .rest{margin-left:auto;display:flex;gap:20px;align-items:center;color:var(--matt);font-size:14px}
+.seite{max-width:1280px;margin:0 auto;padding:32px}
+.zwei-spalten{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+.karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:24px}
+.stapel{display:flex;flex-direction:column;gap:18px}
+.reihe{display:flex;gap:12px;align-items:center}
+.ueberschrift{color:var(--matt);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.matt{color:var(--matt)}
+.hinweis{background:var(--gold);color:var(--gold-schrift);border-radius:var(--radius);padding:10px 14px;font-weight:600}
+.hinweis.fehler{background:var(--rot);color:#1a0508}
+table{width:100%;border-collapse:collapse}
+th{color:var(--matt);font-size:12px;letter-spacing:.08em;text-align:left;text-transform:uppercase}
+th,td{border-bottom:1px solid var(--linie);padding:12px 10px;vertical-align:middle}
+.spielidee{display:flex;flex-direction:column;gap:10px}
+.spielidee h1{color:var(--gold);font-size:40px;line-height:1.1}
+
+/* ---------- neu für Startseite und Editor ---------- */
+.wege{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.weg{display:flex;flex-direction:column;gap:8px}
+.weg button{width:100%}
+.klein{font-size:14px}
+.seiten-titel{font-size:30px;line-height:1.15;font-weight:800}
+.notiz{border-left:3px solid var(--gold);background:var(--flaeche);border-radius:0 var(--radius) var(--radius) 0;padding:10px 14px;color:var(--schrift);font-size:15px}
+.feld textarea{height:auto;resize:none;display:block}
+.feld-unten{display:flex;justify-content:flex-end;gap:12px;margin-top:4px;font-size:13px;min-height:19px}
+.zeichen{color:var(--matt);font-variant-numeric:tabular-nums;white-space:nowrap}
+.zeichen.nah{color:var(--gold);font-weight:600}
+.feld-meldung{display:none;color:var(--rot);font-weight:600;margin-right:auto}
+.feld-fehler label{color:var(--rot);font-weight:600}
+.feld-fehler input,.feld-fehler textarea{border-color:var(--rot);box-shadow:0 0 0 1px var(--rot);background:#23101a}
+.feld-fehler .feld-meldung{display:block}
+.zaehler{color:var(--matt);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zaehler b{color:var(--schrift)}
+.sym{padding:5px 0;width:34px;font-size:15px;line-height:1.3;text-align:center}
+.knoepfe{display:flex;gap:6px;align-items:center;flex:none}
+.knoepfe .text{margin-left:6px}
+.leer-tag{display:inline-block;background:#3c171c;color:var(--rot);border-radius:99px;padding:1px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.aktion{display:flex;align-items:center;gap:18px}
+.aktion .hinweis{flex:1;margin:0}
+.aktion .haupt{margin-left:auto;font-size:17px;padding:12px 26px;font-weight:800;white-space:nowrap}
+.aktion .hinweis + .haupt{margin-left:0}
+.ok-notiz{flex:1;color:var(--gruen);font-weight:600}
+.grenze{color:var(--matt);font-size:14px}
+.frage-kopf{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.frage-kopf b{font-size:15px}
+.frage{border:1px solid var(--linie);border-radius:var(--radius);padding:14px 16px;background:#0f1218}
+.frage .feld + .feld{margin-top:6px}
+
+/* Variante 1: untereinander, aufklappbar */
+.v1-spalte{max-width:920px;margin:0 auto;padding:28px 32px 36px}
+.v1-kat{padding:0;overflow:hidden}
+.v1-kopf{display:flex;align-items:center;gap:12px;padding:12px 16px}
+.v1-auf{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:none;border:0;padding:4px 0;text-align:left}
+.v1-auf:hover:not(:disabled){border:0}
+.v1-auf .pfeil{color:var(--gold);width:14px;flex:none}
+.v1-auf .name{font-size:18px;font-weight:700;overflow-wrap:anywhere}
+.v1-auf .name.leer{color:var(--rot);font-style:italic;font-weight:600}
+.v1-inhalt{border-top:1px solid var(--linie);padding:16px;display:flex;flex-direction:column;gap:14px}
+.v1-unten{display:flex;align-items:center;gap:12px}
+
+/* Variante 2: zweispaltig */
+.v2-raster{display:grid;grid-template-columns:340px minmax(0,1fr);align-items:stretch;min-height:640px}
+.v2-rail{background:var(--flaeche);border-right:1px solid var(--linie);padding:22px 20px;display:flex;flex-direction:column;gap:16px}
+.v2-main{padding:22px 32px 28px;display:flex;flex-direction:column;gap:14px}
+.v2-liste{display:flex;flex-direction:column;gap:6px}
+.v2-zeile{display:flex;align-items:stretch;gap:6px;border:1px solid var(--linie);border-radius:var(--radius);padding:6px;background:var(--grund)}
+.v2-zeile.an{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.v2-wahl{flex:1;min-width:0;text-align:left;background:none;border:0;padding:4px 4px 4px 8px;font-weight:400}
+.v2-wahl:hover:not(:disabled){border:0}
+.v2-wahl b{display:block;font-size:15px;overflow-wrap:anywhere;line-height:1.25}
+.v2-wahl b.leer{color:var(--rot);font-style:italic;font-weight:600}
+.v2-wahl small{display:block;color:var(--matt);font-size:13px;margin-top:2px}
+.v2-wahl .leer-tag{margin-top:4px}
+.v2-pfeile{display:flex;flex-direction:column;gap:4px;justify-content:center}
+.v2-pfeile .sym{width:30px;padding:1px 0;font-size:13px}
+.v2-katkopf{display:flex;gap:16px;align-items:flex-start}
+.v2-katkopf .feld{flex:1}
+.v2-katkopf .text{margin-top:30px}
+.v2-fuss{background:var(--flaeche);border-top:1px solid var(--linie);padding:14px 32px}
+
+/* Variante 3: dichte Tabelle */
+.v3-balken{position:sticky;top:var(--m-kopf,0);z-index:5;background:var(--flaeche);border-bottom:1px solid var(--linie-stark);padding:12px 32px;display:flex;flex-direction:column;gap:10px}
+.v3-zeile{display:flex;gap:18px;align-items:flex-start}
+.v3-zeile .feld{flex:1}
+.v3-zeile .aktion{padding-top:24px}
+.v3-haupt{padding:18px 32px 32px;display:flex;flex-direction:column;gap:16px}
+.v3-kat{padding:0}
+.v3-katkopf{display:flex;gap:14px;align-items:flex-start;padding:12px 16px 2px}
+.v3-katkopf .feld{flex:0 1 460px}
+.v3-katkopf .rechts{margin-left:auto;padding-top:6px;display:flex;gap:16px;align-items:center}
+.v3-kat table{table-layout:fixed}
+.v3-kat th{padding:6px 10px}
+.v3-kat td{padding:7px 10px 3px;vertical-align:top}
+.v3-kat td.nr{color:var(--matt);font-variant-numeric:tabular-nums;padding-top:17px;text-align:right}
+.v3-kat td.knopf-zelle{padding-top:10px}
+.v3-kat tr:last-child td{border-bottom:0}
+.v3-kat .feld input,.v3-kat .feld textarea{padding:7px 10px}
+.v3-unten{display:flex;align-items:center;gap:12px;padding:8px 16px 12px;border-top:1px solid var(--linie)}
+
+/* ---------- Rahmen des Mocks, gehört nicht zur App ---------- */
+body{background:#e9e9ec;color:#1c1f26}
+.m-kopf{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #cfd0d6;padding:12px 24px}
+.m-kopf h1{font-size:19px;margin:0 14px 0 0;display:inline}
+.m-kopf .m-notiz{color:#555a66;font-size:13.5px}
+.m-leiste{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px}
+.m-leiste button{border:1px solid #bfc1c9;background:#fff;color:#1c1f26;border-radius:7px;padding:5px 11px;font-size:13.5px;font-weight:400}
+.m-leiste button:hover:not(:disabled){border-color:#1c1f26}
+.m-leiste button.an{background:#1c1f26;border-color:#1c1f26;color:#fff}
+.m-leiste .m-trenn{width:1px;height:22px;background:#cfd0d6;margin:0 8px}
+.m-leiste .m-was{font-size:13px;color:#555a66;margin-right:2px}
+.m-teil{margin-top:8px}
+.m-teil[hidden]{display:none}
+.m-text{padding:20px 24px 11px}
+.m-text h2{font-size:21px}
+.m-text p{color:#3f4450;margin-top:2px}
+.m-browser{background:#d5d6db;padding:7px 12px;font-size:12.5px;color:#444955;display:flex;gap:10px;align-items:center}
+.m-browser i{width:10px;height:10px;border-radius:50%;background:#a9abb3;display:inline-block}
+.m-browser span{background:#fff;border-radius:6px;padding:2px 12px;margin-left:8px;flex:1}
+.m-schirm{background:var(--grund);color:var(--schrift);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.m-fuss{padding:22px 24px 40px;color:#555a66;font-size:13.5px}
+</style>
+</head>
+<body>
+
+<div class="m-kopf" id="mKopf">
+  <h1>Mock Editor für das Einmal-Quiz</h1>
+  <span class="m-notiz">Wegwerf-Entwurf in Stil C. Alle Quiz-Texte sind Beispieldaten. Die Knöpfe im Entwurf reagieren, gespeichert wird nichts.</span>
+  <div class="m-leiste" id="mLeiste"></div>
+</div>
+
+<section class="m-teil" data-teil="start">
+  <div class="m-text"><h2>Startseite</h2><p>Die Karte „Spielraum eröffnen“ bietet zwei Wege, das Beispiel-Quiz bleibt der goldene Hauptweg. Die Karte „Spielraum beitreten“ bleibt wie heute.</p></div>
+  <div class="m-browser"><i></i><i></i><i></i><span>quiz-poker.quiz-poker.workers.dev/</span></div>
+  <div class="m-schirm" id="start"></div>
+</section>
+
+<section class="m-teil" data-teil="1">
+  <div class="m-text"><h2>Variante 1: Alles untereinander, Kategorien aufklappbar</h2><p>Eine Spalte wie ein Formular von oben nach unten, zugeklappte Kategorien zeigen nur Name, Zähler und leere Felder.</p></div>
+  <div class="m-browser"><i></i><i></i><i></i><span>quiz-poker.quiz-poker.workers.dev/quiz-erstellen</span></div>
+  <div class="m-schirm" id="v1"></div>
+</section>
+
+<section class="m-teil" data-teil="2">
+  <div class="m-text"><h2>Variante 2: Zwei Spalten, Kategorienliste links</h2><p>Links stehen immer alle Kategorien, rechts nur die Fragen der gewählten Kategorie, die Hauptaktion liegt in einer Leiste am Ende.</p></div>
+  <div class="m-browser"><i></i><i></i><i></i><span>quiz-poker.quiz-poker.workers.dev/quiz-erstellen</span></div>
+  <div class="m-schirm" id="v2"></div>
+</section>
+
+<section class="m-teil" data-teil="3">
+  <div class="m-text"><h2>Variante 3: Dichte Tabelle, alles offen</h2><p>Jede Frage ist eine Tabellenzeile mit Fragetext und Musterlösung nebeneinander, nichts ist versteckt, Titel und Hauptaktion bleiben beim Scrollen oben stehen.</p></div>
+  <div class="m-browser"><i></i><i></i><i></i><span>quiz-poker.quiz-poker.workers.dev/quiz-erstellen</span></div>
+  <div class="m-schirm" id="v3"></div>
+</section>
+
+<div class="m-fuss">Ende des Mocks.</div>
+
+<script>
+const q=new URLSearchParams(location.search);
+const G={kategorien:10,fragen:10,titel:100,name:50,text:300,loesung:100};
+const MELDUNG='Bitte fülle alle markierten Felder aus.';
+
+/* ---------- Beispieldaten ---------- */
+const LANG='Nur drei Filme haben jeweils elf Oscars gewonnen: „Ben Hur“ aus dem Jahr 1959, „Titanic“ aus dem Jahr 1997 und ein dritter Film, dessen Handlung in einer von J. R. R. Tolkien erfundenen Welt spielt. Wie heißt dieser dritte Film, der seine elf Auszeichnungen bei der Verleihung im Jahr 2004 erhielt?';
+const FILME=[
+  ['In welchem Jahr kam der erste Film der Reihe „Zurück in die Zukunft“ in die Kinos?','1985'],
+  [LANG,'Der Herr der Ringe: Die Rückkehr des Königs'],
+  ['Wie heißt das Café, in dem sich die Freunde in der Serie „Friends“ treffen?','Central Perk'],
+];
+const FILME_MEHR=[
+  ['Wie heißt der Schulleiter von Hogwarts in den ersten Harry-Potter-Filmen?','Albus Dumbledore'],
+  ['Welche Farbe hat die Pille, die Neo in „Matrix“ schluckt?','Rot'],
+  ['Wer führte bei „Der weiße Hai“ Regie?','Steven Spielberg'],
+  ['Wie heißt der Glücksdrache in „Die unendliche Geschichte“?','Fuchur'],
+  ['In welcher Stadt spielt die Serie „Breaking Bad“?','Albuquerque'],
+  ['Wie heißt das Raumschiff von Han Solo?','Millennium Falke'],
+  ['Wer spielt in „Forrest Gump“ die Hauptrolle?','Tom Hanks'],
+];
+const ESSEN=[
+  ['Aus welchem Land stammt der Käse Gouda?','Niederlande'],
+  ['Welche Frucht ist die Hauptzutat von Guacamole?','Avocado'],
+];
+const WEITERE=[
+  ['Geographie','Wie heißt die Hauptstadt von Australien?','Canberra'],
+  ['Musik','Aus welcher Stadt stammen die Beatles?','Liverpool'],
+  ['Sport','Wie viele Spieler einer Fußballmannschaft stehen zu Beginn auf dem Feld?','Elf'],
+  ['Tiere','Wie heißt das größte Landtier der Erde?','Afrikanischer Elefant'],
+  ['Technik','Wofür steht die Abkürzung USB?','Universal Serial Bus'],
+  ['Literatur','Wer schrieb „Faust“?','Johann Wolfgang von Goethe'],
+  ['Geschichte','In welchem Jahr fiel die Berliner Mauer?','1989'],
+  ['Wissenschaft','Welches chemische Symbol hat Gold?','Au'],
+];
+let naechsteId=1;
+const neueId=()=>naechsteId++;
+const frage=([text,loesung])=>({id:neueId(),text,loesung});
+const kategorie=(name,fragen)=>({id:neueId(),name,fragen:fragen.map(frage)});
+
+function daten(zustand){
+  if(zustand==='grenze')return{titel:'Großer Spieleabend bei Cara',kategorien:[
+    kategorie('Filme und Serien',[...FILME,...FILME_MEHR]),
+    kategorie('Essen und Trinken',ESSEN),
+    ...WEITERE.map(([n,t,l])=>kategorie(n,[[t,l]]))]};
+  if(zustand==='fehler')return{titel:'',kategorien:[
+    kategorie('Filme und Serien',[FILME[0],FILME[1],[FILME[2][0],'']]),
+    kategorie('Essen und Trinken',[ESSEN[0],['',ESSEN[1][1]]])]};
+  return{titel:'Spieleabend bei Cara',kategorien:[kategorie('Filme und Serien',FILME),kategorie('Essen und Trinken',ESSEN)]};
+}
+
+/* ---------- Zustand ---------- */
+const S={ansicht:q.get('v')||'alle',zustand:q.get('z')||'normal',quiz:null,gepruft:false,offen:new Set(),gewaehlt:null,bereit:false};
+function zustandLaden(){
+  S.quiz=daten(S.zustand);
+  S.bereit=false;
+  S.gepruft=S.zustand==='fehler';
+  S.gewaehlt=S.quiz.kategorien[0].id;
+  S.offen=new Set([S.quiz.kategorien[0].id]);
+  if(S.gepruft)fehlerAufklappen();
+}
+const leer=w=>!w.trim();
+const leereFelder=k=>(leer(k.name)?1:0)+k.fragen.reduce((n,f)=>n+(leer(f.text)?1:0)+(leer(f.loesung)?1:0),0);
+const hatFehler=()=>leer(S.quiz.titel)||S.quiz.kategorien.some(k=>leereFelder(k)>0);
+function fehlerAufklappen(){
+  S.quiz.kategorien.filter(k=>leereFelder(k)>0).forEach(k=>S.offen.add(k.id));
+  const g=S.quiz.kategorien.find(k=>k.id===S.gewaehlt);
+  if(g&&!leereFelder(g)){const erste=S.quiz.kategorien.find(k=>leereFelder(k)>0);if(erste)S.gewaehlt=erste.id;}
+}
+
+/* ---------- Bausteine ---------- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const zaehler=(n,g,wort)=>`<span class="zaehler"><b>${n}</b> von ${g} ${wort}</span>`;
+const leerTag=n=>n?`<span class="leer-tag">${n===1?'1 leeres Feld':n+' leere Felder'}</span>`:'';
+/* opt.lang macht ein mehrzeiliges Feld, opt.ohneLabel nutzt die Spaltenüberschrift der Tabelle */
+function feld(v,key,label,wert,max,opt={}){
+  const fehler=S.gepruft&&leer(wert);
+  const id=`${v}-${key}`;
+  const attr=`id="${id}" data-key="${key}" maxlength="${max}" autocomplete="off" ${opt.ohneLabel?`aria-label="${label}"`:''} ${fehler?'aria-invalid="true"':''}`;
+  const n=wert.length;
+  return `<div class="feld ${fehler?'feld-fehler':''}">
+    ${opt.ohneLabel?'':`<label for="${id}">${label}</label>`}
+    ${opt.lang?`<textarea rows="${opt.rows||2}" ${attr}>${esc(wert)}</textarea>`:`<input ${attr} value="${esc(wert)}">`}
+    <div class="feld-unten"><span class="feld-meldung">Bitte ausfüllen</span><span class="zeichen ${n>=max*.9?'nah':''}">${n} von ${max}</span></div>
+  </div>`;
+}
+function schieben(art,kid,fid,i,anzahl,wort){
+  const d=`data-art="${art}" data-kid="${kid}" data-fid="${fid??''}"`;
+  return `<button class="sym" data-t="hoch" ${d} aria-label="${wort} nach oben" title="${wort} nach oben" ${i===0?'disabled':''}>↑</button>
+    <button class="sym" data-t="runter" ${d} aria-label="${wort} nach unten" title="${wort} nach unten" ${i===anzahl-1?'disabled':''}>↓</button>`;
+}
+function loeschen(art,kid,fid,anzahl,wort){
+  const letzte=anzahl<=1;
+  return `<button class="text klein" data-t="weg" data-art="${art}" data-kid="${kid}" data-fid="${fid??''}" ${letzte?`disabled title="Das Quiz braucht mindestens eine ${wort}."`:''}>${wort} löschen</button>`;
+}
+const fragePlus=k=>`<button data-t="f-neu" data-kid="${k.id}" ${k.fragen.length>=G.fragen?'disabled':''}>Frage hinzufügen</button>`;
+const katPlus=()=>`<button data-t="k-neu" ${S.quiz.kategorien.length>=G.kategorien?'disabled':''}>Kategorie hinzufügen</button>`;
+const grenzeFrage=k=>k.fragen.length>=G.fragen?`<span class="grenze">Mehr als ${G.fragen} Fragen je Kategorie gehen nicht.</span>`:'';
+const grenzeKat=()=>S.quiz.kategorien.length>=G.kategorien?`<span class="grenze">Mehr als ${G.kategorien} Kategorien gehen nicht.</span>`:'';
+const zurueck=()=>`<button class="text" data-t="zum-start">Zurück zum Start</button>`;
+const eroeffnen=()=>`<button class="haupt" data-t="eroeffnen">Spielraum eröffnen</button>`;
+const zeigeFehler=()=>S.gepruft&&hatFehler();
+const meldung=()=>zeigeFehler()?`<p class="hinweis fehler" role="alert">${MELDUNG}</p>`:S.bereit?`<span class="ok-notiz">Hier würde sich der Spielraum öffnen, im Mock passiert nichts weiter.</span>`:'';
+const entwurfHinweis=()=>`<p class="notiz">Dein Entwurf liegt nur in diesem Browser. Das Einmal-Quiz besteht nur so lange wie sein Spielraum und ist danach weg.</p>`;
+const kopf=()=>`<header class="kopf"><span class="logo">Quiz-Poker</span><div class="rest"><span>Einmal-Quiz erstellen, ohne Konto</span></div></header>`;
+const nummerName=(k,i)=>leer(k.name)?`Kategorie ${i+1} ohne Name`:k.name;
+const zeigeFrage=(v,k,f,i)=>`<div class="frage">
+    <div class="frage-kopf"><b>Frage ${i+1}</b><div class="knoepfe">${schieben('f',k.id,f.id,i,k.fragen.length,'Frage')}${loeschen('f',k.id,f.id,k.fragen.length,'Frage')}</div></div>
+    ${feld(v,`k${k.id}-f${f.id}-text`,'Fragetext',f.text,G.text,{lang:true})}
+    ${feld(v,`k${k.id}-f${f.id}-loesung`,'Musterlösung',f.loesung,G.loesung)}
+  </div>`;
+
+/* ---------- Startseite ---------- */
+const start=()=>`<header class="kopf"><span class="logo">Quiz-Poker</span></header>
+<main class="seite stapel">
+  <section class="spielidee"><h1>Setze deine Chips auf dein Wissen.</h1>
+    <p class="matt">Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht. Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch kostet ihn. Am Ende gewinnt, wer die meisten Chips hat.</p></section>
+  <div class="zwei-spalten">
+    <section class="karte stapel">
+      <h2>Spielraum eröffnen</h2>
+      <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+      <div class="wege">
+        <div class="weg"><button class="haupt">Beispiel-Quiz spielen</button><p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p></div>
+        <div class="weg"><button data-t="zum-editor">Eigenes Quiz erstellen</button><p class="matt klein">Kategorien und Fragen selbst schreiben, ohne Konto. Das Einmal-Quiz gilt nur für diesen Spielraum.</p></div>
+      </div>
+    </section>
+    <form class="karte stapel" onsubmit="return false">
+      <h2>Spielraum beitreten</h2>
+      <div><label for="s-code">Raumcode</label><input id="s-code" maxlength="4" autocomplete="off"></div>
+      <div><label for="s-name">Dein Name</label><input id="s-name" maxlength="20" autocomplete="off"></div>
+      <div class="reihe"><button class="haupt" type="submit">Beitreten</button></div>
+    </form>
+  </div>
+</main>`;
+
+/* ---------- Variante 1 ---------- */
+function v1(){
+  const ks=S.quiz.kategorien;
+  return kopf()+`<main class="v1-spalte stapel">
+    <div class="reihe" style="justify-content:space-between"><h1 class="seiten-titel">Einmal-Quiz erstellen</h1>${zurueck()}</div>
+    ${entwurfHinweis()}
+    <section class="karte">${feld('v1','titel','Titel des Quiz',S.quiz.titel,G.titel)}</section>
+    <div class="reihe" style="justify-content:space-between"><span class="ueberschrift">Kategorien</span>${zaehler(ks.length,G.kategorien,'Kategorien')}</div>
+    ${ks.map((k,i)=>{
+      const auf=S.offen.has(k.id);
+      return `<section class="karte v1-kat">
+        <div class="v1-kopf">
+          <button class="v1-auf" data-t="auf" data-kid="${k.id}" aria-expanded="${auf}">
+            <span class="pfeil">${auf?'▾':'▸'}</span>
+            <span class="name ${leer(k.name)?'leer':''}">${esc(nummerName(k,i))}</span>
+            ${zaehler(k.fragen.length,G.fragen,'Fragen')}
+            ${S.gepruft?leerTag(leereFelder(k)):''}
+          </button>
+          <div class="knoepfe">${schieben('k',k.id,null,i,ks.length,'Kategorie')}${loeschen('k',k.id,null,ks.length,'Kategorie')}</div>
+        </div>
+        ${auf?`<div class="v1-inhalt">
+          ${feld('v1',`k${k.id}-name`,'Name der Kategorie',k.name,G.name)}
+          ${k.fragen.map((f,j)=>zeigeFrage('v1',k,f,j)).join('')}
+          <div class="v1-unten">${fragePlus(k)}${grenzeFrage(k)}</div>
+        </div>`:''}
+      </section>`;}).join('')}
+    <div class="reihe">${katPlus()}${grenzeKat()}</div>
+    <div class="aktion" style="border-top:1px solid var(--linie);padding-top:18px">${meldung()}${eroeffnen()}</div>
+  </main>`;
+}
+
+/* ---------- Variante 2 ---------- */
+function v2(){
+  const ks=S.quiz.kategorien;
+  const k=ks.find(x=>x.id===S.gewaehlt)||ks[0];
+  const i=ks.indexOf(k);
+  return kopf()+`<div class="v2-raster">
+    <aside class="v2-rail">
+      <div class="reihe" style="justify-content:space-between"><h1 class="seiten-titel" style="font-size:24px">Einmal-Quiz erstellen</h1></div>
+      ${feld('v2','titel','Titel des Quiz',S.quiz.titel,G.titel)}
+      <div class="reihe" style="justify-content:space-between"><span class="ueberschrift">Kategorien</span>${zaehler(ks.length,G.kategorien,'')}</div>
+      <div class="v2-liste">${ks.map((x,n)=>`<div class="v2-zeile ${x===k?'an':''}">
+        <button class="v2-wahl" data-t="wahl" data-kid="${x.id}" ${x===k?'aria-current="true"':''}>
+          <b class="${leer(x.name)?'leer':''}">${esc(nummerName(x,n))}</b>
+          <small>${x.fragen.length} von ${G.fragen} Fragen</small>
+          ${S.gepruft?leerTag(leereFelder(x)):''}
+        </button>
+        <div class="v2-pfeile">${schieben('k',x.id,null,n,ks.length,'Kategorie')}</div>
+      </div>`).join('')}</div>
+      <div class="stapel" style="gap:6px;align-items:flex-start">${katPlus()}${grenzeKat()}</div>
+      ${entwurfHinweis()}
+    </aside>
+    <main class="v2-main">
+      <div class="v2-katkopf">
+        ${feld('v2',`k${k.id}-name`,`Name der Kategorie ${i+1}`,k.name,G.name)}
+        ${loeschen('k',k.id,null,ks.length,'Kategorie')}
+      </div>
+      <div class="reihe" style="justify-content:space-between"><span class="ueberschrift">Fragen</span>${zaehler(k.fragen.length,G.fragen,'Fragen')}</div>
+      ${k.fragen.map((f,j)=>zeigeFrage('v2',k,f,j)).join('')}
+      <div class="reihe">${fragePlus(k)}${grenzeFrage(k)}</div>
+    </main>
+  </div>
+  <div class="v2-fuss"><div class="aktion">${zurueck()}${meldung()}${eroeffnen()}</div></div>`;
+}
+
+/* ---------- Variante 3 ---------- */
+function v3(){
+  const ks=S.quiz.kategorien;
+  return kopf()+`<div class="v3-balken">
+    <div class="v3-zeile">
+      ${feld('v3','titel','Titel des Quiz',S.quiz.titel,G.titel)}
+      <div class="aktion">${zaehler(ks.length,G.kategorien,'Kategorien')}${zurueck()}${eroeffnen()}</div>
+    </div>
+    ${zeigeFehler()?meldung():S.bereit?meldung():''}
+  </div>
+  <main class="v3-haupt">
+    ${entwurfHinweis()}
+    ${ks.map((k,i)=>`<section class="karte v3-kat">
+      <div class="v3-katkopf">
+        ${feld('v3',`k${k.id}-name`,`Name der Kategorie ${i+1}`,k.name,G.name)}
+        <div class="rechts">${zaehler(k.fragen.length,G.fragen,'Fragen')}<div class="knoepfe">${schieben('k',k.id,null,i,ks.length,'Kategorie')}${loeschen('k',k.id,null,ks.length,'Kategorie')}</div></div>
+      </div>
+      <table><colgroup><col style="width:44px"><col><col style="width:320px"><col style="width:186px"></colgroup>
+        <thead><tr><th></th><th>Fragetext</th><th>Musterlösung</th><th></th></tr></thead>
+        <tbody>${k.fragen.map((f,j)=>`<tr>
+          <td class="nr">${j+1}</td>
+          <td>${feld('v3',`k${k.id}-f${f.id}-text`,`Fragetext von Frage ${j+1}`,f.text,G.text,{lang:true,ohneLabel:true,rows:1})}</td>
+          <td>${feld('v3',`k${k.id}-f${f.id}-loesung`,`Musterlösung von Frage ${j+1}`,f.loesung,G.loesung,{lang:true,ohneLabel:true,rows:1})}</td>
+          <td class="knopf-zelle"><div class="knoepfe">${schieben('f',k.id,f.id,j,k.fragen.length,'Frage')}<button class="text klein" data-t="weg" data-art="f" data-kid="${k.id}" data-fid="${f.id}" ${k.fragen.length<=1?'disabled title="Das Quiz braucht mindestens eine Frage."':''}>Löschen</button></div></td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div class="v3-unten">${fragePlus(k)}${grenzeFrage(k)}</div>
+    </section>`).join('')}
+    <div class="reihe">${katPlus()}${grenzeKat()}</div>
+  </main>`;
+}
+
+/* ---------- Steuerung des Mocks ---------- */
+function leiste(){
+  const reihe=(was,key,werte)=>`<span class="m-was">${was}:</span>`+werte.map(([v,l])=>`<button class="${S[key]===v?'an':''}" data-t="m-setz" data-k="${key}" data-v="${v}">${l}</button>`).join('');
+  return reihe('Zeigen','ansicht',[['alle','Alles untereinander'],['start','Startseite'],['1','Variante 1'],['2','Variante 2'],['3','Variante 3']])
+    +'<span class="m-trenn"></span>'
+    +reihe('Zustand des Editors','zustand',[['normal','Normal'],['fehler','Mit Fehlern'],['grenze','An der Grenze']]);
+}
+function textfelderAnpassen(){
+  document.querySelectorAll('.feld textarea').forEach(t=>{
+    t.style.height='auto';
+    if(t.scrollHeight)t.style.height=t.scrollHeight+2+'px';
+  });
+}
+function zeichne(fokus){
+  const y=window.scrollY;
+  document.getElementById('mLeiste').innerHTML=leiste();
+  document.querySelectorAll('.m-teil').forEach(t=>{t.hidden=S.ansicht!=='alle'&&S.ansicht!==t.dataset.teil;});
+  /* Die Startseite behält ihre Eingaben, sie hängt nicht am Zustand des Editors */
+  if(!document.getElementById('start').innerHTML)document.getElementById('start').innerHTML=start();
+  v1El.innerHTML=v1();v2El.innerHTML=v2();v3El.innerHTML=v3();
+  textfelderAnpassen();
+  document.documentElement.style.setProperty('--m-kopf',document.getElementById('mKopf').offsetHeight+'px');
+  if(fokus){
+    const el=document.getElementById(fokus.id);
+    if(el){el.focus({preventScroll:true});el.setSelectionRange(fokus.von,fokus.bis);}
+  }
+  window.scrollTo(0,y);
+}
+const v1El=document.getElementById('v1'),v2El=document.getElementById('v2'),v3El=document.getElementById('v3');
+
+const liste=(art,kid)=>art==='k'?S.quiz.kategorien:S.quiz.kategorien.find(k=>k.id===kid).fragen;
+function tausche(l,i,j){if(j<0||j>=l.length)return;[l[i],l[j]]=[l[j],l[i]];}
+const zuTeil=teil=>document.querySelector(`.m-teil[data-teil="${teil}"]`).scrollIntoView();
+
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-t]');
+  if(!b||b.disabled)return;
+  const {t,art,k,v}=b.dataset;
+  const kid=+b.dataset.kid,fid=+b.dataset.fid;
+  S.bereit=false;
+  if(t==='m-setz'){
+    S[k]=v;
+    if(k==='zustand')zustandLaden();
+  }
+  if(t==='auf'){S.offen.has(kid)?S.offen.delete(kid):S.offen.add(kid);}
+  if(t==='wahl')S.gewaehlt=kid;
+  if(t==='hoch'||t==='runter'){
+    const l=liste(art,kid),id=art==='k'?kid:fid,i=l.findIndex(x=>x.id===id);
+    tausche(l,i,i+(t==='hoch'?-1:1));
+  }
+  if(t==='weg'){
+    const l=liste(art,kid),id=art==='k'?kid:fid,i=l.findIndex(x=>x.id===id);
+    if(art==='k'&&l[i].fragen.some(f=>f.text||f.loesung)&&!confirm('Kategorie mit allen Fragen löschen?'))return;
+    l.splice(i,1);
+    if(art==='k'&&S.gewaehlt===kid)S.gewaehlt=l[Math.max(0,i-1)].id;
+  }
+  if(t==='f-neu'){
+    liste('f',kid).push({id:neueId(),text:'',loesung:''});
+    S.offen.add(kid);
+  }
+  if(t==='k-neu'){
+    const neu={id:neueId(),name:'',fragen:[{id:neueId(),text:'',loesung:''}]};
+    S.quiz.kategorien.push(neu);
+    S.offen.add(neu.id);
+    S.gewaehlt=neu.id;
+  }
+  if(t==='eroeffnen'){
+    S.gepruft=true;
+    if(hatFehler())fehlerAufklappen();else S.bereit=true;
+  }
+  if(t==='zum-editor'&&S.ansicht==='start')S.ansicht='alle';
+  if(t==='zum-start'&&S.ansicht!=='alle')S.ansicht='start';
+  zeichne();
+  if(t==='zum-editor')zuTeil(S.ansicht==='alle'?'1':S.ansicht);
+  if(t==='zum-start')zuTeil('start');
+});
+document.addEventListener('input',ev=>{
+  const e=ev.target,key=e.dataset.key;
+  if(!key)return;
+  if(key==='titel')S.quiz.titel=e.value;
+  else{
+    const [,kid,fid,was]=key.match(/^k(\d+)(?:-f(\d+)-(text|loesung))?/);
+    const kat=S.quiz.kategorien.find(k=>k.id===+kid);
+    if(fid)kat.fragen.find(f=>f.id===+fid)[was]=e.value;
+    else kat.name=e.value;
+  }
+  S.bereit=false;
+  zeichne({id:e.id,von:e.selectionStart,bis:e.selectionEnd});
+});
+zustandLaden();
+zeichne();
+/* nur zum Prüfen: ?klick=selektor|selektor=>text löst der Reihe nach Klicks und Eingaben aus */
+(q.get('klick')||'').split('|').filter(Boolean).forEach(s=>{
+  const [sel,text]=s.split('=>');
+  const el=document.querySelector(sel);
+  if(text===undefined)el.click();
+  else{el.value=text;el.dispatchEvent(new Event('input',{bubbles:true}));}
+});
+</script>
+</body>
+</html>

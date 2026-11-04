@@ -131,9 +131,9 @@ it("nimmt das Beispiel-Quiz an", () => {
 
 **Dateien:** Neu `docs/mocks/2026-11-04-editor.html`
 
-- [ ] **Schritt 1: Mock bauen** mit dem Agent `mock-bauer`: Startseite mit der Wahl zwischen Beispiel-Quiz und eigenem Quiz, dazu der Editor mit Titel, Kategorien, Fragen, Knöpfen hoch und runter, Zähler an den Grenzen und Fehlermarkierung leerer Felder. Stil C, Varianten für den Aufbau des Editors.
-- [ ] **Schritt 2: Freigabe**: Der Entwickler wählt eine Variante. Ohne Freigabe beginnen die Aufgaben 4 und 5 nicht. Abweichungen vom Mock in Aufgabe 5 eintragen.
-- [ ] **Schritt 3: Committen**: `git commit -m "Add editor mock"`.
+- [x] **Schritt 1: Mock bauen** mit dem Agent `mock-bauer`: Startseite mit der Wahl zwischen Beispiel-Quiz und eigenem Quiz, dazu der Editor mit Titel, Kategorien, Fragen, Knöpfen hoch und runter, Zähler an den Grenzen und Fehlermarkierung leerer Felder. Stil C, Varianten für den Aufbau des Editors.
+- [x] **Schritt 2: Freigabe**: Der Entwickler wählt eine Variante. Ohne Freigabe beginnen die Aufgaben 4 und 5 nicht. Abweichungen vom Mock in Aufgabe 5 eintragen.
+- [x] **Schritt 3: Committen**: `git commit -m "Add editor mock"`.
 
 ### Aufgabe 4: Entwurf im Browser
 
@@ -161,6 +161,8 @@ it("nimmt das Beispiel-Quiz an", () => {
 
 - Nutzt: `quizPruefen`, `QUIZ_GRENZEN` aus Aufgabe 1, die Anfrage aus Aufgabe 2, `entwurfLesen`, `entwurfSpeichern`, `entwurfLoeschen`, `verschieben` aus Aufgabe 4, `meldungFuer`
 - Liefert: Adresse `/quiz-erstellen`, Komponente `QuizEditor` mit den Props `onEintritt(raumcode: string, token: string, rueckkehr: boolean)` und `onZurueck()`
+
+**Freigabe aus dem Mock (2026-11-04):** Variante 2, zwei Spalten, die Leiste mit „Spielraum eröffnen“ bleibt beim Scrollen stehen. Der Hinweis sagt ausdrücklich, dass der Entwurf nach dem Eröffnen gelöscht wird. Die letzte Frage und die letzte Kategorie lassen sich nicht löschen. Rückfrage nur beim Löschen einer Kategorie mit Inhalt. Neue leere Felder werden nicht sofort rot. Jedes Feld zeigt einen Zeichenzähler.
 
 - [ ] **Schritt 1: Startseite**: Karte „Spielraum eröffnen“ mit „Beispiel-Quiz spielen“ (wie bisher) und „Eigenes Quiz erstellen“ (führt zu `/quiz-erstellen`).
 - [ ] **Schritt 2: `App.svelte`**: Bei `/quiz-erstellen` zeigt sie den Editor. Die Zurück-Taste des Browsers führt über `onpopstate` zurück.
