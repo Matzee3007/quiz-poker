@@ -31,7 +31,15 @@ Aufbau je Eintrag:
 
 ## Better Auth
 
-- **Link:** https://www.better-auth.com/, Lizenz vor dem Einsatz prüfen
-- **Was:** Bibliothek für Login mit E-Mail und Passwort (siehe [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]]).
-- **Warum noch nicht:** Konten kommen erst in Phase 3.
-- **Wann prüfen:** Start von Phase 3. Dann prüfen, ob sie mit D1 zusammenarbeitet und welcher Dienst die E-Mails verschickt.
+- **Link:** https://www.better-auth.com/, MIT (geprüft am 2026-11-04, Version 1.7.17)
+- **Was:** Bibliothek für Login mit E-Mail und Passwort (siehe [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]).
+  Bindet D1 seit Version 1.5 direkt an.
+- **Warum noch nicht:** Die Konten sind Schritt 2 von Phase 3.
+- **Wann prüfen:** Vor Schritt 2 mit einem Test im echten Betrieb: Hashing im Durable Object und Größe des Workers.
+
+## Magic Link
+
+- **Link:** https://www.better-auth.com/docs/plugins/magic-link, Teil von Better Auth
+- **Was:** Zusätzlicher Login per Link aus einer E-Mail, ohne Passwort. Der Hauptweg bleibt das Passwort.
+- **Warum noch nicht:** Braucht einen Mail-Dienst und damit praktisch eine eigene Domain (siehe [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]).
+- **Wann prüfen:** Sobald das Projekt eine eigene Domain bekommt. Dann auch Bestätigen und Zurücksetzen per Mail einführen.

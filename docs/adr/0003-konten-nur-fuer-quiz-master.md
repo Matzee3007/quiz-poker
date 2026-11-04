@@ -7,6 +7,9 @@ tags: [adr, architektur, konten]
 
 # ADR (Architecture Decision Record) 0003: Konten nur für Quiz-Master
 
+Teilweise ersetzt durch [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]: Registrierung nur
+mit Einladung, kein E-Mail-Versand, Spielraum auch ohne Konto.
+
 ## Kontext
 
 Private Quizze sollen nur für ihren Ersteller sichtbar sein, und zwar auf all seinen Geräten. Das lässt sich ohne Konten
