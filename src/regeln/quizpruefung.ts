@@ -25,7 +25,7 @@ function istObjekt(wert: unknown): wert is Record<string, unknown> {
 }
 
 /** Baut das Quiz neu auf, damit fremde Felder nicht mitkommen. Liefert null bei falschen Typen. */
-function quizLesen(daten: unknown): Quiz | null {
+export function quizFormLesen(daten: unknown): Quiz | null {
   if (
     !istObjekt(daten) ||
     typeof daten.titel !== "string" ||
@@ -53,14 +53,24 @@ function quizLesen(daten: unknown): Quiz | null {
       ) {
         return null;
       }
-      fragen.push({
+      fragen.push({ text: frage.text, musterloesung: frage.musterloesung });
+    }
+    kategorien.push({ name: kategorie.name, fragen });
+  }
+  return { titel: daten.titel, kategorien };
+}
+
+function gekuerzt(quiz: Quiz): Quiz {
+  return {
+    titel: quiz.titel.trim(),
+    kategorien: quiz.kategorien.map((kategorie) => ({
+      name: kategorie.name.trim(),
+      fragen: kategorie.fragen.map((frage) => ({
         text: frage.text.trim(),
         musterloesung: frage.musterloesung.trim(),
-      });
-    }
-    kategorien.push({ name: kategorie.name.trim(), fragen });
-  }
-  return { titel: daten.titel.trim(), kategorien };
+      })),
+    })),
+  };
 }
 
 /** Grund, aus dem das Quiz nicht spielbar ist, oder null. */
@@ -109,10 +119,11 @@ function verstoss(quiz: Quiz): QuizFehlerCode | null {
 
 /** Prüft ein fremdes Quiz, auf dem Server und im Editor nach denselben Regeln. */
 export function quizPruefen(daten: unknown): QuizPruefung {
-  const quiz = quizLesen(daten);
-  if (!quiz) {
+  const gelesen = quizFormLesen(daten);
+  if (!gelesen) {
     return { ok: false, code: "ungueltige-nachricht" };
   }
+  const quiz = gekuerzt(gelesen);
   const code = verstoss(quiz);
   return code ? { ok: false, code } : { ok: true, quiz };
 }

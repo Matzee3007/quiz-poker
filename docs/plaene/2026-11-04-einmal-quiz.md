@@ -144,14 +144,14 @@ it("nimmt das Beispiel-Quiz an", () => {
 - Nutzt: `Quiz` aus `src/regeln/partie.ts`
 - Liefert: `leererEntwurf(): Quiz` (leerer Titel, eine Kategorie mit einer leeren Frage), `entwurfAusText(text: string | null): Quiz`, `verschieben<T>(liste: T[], index: number, richtung: -1 | 1): T[]`, in `src/entwurfSpeicher.ts`: `entwurfLesen(): Quiz`, `entwurfSpeichern(entwurf: Quiz): void`, `entwurfLoeschen(): void` mit dem Schlüssel `quiz-poker:einmal-quiz`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**:
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**:
   - `entwurfAusText` liefert bei `null`, kaputtem JSON und falscher Form den `leererEntwurf()`.
   - `entwurfAusText` behält unfertige Entwürfe mit leeren Feldern und liefert nur bekannte Felder.
   - `verschieben` tauscht mit dem Nachbarn, gibt eine neue Liste zurück und lässt sie am Rand unverändert.
-- [ ] **Schritt 2: Tests laufen lassen**: `npx vitest run src/regeln/quizEntwurf.test.ts`, erwartet: FAIL, Modul fehlt.
-- [ ] **Schritt 3: Funktionen schreiben**: `entwurfSpeicher.ts` ist nur die dünne Hülle um `localStorage`, ohne eigene Tests, wie die Token-Funktionen in `verbindung.svelte.ts`.
-- [ ] **Schritt 4: Tests laufen lassen**: gleicher Befehl, erwartet: PASS.
-- [ ] **Schritt 5: Prüfen und committen**: `npm run check`, dann `git commit -m "Add quiz draft helpers"`.
+- [x] **Schritt 2: Tests laufen lassen**: `npx vitest run src/regeln/quizEntwurf.test.ts`, erwartet: FAIL, Modul fehlt.
+- [x] **Schritt 3: Funktionen schreiben**: `entwurfSpeicher.ts` ist nur die dünne Hülle um `localStorage`, ohne eigene Tests, wie die Token-Funktionen in `verbindung.svelte.ts`.
+- [x] **Schritt 4: Tests laufen lassen**: gleicher Befehl, erwartet: PASS.
+- [x] **Schritt 5: Prüfen und committen**: `npm run check`, dann `git commit -m "Add quiz draft helpers"`.
 
 ### Aufgabe 5: Editor und Startseite
 
