@@ -33,6 +33,11 @@ npm install -D @cloudflare/vite-plugin wrangler
 Stand 2026-11-02 laut [Preisseite](https://developers.cloudflare.com/durable-objects/platform/pricing/): nur Durable
 Objects mit SQLite-Speicher, 100.000 Anfragen pro Tag. Eingehende WebSocket-Nachrichten zählen 20:1, ausgehende gar nicht.
 
+Stand 2026-11-04 laut [Limits von Workers](https://developers.cloudflare.com/workers/platform/limits/) und
+[Limits von Durable Objects](https://developers.cloudflare.com/durable-objects/platform/limits/): Ein Worker darf 10 ms je
+Anfrage rechnen (sonst Fehler 1102), ein Durable Object 30 Sekunden. Warten auf das Netz zählt nicht. Lokal greift die Grenze
+vermutlich nicht, Rechenzeit lässt sich also nur im echten Betrieb prüfen.
+
 ## Adresse
 
 `https://quiz-poker.quiz-poker.workers.dev`: vorne der Name des Workers aus `wrangler.jsonc`, dahinter die Subdomain des Kontos.
