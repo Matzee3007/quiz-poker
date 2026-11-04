@@ -1,6 +1,6 @@
 ---
 titel: "Plan: Editor und Einmal-Quiz"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-04
 tags: [plan, phase-3, editor, svelte, durable-objects]
 ---
@@ -186,8 +186,8 @@ it("nimmt das Beispiel-Quiz an", () => {
 - [x] **Schritt 1: Doku ergänzen und committen**: `git commit -m "Document one-off quiz"`.
 - [x] **Schritt 2: Agent `plan-pruefer`** prüft den Branch gegen diesen Plan, Funde beheben.
 - [x] **Schritt 3: PR und `/code-review`**: Funde mit dem Entwickler durchgehen. Kein `/security-review`, das gilt erst ab den Konten.
-- [ ] **Schritt 4: Merge** nach grüner CI (`gh pr checks <nr> --watch`).
-- [ ] **Schritt 5: Veröffentlichen** nach Rückfrage beim Entwickler: `npm run deploy`, dann unter `https://quiz-poker.quiz-poker.workers.dev` ein kurzes Einmal-Quiz eröffnen und mit 2 Spielern bis zum Ende spielen.
+- [x] **Schritt 4: Merge** nach grüner CI (`gh pr checks <nr> --watch`).
+- [x] **Schritt 5: Veröffentlichen** nach Rückfrage beim Entwickler: `npm run deploy`, dann unter `https://quiz-poker.quiz-poker.workers.dev` ein kurzes Einmal-Quiz eröffnen und mit 2 Spielern bis zum Ende spielen.
 
 ## Ergebnis des Reviews
 
