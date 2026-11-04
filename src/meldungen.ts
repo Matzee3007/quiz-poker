@@ -18,6 +18,13 @@ const MELDUNGEN: Record<string, string> = {
   "keine-berechtigung": "Das darfst du in dieser Rolle nicht.",
   "ungueltige-nachricht": "Der Server hat die Eingabe nicht verstanden.",
   "anfrage-laeuft": "Für diesen Namen läuft schon eine Rückkehr-Anfrage.",
+  "leeres-quiz":
+    "Das Quiz braucht mindestens eine Kategorie und je Kategorie eine Frage.",
+  "leeres-feld": "Bitte fülle alle markierten Felder aus.",
+  "zu-viele-kategorien": "Ein Quiz darf höchstens 10 Kategorien haben.",
+  "zu-viele-fragen": "Eine Kategorie darf höchstens 10 Fragen haben.",
+  "text-zu-lang": "Ein Text im Quiz ist zu lang.",
+  "anfrage-zu-gross": "Das Quiz ist zu groß.",
   "keine-verbindung":
     "Gerade besteht keine Verbindung. Das wurde nicht übernommen, bitte versuche es gleich noch einmal.",
   "raum-unbekannt": "Diesen Spielraum gibt es nicht.",

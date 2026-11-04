@@ -16,8 +16,11 @@ export async function post(pfad: string, daten?: unknown) {
   };
 }
 
-export async function raumEroeffnen() {
-  const { daten } = await post("/api/raeume");
+export async function raumEroeffnen(quiz?: unknown) {
+  const { daten } = await post(
+    "/api/raeume",
+    quiz === undefined ? undefined : { quiz },
+  );
   return { raumcode: daten.raumcode, token: daten.token };
 }
 
@@ -102,8 +105,8 @@ export async function verbinden(
 }
 
 /** Ein Raum mit Quiz-Master, Anna und Ben: alle verbunden, alle Eingänge leer. */
-export async function raumMitAnnaUndBen() {
-  const { raumcode, token } = await raumEroeffnen();
+export async function raumMitAnnaUndBen(quiz?: unknown) {
+  const { raumcode, token } = await raumEroeffnen(quiz);
   const annaToken = await spielerAnlegen(raumcode, "Anna");
   const benToken = await spielerAnlegen(raumcode, "Ben");
   const quizMaster = await verbinden(raumcode, token);

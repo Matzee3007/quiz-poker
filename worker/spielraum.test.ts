@@ -52,6 +52,187 @@ describe("Spielraum eröffnen", () => {
   });
 });
 
+describe("Spielraum mit Einmal-Quiz", () => {
+  const einmalQuiz = {
+    titel: "Unser Abend",
+    kategorien: [
+      {
+        name: "Filme",
+        fragen: [{ text: "Wer ist Neo?", musterloesung: "Der Auserwählte" }],
+      },
+    ],
+  };
+
+  it("öffnet den Spielraum mit dem mitgeschickten Quiz", async () => {
+    const { quizMaster, anna } = await raumMitAnnaUndBen(einmalQuiz);
+
+    quizMaster.senden({ typ: "partie-starten" });
+    const qmEinsatz = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.phase === "einsatz",
+    );
+    await anna.ansicht((a) => a.phase === "einsatz");
+
+    expect(qmEinsatz.kategorie).toBe("Filme");
+    expect(qmEinsatz.frage).toBe("Wer ist Neo?");
+    expect(qmEinsatz.musterloesung).toBe("Der Auserwählte");
+  });
+
+  it("verrät dem Spieler die Musterlösung erst bei der Auflösung und spielt bis zum Ende", async () => {
+    const { quizMaster, anna, ben, annaId } =
+      await raumMitAnnaUndBen(einmalQuiz);
+    const gesehen = new Map<string, string>();
+    const annaIn = (phase: string) =>
+      anna.ansicht<SpielerAnsicht>((a) => {
+        gesehen.set(a.phase, (gesehen.get(a.phase) ?? "") + JSON.stringify(a));
+        return a.phase === phase;
+      });
+
+    quizMaster.senden({ typ: "partie-starten" });
+    await annaIn("einsatz");
+    quizMaster.senden({ typ: "frage-zeigen" });
+    await annaIn("antworten");
+    anna.senden({ typ: "antwort-bestaetigen", text: "Keanu" });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) =>
+      a.spieler.some((s) => s.id === annaId && s.istBereit),
+    );
+    quizMaster.senden({ typ: "auswertung-starten" });
+    await annaIn("auswertung");
+    quizMaster.senden({
+      typ: "antwort-auswerten",
+      spielerId: annaId,
+      richtig: true,
+    });
+    await quizMaster.ansicht<QuizMasterAnsicht>((a) =>
+      a.spieler.some((s) => s.id === annaId && s.richtig === true),
+    );
+    quizMaster.senden({ typ: "aufloesen" });
+    await annaIn("aufgeloest");
+    quizMaster.senden({ typ: "naechste-runde" });
+    const ende = await ben.ansicht<SpielerAnsicht>(
+      (a) => a.phase === "beendet",
+    );
+
+    expect(ende.phase).toBe("beendet");
+    for (const phase of ["warten", "einsatz", "antworten", "auswertung"]) {
+      expect(gesehen.get(phase) ?? "").not.toContain("Der Auserwählte");
+    }
+    expect(gesehen.get("aufgeloest")).toContain("Der Auserwählte");
+  });
+
+  it("spielt ein Quiz an allen Grenzen", async () => {
+    const fragen = Array(10).fill({
+      text: "f".repeat(300),
+      musterloesung: "l".repeat(100),
+    });
+    const kategorien = Array(10).fill({ name: "k".repeat(50), fragen });
+    const quiz = { titel: "t".repeat(100), kategorien };
+
+    const { quizMaster, anna } = await raumMitAnnaUndBen(quiz);
+    quizMaster.senden({ typ: "partie-starten" });
+    const qmEinsatz = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.phase === "einsatz",
+    );
+    await anna.ansicht((a) => a.phase === "einsatz");
+
+    expect(qmEinsatz.rundenInKategorie).toBe(10);
+    expect(qmEinsatz.frage).toBe("f".repeat(300));
+  });
+
+  it("speichert fremde Felder nicht", async () => {
+    const { raumcode } = await raumEroeffnen({
+      ...einmalQuiz,
+      kategorien: [
+        {
+          name: "Filme",
+          fragen: [
+            {
+              text: "Wer ist Neo?",
+              musterloesung: "Der Auserwählte",
+              fremd: "FREMDER-WERT",
+            },
+          ],
+        },
+      ],
+    });
+
+    const gespeichert = await runInDurableObject(
+      env.SPIELRAUM.getByName(raumcode),
+      async (_raum: Spielraum, zustand) =>
+        JSON.stringify(await zustand.storage.get("stand")),
+    );
+
+    expect(gespeichert).toContain("Wer ist Neo?");
+    expect(gespeichert).not.toContain("FREMDER-WERT");
+  });
+
+  it("nimmt ohne Quiz wie bisher das Beispiel-Quiz", async () => {
+    const { quizMaster, anna } = await raumMitAnnaUndBen();
+
+    quizMaster.senden({ typ: "partie-starten" });
+    const qmEinsatz = await quizMaster.ansicht<QuizMasterAnsicht>(
+      (a) => a.phase === "einsatz",
+    );
+    await anna.ansicht((a) => a.phase === "einsatz");
+
+    expect(qmEinsatz.kategorie).toBe("Geographie");
+  });
+
+  it.each(["{kaputt", "null", "{}"])(
+    "lehnt den Inhalt %s mit 422 ab",
+    async (inhalt) => {
+      const antwort = await exports.default.fetch(
+        "https://quiz-poker.test/api/raeume",
+        { method: "POST", body: inhalt },
+      );
+
+      expect(antwort.status).toBe(422);
+      expect(await antwort.json()).toEqual({ code: "ungueltige-nachricht" });
+    },
+  );
+
+  it("lehnt ein ungültiges Quiz mit seinem Code ab", async () => {
+    const { status, daten } = await post("/api/raeume", {
+      quiz: { titel: "T", kategorien: [] },
+    });
+
+    expect(status).toBe(422);
+    expect(daten.code).toBe("leeres-quiz");
+  });
+
+  it("lehnt eine Anfrage über 256 KiB mit 413 ab", async () => {
+    const { status, daten } = await post("/api/raeume", {
+      quiz: einmalQuiz,
+      fuellung: "x".repeat(256 * 1024),
+    });
+
+    expect(status).toBe(413);
+    expect(daten.code).toBe("anfrage-zu-gross");
+  });
+
+  const beiVollerGrenze = (quiz: unknown) =>
+    worker.fetch(
+      new Request("https://quiz-poker.test/api/raeume", {
+        method: "POST",
+        body: JSON.stringify({ quiz }),
+      }),
+      { ...env, RAEUME_PRO_STUNDE: "0" } as unknown as Env,
+    );
+
+  it("zählt ein ungültiges Quiz nicht gegen die Raumgrenze", async () => {
+    const antwort = await beiVollerGrenze({ titel: "T", kategorien: [] });
+    await antwort.text();
+
+    expect(antwort.status).toBe(422);
+  });
+
+  it("lehnt ein gültiges Quiz bei voller Raumgrenze mit 429 ab", async () => {
+    const antwort = await beiVollerGrenze(einmalQuiz);
+
+    expect(antwort.status).toBe(429);
+    expect(await antwort.json()).toEqual({ code: "zu-viele-raeume" });
+  });
+});
+
 describe("Grenze für neue Spielräume", () => {
   it("antwortet über der Grenze mit 429, ohne einen Raum anzulegen", async () => {
     const antwort = await worker.fetch(

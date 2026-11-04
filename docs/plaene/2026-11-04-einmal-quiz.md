@@ -111,7 +111,7 @@ it("nimmt das Beispiel-Quiz an", () => {
 - Nutzt: `quizPruefen`, `QuizFehlerCode` aus Aufgabe 1
 - Liefert: `Spielraum.eroeffnen(quiz: Quiz): Promise<string | null>`, die Anfrage aus „Schnittstelle zwischen Gerät und Server“, `raumEroeffnen(quiz?: unknown)` in `worker/testhilfen.ts`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben** in `worker/spielraum.test.ts`:
+- [x] **Schritt 1: Fehlschlagende Tests schreiben** in `worker/spielraum.test.ts`:
   - `öffnet einen Spielraum mit dem mitgeschickten Quiz`: Quiz-Master-Ansicht zeigt nach dem Start dessen Kategorie und Frage.
   - `verrät dem Spieler die Musterlösung des Einmal-Quiz erst bei der Auflösung`: rohe Nachrichten des Spielers enthalten die Musterlösung in den Phasen `warten`, `einsatz`, `antworten` und `auswertung` nicht, in `aufgeloest` schon.
   - `spielt ein Quiz mit nur einer Frage bis zum Ende`: Phase `beendet` nach `naechste-runde`.
@@ -122,10 +122,10 @@ it("nimmt das Beispiel-Quiz an", () => {
   - `lehnt eine Anfrage über 256 KiB mit 413 anfrage-zu-gross ab`.
   - `zählt ein ungültiges Quiz nicht gegen die Raumgrenze`: mit `RAEUME_PRO_STUNDE: "0"` wie im vorhandenen Test kommt 422 statt 429.
   - `lehnt ein gültiges Quiz bei voller Raumgrenze mit 429 ab`.
-- [ ] **Schritt 2: Tests laufen lassen**: `npx vitest run worker/spielraum.test.ts`, erwartet: die neuen Tests schlagen fehl.
-- [ ] **Schritt 3: Server ändern**: `raumEroeffnen(anfrage, env)` liest den Text, prüft zuerst die Größe, dann JSON und Quiz und erst danach die Raumgrenze. Ein leerer Text bedeutet `BEISPIEL_QUIZ`. Der Import von `BEISPIEL_QUIZ` wandert von `spielraum.ts` nach `index.ts`. In `meldungen.ts` je eine deutsche Meldung für alle Codes aus `QuizFehlerCode` und `anfrage-zu-gross`.
-- [ ] **Schritt 4: Tests laufen lassen**: `npm test`, erwartet: PASS, auch alle bisherigen.
-- [ ] **Schritt 5: Prüfen und committen**: `npm run check`, dann `git commit -m "Open rooms with a one-off quiz"`.
+- [x] **Schritt 2: Tests laufen lassen**: `npx vitest run worker/spielraum.test.ts`, erwartet: die neuen Tests schlagen fehl.
+- [x] **Schritt 3: Server ändern**: `raumEroeffnen(anfrage, env)` liest den Text, prüft zuerst die Größe, dann JSON und Quiz und erst danach die Raumgrenze. Ein leerer Text bedeutet `BEISPIEL_QUIZ`. Der Import von `BEISPIEL_QUIZ` wandert von `spielraum.ts` nach `index.ts`. In `meldungen.ts` je eine deutsche Meldung für alle Codes aus `QuizFehlerCode` und `anfrage-zu-gross`.
+- [x] **Schritt 4: Tests laufen lassen**: `npm test`, erwartet: PASS, auch alle bisherigen.
+- [x] **Schritt 5: Prüfen und committen**: `npm run check`, dann `git commit -m "Open rooms with a one-off quiz"`.
 
 ### Aufgabe 3: Mock und Freigabe
 

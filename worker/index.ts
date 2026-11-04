@@ -1,11 +1,39 @@
+import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
+import type { Quiz } from "../src/regeln/partie";
+import { quizPruefen, type QuizFehlerCode } from "../src/regeln/quizpruefung";
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
 
 export { Raumzaehler } from "./raumzaehler";
 export { Spielraum } from "./spielraum";
 
 const RAUMCODE_VERSUCHE = 10;
+const ANFRAGE_HOECHSTGROESSE = 256 * 1024;
 
-async function raumEroeffnen(env: Env): Promise<Response> {
+/** Ohne Inhalt gilt das Beispiel-Quiz, sonst das mitgeschickte Einmal-Quiz. */
+function quizAusAnfrage(
+  text: string,
+): { ok: true; quiz: Quiz } | { ok: false; code: QuizFehlerCode } {
+  if (text === "") {
+    return { ok: true, quiz: BEISPIEL_QUIZ };
+  }
+  try {
+    const daten = JSON.parse(text) as { quiz?: unknown } | null;
+    return quizPruefen(daten?.quiz);
+  } catch {
+    return { ok: false, code: "ungueltige-nachricht" };
+  }
+}
+
+async function raumEroeffnen(anfrage: Request, env: Env): Promise<Response> {
+  const text = await anfrage.text();
+  if (text.length > ANFRAGE_HOECHSTGROESSE) {
+    return Response.json({ code: "anfrage-zu-gross" }, { status: 413 });
+  }
+  const pruefung = quizAusAnfrage(text);
+  if (!pruefung.ok) {
+    return Response.json({ code: pruefung.code }, { status: 422 });
+  }
+
   const zugelassen = await env.RAUMZAEHLER.getByName("global").raumZulassen(
     Number(env.RAEUME_PRO_STUNDE),
   );
@@ -15,7 +43,9 @@ async function raumEroeffnen(env: Env): Promise<Response> {
 
   for (let versuch = 0; versuch < RAUMCODE_VERSUCHE; versuch++) {
     const raumcode = raumcodeErzeugen();
-    const token = await env.SPIELRAUM.getByName(raumcode).eroeffnen();
+    const token = await env.SPIELRAUM.getByName(raumcode).eroeffnen(
+      pruefung.quiz,
+    );
     if (token) {
       return Response.json({ raumcode, token }, { status: 201 });
     }
@@ -78,7 +108,7 @@ export default {
     }
 
     if (pathname === "/api/raeume" && anfrage.method === "POST") {
-      return raumEroeffnen(env);
+      return raumEroeffnen(anfrage, env);
     }
 
     const treffer =
