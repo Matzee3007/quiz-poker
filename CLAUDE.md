@@ -9,7 +9,7 @@ stehen in der globalen `~/.claude/CLAUDE.md` (Repo `claude-ecosystem`, `config/C
 
 Quiz-Poker ist ein Online-Quiz im Browser für Spieleabende in der Freundesrunde. Ein Quiz-Master erstellt Kategorien,
 Runden, Fragen und Antworten, die Spieler setzen Pokerchips auf ihre Antworten, am Ende gewinnt, wer die meisten Chips hat.
-Frei erreichbar, aber keine beworbene Plattform. Konten nur für Quiz-Master (ADR 0003), Spieler sind Gäste, kein Echtgeld.
+Frei erreichbar, aber keine beworbene Plattform. Konten nur für eingeladene Quiz-Master, die Quizze speichern wollen (ADR 0003, ADR 0005), Spieler sind Gäste, kein Echtgeld.
 
 Gleichwertiges Ziel ist das **Lernen**: Echtzeit-Multiplayer mit WebSockets, Rollen und Rechte (Spieler sehen Lösungen erst nach der Auflösung), testgetriebene Spiellogik und ein neuer Stack aus Svelte und Cloudflare.
 

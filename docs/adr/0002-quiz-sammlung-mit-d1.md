@@ -7,6 +7,9 @@ tags: [adr, architektur, speicher]
 
 # ADR (Architecture Decision Record) 0002: Quiz-Sammlung mit D1
 
+Die offene Registrierung, von der dieser Text ausgeht, ersetzt
+[[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]] durch Einladungscodes. Die Wahl von D1 bleibt.
+
 ## Kontext
 
 Quizze sollen in einem eigenen Bereich erstellt und für neue Partien ausgewählt werden. Ersteller entscheiden, ob ein

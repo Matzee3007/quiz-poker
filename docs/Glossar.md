@@ -13,7 +13,7 @@ Technische Abkürzungen stehen in [[Abkürzungen]].
 ## Rollen
 
 **Quiz-Master**:
-Die Person, die eine Partie leitet und jeden Spielschritt weiterschaltet, ab Phase 3 mit Konto. Sie sieht die Lösungen und spielt nicht mit.
+Die Person, die eine Partie leitet und jeden Spielschritt weiterschaltet, mit oder ohne Konto. Sie sieht die Lösungen und spielt nicht mit.
 _Nicht verwenden_: Host, Spielleiter, Admin
 
 **Ersteller**:
@@ -39,8 +39,16 @@ Ein Quiz, das nur sein Ersteller sehen und bearbeiten kann.
 _Nicht verwenden_: geheimes Quiz
 
 **Öffentliches Quiz**:
-Ein Quiz, das alle in der Quiz-Sammlung sehen und als eigene Kopie übernehmen können.
+Ein Quiz, das alle in der Quiz-Sammlung sehen und spielen können und das sich mit einem Konto als eigene Kopie übernehmen lässt.
 _Nicht verwenden_: freies Quiz, geteiltes Quiz
+
+**Einmal-Quiz**:
+Ein Quiz ohne Konto, das nicht in der Quiz-Sammlung liegt und nur so lange besteht wie der Spielraum, in dem es gespielt wird.
+_Nicht verwenden_: Gast-Quiz, Sitzungs-Quiz, temporäres Quiz
+
+**Einladungscode**:
+Der einmal gültige Code, ohne den sich niemand ein Konto anlegen kann.
+_Nicht verwenden_: Freischaltcode, Raumcode, Token
 
 **Spielraum**:
 Der Ort, an dem genau eine Partie läuft und dem Quiz-Master und Spieler beitreten.
@@ -51,7 +59,7 @@ Die 4 Großbuchstaben, mit denen Spieler einem Spielraum beitreten.
 _Nicht verwenden_: PIN, Einladungscode
 
 **Beispiel-Quiz**:
-Das fest eingebaute Quiz, mit dem Partien gespielt werden, solange es noch keine Quiz-Sammlung gibt.
+Das fest eingebaute Quiz, das ohne Konto und ohne Quiz-Sammlung spielbar ist und später entfallen kann.
 _Nicht verwenden_: Test-Quiz, Demo
 
 **Ansicht**:

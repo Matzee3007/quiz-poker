@@ -14,7 +14,7 @@ Kategorien (z. B. Sport, Gaming, Geographie), je Kategorie eine eigene Anzahl Ru
 
 Alle Spieler starten mit derselben Anzahl Pokerchips und setzen in jeder Runde einen Teil davon. Wer richtig antwortet,
 gewinnt Chips, wer falsch antwortet, verliert den Einsatz. Nach allen Kategorien und Runden gewinnt, wer die meisten
-Chips hat. Spieler treten als Gäste per Link und Raumcode bei, der Quiz-Master leitet die Partie mit seinem Konto, jeder
+Chips hat. Spieler treten als Gäste per Link und Raumcode bei, der Quiz-Master leitet die Partie mit oder ohne Konto, jeder
 am eigenen Gerät. Fachbegriffe stehen im [[projects/quiz-poker/docs/Glossar|Glossar]].
 
 Der spätere Game-Launcher (im Ecosystem vorgemerkt) soll das Spiel über seine Web-Adresse öffnen, eine eigene
@@ -76,15 +76,29 @@ Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
 
 ## Quiz-Sammlung
 
-- Quizze gehören dem Konto ihres Erstellers ([[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]]) und
-  liegen in D1 ([[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]).
-- Ein privates Quiz kann nur sein Ersteller sehen und bearbeiten.
-- Ein öffentliches Quiz kann jeder in der Sammlung mit Titel und Kategorien sehen und mit einem Konto als eigene Kopie zum
-  Spielen und Bearbeiten übernehmen. Die Kopie ist unabhängig vom Original und zunächst privat.
-- Schutzregeln, weil sich jeder ein Konto anlegen kann: Neue Quizze sind zunächst privat, die Größe eines Quiz ist begrenzt,
-  und der Entwickler kann jedes Quiz löschen.
+- Gespeicherte Quizze gehören dem Konto ihres Erstellers ([[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]])
+  und liegen in D1 ([[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]), der Inhalt als JSON in einem Feld.
+- Konten gibt es nur mit Einladungscode, E-Mails werden nicht verschickt
+  ([[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]).
+- **Ohne Konto** lässt sich ein Spielraum mit einem Einmal-Quiz, dem Beispiel-Quiz oder einem öffentlichen Quiz öffnen. Der
+  Entwurf eines Einmal-Quiz liegt bis dahin nur im Browser.
+- **Der Spielraum kopiert das Quiz beim Öffnen.** Bearbeiten oder Löschen ändert eine laufende Partie nicht.
+- Ein privates Quiz kann nur sein Ersteller sehen und bearbeiten. Es darf unfertig gespeichert werden. Zum Spielen und
+  Veröffentlichen braucht es mindestens eine Kategorie, je Kategorie mindestens eine Frage und keine leeren Felder.
+- Ein öffentliches Quiz kann jeder in der Sammlung mit Titel und Kategorien sehen und spielen, die neuesten zuerst. Der Ersteller
+  wird nicht angezeigt. Mit einem Konto lässt es sich als eigene Kopie übernehmen. Die Kopie ist unabhängig vom Original und
+  zunächst privat. Der Ersteller kann es jederzeit wieder auf privat stellen.
+- Das Beispiel-Quiz bleibt im Code und lässt sich mit Konto als Vorlage kopieren. Es kann später entfallen.
+- Schutzregeln: Neue Quizze sind zunächst privat, und der Server prüft die Grenzen, auch beim Einmal-Quiz: höchstens 10 Kategorien,
+  10 Fragen je Kategorie, 300 Zeichen je Frage, 100 Zeichen je Musterlösung, 20 gespeicherte Quizze je Konto.
+- **Konto:** Eine Anmeldung gilt 30 Tage, Passwörter haben mindestens 8 Zeichen, Fehlversuche werden je IP-Adresse begrenzt. Wer
+  sein Konto löscht, löscht auch alle seine Quizze, Kopien anderer bleiben.
+- **Betreiber:** Einladungscode (gültig bis zur Nutzung), Link zum Zurücksetzen (24 Stunden) und das Löschen eines Quiz laufen über
+  dokumentierte Befehle, ohne Admin-Seite.
+- **Vor der Veröffentlichung der Konten:** Impressum und Datenschutzhinweise online, Cloudflare Security Audit Skill einmal
+  ausführen. Jeder PR ab den Konten bekommt zusätzlich `/security-review`.
 - Bewusst hingenommen: Bei öffentlichen Quizzen kann ein Mitspieler vorab die Lösungen sehen. Wer sichergehen will, nimmt ein
-  eigenes privates Quiz.
+  eigenes privates Quiz oder ein Einmal-Quiz.
 
 Weitere Notizen: [[projects/quiz-poker/docs/Arbeitsumgebung|Arbeitsumgebung]] (was der Rechner braucht), [[projects/quiz-poker/docs/Nächste Session|Nächste Session]] (womit es weitergeht),
 [[projects/quiz-poker/docs/Tools für später|Tools für später]] (vorgemerkte Werkzeuge).
@@ -124,7 +138,8 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 3. **Ein Raum, ein Durable Object:** Jeder Spielraum hat genau ein Objekt, das seinen Zustand verwaltet.
 4. **Stack:** [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001]].
 5. **Quiz-Sammlung in D1:** [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]].
-6. **Konten nur für Quiz-Master:** [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]].
+6. **Konten nur für Quiz-Master:** [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]], mit Einladung und
+   ohne E-Mail-Versand: [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]].
 7. **Spielstand und Hibernation:** [[projects/quiz-poker/docs/adr/0004-spielstand-und-hibernation|ADR 0004]].
 
 ## Roadmap
@@ -137,7 +152,8 @@ abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 - [x] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
 - [x] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
   Spieler, Rückkehr nach Abbruch, ein fest eingebautes Beispiel-Quiz, erste Veröffentlichung bei Cloudflare
-- [ ] **Phase 3 – Quiz-Sammlung:** Konten, Editor, D1, öffentliche und private Quizze, Kopien, Schutzregeln
+- [ ] **Phase 3 – Quiz-Sammlung:** in vier Schritten: (1) Editor und Einmal-Quiz im Spielraum, (2) Konten mit Einladungscode,
+  (3) Quizze in D1 speichern, (4) öffentliche Quizze, Kopien und Schutzregeln
 - [ ] **Phase 4 – Spieleabend:** echter Test mit Freunden, Feinschliff (z. B. fürs Handy)
 
 **Für später:** Modus gegen andere Spieler (Pot), Fernseher-Ansicht, Timer, einstellbare Startchips und Einsatzgrenzen,
@@ -155,10 +171,11 @@ Export eines Quiz als Datei, private Quizze mit einzelnen Freunden teilen.
   werden. Beides braucht in Phase 2 einen Test.
 - **Abbrüche:** Handys verlieren beim Sperren die Verbindung, Spieler müssen ohne Konto zurück in den Raum finden.
 - **Fragen und Antworten:** Quizfragen aus fremden Quellen nicht ungeprüft veröffentlichen, das Repo bleibt privat.
-- **Betreiberpflichten:** Fremde können Inhalte einstellen, und Konten speichern E-Mail-Adressen. Impressum, Datenschutz und
-  Umgang mit Inhalten vor der Veröffentlichung von Phase 3 klären.
+- **Betreiberpflichten:** Eingeladene können Inhalte einstellen, und Konten speichern E-Mail-Adressen. Ob eine frei erreichbare
+  Seite für Freunde ein Impressum braucht, ließ sich nicht klären, es kommt deshalb vor der Veröffentlichung der Konten.
+- **Rechenzeit:** Ein Worker darf im kostenlosen Tarif 10 ms je Anfrage rechnen, Passwort-Hashing läuft deshalb in einem Durable
+  Object. Vor dem Bau der Konten im echten Betrieb messen.
 
 ## Offene Fragen
 
-- Welcher Dienst verschickt die E-Mails zum Zurücksetzen? (Auswahl im Plan für Phase 3.)
 - Wie startet das Spiel im Launcher genau? (Annahme: über die Web-Adresse.)
