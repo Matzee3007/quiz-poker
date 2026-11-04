@@ -21,8 +21,8 @@ Workflow `.github/workflows/ci.yml`, Job `check`, bei jedem Pull Request und jed
 
 Ein Lauf ohne npm-Cache dauert etwa eine Minute, davon rund 40 Sekunden für `npm ci`. Mit Cache waren es 33 Sekunden, davon
 6 für `npm ci`. Der Workflow darf nur lesen und bricht nach 10 Minuten ab. Ein neuer Push in einen PR ersetzt dessen älteren
-Lauf, auf `main` läuft jeder Commit in einer eigenen `concurrency`-Gruppe bis zum Ende. Er braucht keine Secrets und kein
-Cloudflare-Konto.
+Lauf, auf `main` läuft jeder Commit in einer eigenen `concurrency`-Gruppe bis zum Ende. Der Workflow braucht keine Secrets und
+kein Cloudflare-Konto.
 
 ## Wie haben wir es eingerichtet?
 
@@ -34,6 +34,8 @@ Cloudflare-Konto.
 - **Lauf grün:** Ohne die Datei bestand der Job. `npm ci` läuft also mit der `package-lock.json` vom Mac auf Linux, Build und
   Tests laufen mit dem Eintrag `allowScripts`, und `wrangler types` läuft ohne Login bei Cloudflare. Ob `allowScripts` in der CI
   tatsächlich gegriffen hat, zeigt das Log nicht.
+
+**2026-11-04, vor Phase 3:** PR #12. Läufe auf `main` verdrängen sich nicht mehr gegenseitig, siehe Abschnitt „Fehler“.
 
 ## Regeln
 
@@ -61,6 +63,7 @@ gh run view <id> --log-failed  # nur die Log-Zeilen der fehlgeschlagenen Schritt
 **Lauf auf `main` endet als `cancelled`, der Merge-Commit bleibt ungeprüft** (in musik-app aufgetreten, hier vorbeugend
 behoben am 2026-11-04):
 
-- Ursache: Alle Läufe von `main` lagen in einer `concurrency`-Gruppe. Bei schnellen Merges verdrängte ein neuer wartender
-  Lauf den alten.
-- Lösung: Auf `main` eine Gruppe je Commit (`github.sha`) und kein `cancel-in-progress`.
+- Ursache: Alle Läufe von `main` lagen in einer `concurrency`-Gruppe mit `cancel-in-progress: true`. Damit bricht schon der
+  zweite Merge den laufenden Lauf des ersten ab. Ohne `cancel-in-progress` bliebe die Falle bei drei schnellen Merges: Eine
+  Gruppe hat höchstens einen wartenden Lauf, und ein neuer wartender verdrängt den alten.
+- Lösung: Auf `main` eine Gruppe je Commit (`github.sha`) und kein `cancel-in-progress`. Beide Teile sind nötig.

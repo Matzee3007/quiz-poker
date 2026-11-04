@@ -28,7 +28,6 @@ Stand vom 2026-11-04. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
 
 **Phase 2 ist abgeschlossen, das Spiel läuft unter `https://quiz-poker.quiz-poker.workers.dev`.** Die nächste Session beginnt mit Phase 3 – Quiz-Sammlung. Claude fragt vorher, ob etwas anderes ansteht. Restpunkte als Vorschläge:
 
-- **CI-Falle beheben (aus tages-dashboard, klein, ein PR mit `/code-review`):** `.github/workflows/ci.yml` hat `group: ci-${{ github.ref }}` mit `cancel-in-progress: true`. Bei zwei schnellen Merges bleibt ein Merge-Commit auf `main` ungeprüft. Lösung: `group: ci-${{ github.event.pull_request.number || github.sha }}` und `cancel-in-progress: ${{ github.event_name == 'pull_request' }}`.
 - Echter Spieleabend schon vor Phase 3, weil das Spiel jetzt online spielbar ist. Das Beispiel-Quiz ist kurz und selbst formuliert.
 - Doppelter Code in den Ansichten: Sortierung nach Chips, `platzVon`, Grenzen 2 und 8.
 - Grenzen für Beitritte und Aktionen innerhalb eines Raums. Bisher sind nur neue Räume begrenzt.
