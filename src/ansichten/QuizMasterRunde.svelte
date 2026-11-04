@@ -26,8 +26,8 @@
 </script>
 
 <main class="seite stapel">
-  <section class="reihe" style="align-items: flex-start; gap: 32px">
-    <div class="stapel" style="flex: 1">
+  <section class="frage-loesung">
+    <div class="stapel">
       <p class="ueberschrift">Frage</p>
       <p class="frage">{ansicht.frage}</p>
     </div>

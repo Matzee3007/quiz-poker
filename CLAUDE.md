@@ -42,18 +42,22 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
 quiz-poker/
 ├── src/                Oberfläche (Svelte)
 │   ├── App.svelte      Wählt je nach Adresse, Token und Ansicht, was zu sehen ist
-│   ├── ansichten/      Eine Komponente je Ansicht (Start, Warten, Runde, Auflösung, Ende)
+│   ├── ansichten/      Eine Komponente je Ansicht (Start, Editor, Warten, Runde, Auflösung, Ende)
+│   ├── entwurfSpeicher.ts  Entwurf des Einmal-Quiz im localStorage
 │   ├── main.ts         Einstieg im Browser
 │   ├── meldungen.ts    Fehlercodes als deutsche Meldungen
 │   ├── stil.css        Stil C aus dem Mock
 │   ├── verbindung.svelte.ts  WebSocket mit Neuverbinden, Token im localStorage
 │   ├── protokoll.ts    Nachrichten zwischen Gerät und Server
+│   ├── raumEroeffnen.ts  Anfrage zum Eröffnen eines Spielraums
 │   └── regeln/         Spielregeln als reines TypeScript, ohne Svelte und Cloudflare
 │       ├── ansicht.ts  Was jede Rolle sehen darf
-│       ├── beispielQuiz.ts  Fest eingebautes Quiz bis Phase 3
+│       ├── beispielQuiz.ts  Fest eingebautes Quiz, spielbar ohne Konto
 │       ├── chips.ts    Startchips, Einsatzgrenzen, Gewinn und Verlust
 │       ├── fehler.ts   Regelfehler mit Code
 │       ├── partie.ts   Spielstand und alle Spielaktionen einer Partie
+│       ├── quizEntwurf.ts  Unfertiger Entwurf im Editor: leer anlegen, lesen, sortieren
+│       ├── quizpruefung.ts  Prüft ein Quiz: Form, Grenzen, leere Felder
 │       ├── raumcode.ts Raumcode erzeugen und prüfen
 │       └── raumgrenze.ts  Höchstens 30 neue Spielräume pro Stunde
 ├── worker/             Server (Cloudflare Worker)

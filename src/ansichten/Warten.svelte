@@ -33,6 +33,7 @@
       <span class="matt">{link}</span>
       <button onclick={kopieren}>{kopierText}</button>
     </div>
+    <p class="matt">Quiz: <strong>{ansicht.quizTitel}</strong></p>
     {#if ansicht.rolle === "quiz-master"}
       <div>
         <button

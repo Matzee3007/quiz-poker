@@ -2,6 +2,7 @@
   import { untrack } from "svelte";
   import Aufloesung from "./ansichten/Aufloesung.svelte";
   import Ende from "./ansichten/Ende.svelte";
+  import QuizEditor from "./ansichten/QuizEditor.svelte";
   import QuizMasterRunde from "./ansichten/QuizMasterRunde.svelte";
   import RueckkehrHinweise from "./ansichten/RueckkehrHinweise.svelte";
   import SpielerRunde from "./ansichten/SpielerRunde.svelte";
@@ -23,6 +24,9 @@
     return code && istGueltigerRaumcode(code) ? code : null;
   }
 
+  const EDITOR_PFAD = "/quiz-erstellen";
+
+  let imEditor = $state(location.pathname === EDITOR_PFAD);
   let raumcode = $state(raumcodeAusPfad());
   let token = $state(raumcodeAusPfad() ? tokenLesen(raumcodeAusPfad()!) : null);
   let verbindung = $state<Verbindung | null>(null);
@@ -64,6 +68,7 @@
     const code = raumcodeAusPfad();
     const neuesToken = code ? tokenLesen(code) : null;
     startMeldung = null;
+    imEditor = location.pathname === EDITOR_PFAD;
     // Gleicher Raum und gleiches Token: Die offene Verbindung bleibt gültig.
     if (code === raumcode && neuesToken === token) {
       return;
@@ -78,6 +83,11 @@
     adresseUebernehmen();
   }
 
+  function zumEditor() {
+    history.pushState(null, "", EDITOR_PFAD);
+    adresseUebernehmen();
+  }
+
   function eintreten(
     neuerCode: string,
     neuesToken: string,
@@ -85,6 +95,7 @@
   ) {
     tokenSpeichern(neuerCode, neuesToken, rueckkehr);
     startMeldung = null;
+    imEditor = false;
     raumcode = neuerCode;
     token = neuesToken;
     if (raumcodeAusPfad() !== neuerCode) {
@@ -104,6 +115,9 @@
 
 <header class="kopf">
   <span class="logo">Quiz-Poker</span>
+  {#if imEditor}
+    <span class="matt rest">Einmal-Quiz erstellen, ohne Konto</span>
+  {/if}
   {#if raumcode && token}
     <span class="matt">Spielraum <strong>{raumcode}</strong></span>
   {/if}
@@ -132,8 +146,15 @@
   {/if}
 </header>
 
-{#if !raumcode || !token}
-  <Start {raumcode} meldung={startMeldung} onEintritt={eintreten} />
+{#if imEditor}
+  <QuizEditor onEintritt={eintreten} onZurueck={zumStart} />
+{:else if !raumcode || !token}
+  <Start
+    {raumcode}
+    meldung={startMeldung}
+    onEintritt={eintreten}
+    onEditor={zumEditor}
+  />
 {:else if verbindung?.zustand === "geschlossen"}
   <main class="seite stapel">
     <p class="hinweis">Dieser Spielraum wurde geschlossen.</p>
@@ -189,7 +210,7 @@
       senden={(aktion) => verbindung?.senden(aktion)}
     />
   {:else}
-    {#key `${verbindung.ansicht.kategorie}-${verbindung.ansicht.rundeInKategorie}`}
+    {#key verbindung.ansicht.rundeNummer}
       <SpielerRunde
         ansicht={verbindung.ansicht}
         senden={(aktion) => verbindung?.senden(aktion)}

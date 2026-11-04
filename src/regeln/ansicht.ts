@@ -15,6 +15,9 @@ export interface SpielerZeile {
 
 export interface GemeinsameAnsicht {
   phase: Phase;
+  quizTitel: string;
+  /** Zählt über alle Kategorien, anders als Name und Runde der Kategorie eindeutig. */
+  rundeNummer: number;
   kategorie: string | null;
   rundeInKategorie: number;
   rundenInKategorie: number;
@@ -49,8 +52,14 @@ function gemeinsameAnsicht(
 ): Omit<GemeinsameAnsicht, "frage" | "musterloesung"> {
   const gestartet = partie.phase !== "warten";
 
+  const fruehereRunden = partie.quiz.kategorien
+    .slice(0, partie.kategorieIndex)
+    .reduce((summe, kategorie) => summe + kategorie.fragen.length, 0);
+
   return {
     phase: partie.phase,
+    quizTitel: partie.quiz.titel,
+    rundeNummer: fruehereRunden + partie.frageIndex + 1,
     kategorie: gestartet ? aktuelleRunde(partie).kategorie : null,
     rundeInKategorie: partie.frageIndex + 1,
     rundenInKategorie:

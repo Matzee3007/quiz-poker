@@ -8,7 +8,6 @@ import {
   type ServerNachricht,
 } from "../src/protokoll";
 import { quizMasterAnsicht, spielerAnsicht } from "../src/regeln/ansicht";
-import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
 import { Regelfehler, type RegelfehlerCode } from "../src/regeln/fehler";
 import {
   antwortAuswerten,
@@ -25,6 +24,7 @@ import {
   spielerEntfernen,
   spielerNachName,
   type Partie,
+  type Quiz,
 } from "../src/regeln/partie";
 
 const STAND_SCHLUESSEL = "stand";
@@ -70,14 +70,14 @@ export class Spielraum extends DurableObject<Env> {
   }
 
   /** Legt den Raum an. Liefert das Quiz-Master-Token oder null, wenn der Raum schon belegt ist. */
-  async eroeffnen(): Promise<string | null> {
+  async eroeffnen(quiz: Quiz): Promise<string | null> {
     if (await this.standLesen()) {
       return null;
     }
 
     const quizMasterToken = crypto.randomUUID();
     await this.standSpeichern({
-      partie: partieErstellen(BEISPIEL_QUIZ),
+      partie: partieErstellen(quiz),
       quizMasterToken,
       spielerTokens: {},
       rueckkehrAnfragen: [],
