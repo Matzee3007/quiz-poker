@@ -1,5 +1,6 @@
 <script lang="ts">
   import { meldungFuer } from "../meldungen";
+  import { raumEroeffnen } from "../raumEroeffnen";
   import { istGueltigerRaumcode } from "../regeln/raumcode";
   import { rueckkehrOffen, tokenLesen } from "../verbindung.svelte";
 
@@ -7,9 +8,10 @@
     raumcode: string | null;
     meldung: string | null;
     onEintritt: (raumcode: string, token: string, rueckkehr: boolean) => void;
+    onEditor: () => void;
   }
 
-  let { raumcode, meldung, onEintritt }: Props = $props();
+  let { raumcode, meldung, onEintritt, onEditor }: Props = $props();
 
   let eingabeCode = $state("");
   let name = $state("");
@@ -27,21 +29,12 @@
   async function eroeffnen() {
     fehler = null;
     eroeffnetGerade = true;
-    try {
-      const antwort = await fetch("/api/raeume", { method: "POST" });
-      if (!antwort.ok) {
-        fehler = meldungFuer(await codeLesen(antwort));
-        return;
-      }
-      const daten = (await antwort.json()) as {
-        raumcode: string;
-        token: string;
-      };
-      onEintritt(daten.raumcode, daten.token, false);
-    } catch {
-      fehler = meldungFuer("keine-verbindung");
-    } finally {
-      eroeffnetGerade = false;
+    const ergebnis = await raumEroeffnen();
+    eroeffnetGerade = false;
+    if (ergebnis.ok) {
+      onEintritt(ergebnis.raumcode, ergebnis.token, false);
+    } else {
+      fehler = meldungFuer(ergebnis.code);
     }
   }
 
@@ -103,10 +96,20 @@
         <p class="matt">
           Du leitest die Partie als Quiz-Master und spielst nicht mit.
         </p>
-        <div>
-          <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
-            >Spielraum eröffnen</button
-          >
+        <div class="wege">
+          <div class="weg">
+            <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
+              >Beispiel-Quiz spielen</button
+            >
+            <p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p>
+          </div>
+          <div class="weg">
+            <button onclick={onEditor}>Eigenes Quiz erstellen</button>
+            <p class="matt klein">
+              Kategorien und Fragen selbst schreiben, ohne Konto. Das
+              Einmal-Quiz gilt nur für diesen Spielraum.
+            </p>
+          </div>
         </div>
       </section>
     {/if}

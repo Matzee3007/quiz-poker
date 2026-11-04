@@ -164,18 +164,20 @@ it("nimmt das Beispiel-Quiz an", () => {
 
 **Freigabe aus dem Mock (2026-11-04):** Variante 2, zwei Spalten, die Leiste mit „Spielraum eröffnen“ bleibt beim Scrollen stehen. Der Hinweis sagt ausdrücklich, dass der Entwurf nach dem Eröffnen gelöscht wird. Die letzte Frage und die letzte Kategorie lassen sich nicht löschen. Rückfrage nur beim Löschen einer Kategorie mit Inhalt. Neue leere Felder werden nicht sofort rot. Jedes Feld zeigt einen Zeichenzähler.
 
-- [ ] **Schritt 1: Startseite**: Karte „Spielraum eröffnen“ mit „Beispiel-Quiz spielen“ (wie bisher) und „Eigenes Quiz erstellen“ (führt zu `/quiz-erstellen`).
-- [ ] **Schritt 2: `App.svelte`**: Bei `/quiz-erstellen` zeigt sie den Editor. Die Zurück-Taste des Browsers führt über `onpopstate` zurück.
-- [ ] **Schritt 3: `QuizEditor.svelte`**: Bearbeitet einen `$state`-Entwurf aus `entwurfLesen()` und speichert jede Änderung mit `entwurfSpeichern`. Felder mit `maxlength` aus `QUIZ_GRENZEN`, „Hinzufügen“ an der Grenze gesperrt. „Spielraum eröffnen“ ruft `quizPruefen` auf, zeigt bei Fehlern die Meldung und markiert leere Felder, sonst `POST /api/raeume { quiz }`. Bei Erfolg `entwurfLoeschen()` und `onEintritt`, bei Fehler bleibt der Entwurf.
-- [ ] **Schritt 4: Prüfen**: `npm run check`, erwartet: alles grün.
-- [ ] **Schritt 5: Im Browser spielen** mit `npm run dev`:
+**Abweichungen beim Bau:** Zusätzlich `src/ansichten/EditorFeld.svelte` (das Feld kommt viermal vor) und `src/raumEroeffnen.ts` (Anfrage aus Startseite und Editor). Der Browser-Test fand einen Fehler: Eine lange Musterlösung drückte die Frage in `Aufloesung.svelte` und `QuizMasterRunde.svelte` zu einer schmalen Spalte zusammen, beide nutzen jetzt die Klasse `frage-loesung` mit festen Spalten. „Server gestoppt“ wurde durch eine blockierte Anfrage im Browser nachgestellt.
+
+- [x] **Schritt 1: Startseite**: Karte „Spielraum eröffnen“ mit „Beispiel-Quiz spielen“ (wie bisher) und „Eigenes Quiz erstellen“ (führt zu `/quiz-erstellen`).
+- [x] **Schritt 2: `App.svelte`**: Bei `/quiz-erstellen` zeigt sie den Editor. Die Zurück-Taste des Browsers führt über `onpopstate` zurück.
+- [x] **Schritt 3: `QuizEditor.svelte`**: Bearbeitet einen `$state`-Entwurf aus `entwurfLesen()` und speichert jede Änderung mit `entwurfSpeichern`. Felder mit `maxlength` aus `QUIZ_GRENZEN`, „Hinzufügen“ an der Grenze gesperrt. „Spielraum eröffnen“ ruft `quizPruefen` auf, zeigt bei Fehlern die Meldung und markiert leere Felder, sonst `POST /api/raeume { quiz }`. Bei Erfolg `entwurfLoeschen()` und `onEintritt`, bei Fehler bleibt der Entwurf.
+- [x] **Schritt 4: Prüfen**: `npm run check`, erwartet: alles grün.
+- [x] **Schritt 5: Im Browser spielen** mit `npm run dev`:
   - Quiz mit 2 Kategorien erstellen, sortieren, neu laden: Der Entwurf ist noch da.
   - Spielraum eröffnen, mit 2 Spielern in weiteren Fenstern bis zum Ende spielen.
   - Leere Felder: Der Knopf zeigt die Meldung und markiert sie.
   - Server gestoppt: Meldung erscheint, der Entwurf bleibt.
   - Langer Text mit 300 Zeichen: Das Layout bleibt in Editor und Runde intakt.
   - Beispiel-Quiz funktioniert wie zuvor.
-- [ ] **Schritt 6: Committen**: `git commit -m "Add quiz editor and one-off quiz start"`.
+- [x] **Schritt 6: Committen**: `git commit -m "Add quiz editor and one-off quiz start"`.
 
 ### Aufgabe 6: Doku, Prüfung und Veröffentlichung
 
