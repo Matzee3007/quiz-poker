@@ -95,7 +95,8 @@ Plattform, Benutzerkonten für Spieler, Echtgeld (Chips sind reine Spielpunkte).
   sein Konto löscht, löscht auch alle seine Quizze, Kopien anderer bleiben.
 - **Betreiber:** Einladungscode (gültig bis zur Nutzung), Link zum Zurücksetzen (24 Stunden) und das Löschen eines Quiz laufen über
   dokumentierte Befehle, ohne Admin-Seite.
-- **Vor der Veröffentlichung der Konten:** Impressum und Datenschutzhinweise online, Cloudflare Security Audit Skill einmal
+- **Vor der Veröffentlichung der Konten:** Kurze Datenschutzhinweise online, kein Impressum
+  ([[projects/quiz-poker/docs/adr/0006-kein-impressum|ADR 0006]]), Cloudflare Security Audit Skill einmal
   ausführen. Jeder PR ab den Konten bekommt zusätzlich `/security-review`.
 - Bewusst hingenommen: Bei öffentlichen Quizzen kann ein Mitspieler vorab die Lösungen sehen. Wer sichergehen will, nimmt ein
   eigenes privates Quiz oder ein Einmal-Quiz.
@@ -125,7 +126,7 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 | Sprache | TypeScript |
 | Oberfläche | Svelte 5 mit Vite 8 |
 | Server und Echtzeit | Cloudflare Workers und Durable Objects, WebSockets |
-| Quiz-Sammlung und Konten (ab Phase 3) | Cloudflare D1, Login-Bibliothek (Kandidat Better Auth) |
+| Quiz-Sammlung und Konten (ab Phase 3) | Cloudflare D1, Better Auth |
 | Hosting | Cloudflare (kostenloser Tarif), `wrangler` |
 | Tests | Vitest 4 |
 | Qualität | ESLint, Prettier, `svelte-check` |
@@ -140,6 +141,7 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 5. **Quiz-Sammlung in D1:** [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]].
 6. **Konten nur für Quiz-Master:** [[projects/quiz-poker/docs/adr/0003-konten-nur-fuer-quiz-master|ADR 0003]], mit Einladung und
    ohne E-Mail-Versand: [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]].
+   Kein Impressum: [[projects/quiz-poker/docs/adr/0006-kein-impressum|ADR 0006]].
 7. **Spielstand und Hibernation:** [[projects/quiz-poker/docs/adr/0004-spielstand-und-hibernation|ADR 0004]].
 
 ## Roadmap
@@ -172,7 +174,8 @@ Export eines Quiz als Datei, private Quizze mit einzelnen Freunden teilen.
 - **Abbrüche:** Handys verlieren beim Sperren die Verbindung, Spieler müssen ohne Konto zurück in den Raum finden.
 - **Fragen und Antworten:** Quizfragen aus fremden Quellen nicht ungeprüft veröffentlichen, das Repo bleibt privat.
 - **Betreiberpflichten:** Eingeladene können Inhalte einstellen, und Konten speichern E-Mail-Adressen. Ob eine frei erreichbare
-  Seite für Freunde ein Impressum braucht, ließ sich nicht klären, es kommt deshalb vor der Veröffentlichung der Konten.
+  Seite für Freunde ein Impressum braucht, ließ sich nicht klären. Der Entwickler verzichtet darauf und trägt das Risiko
+  ([[projects/quiz-poker/docs/adr/0006-kein-impressum|ADR 0006]]).
 - **Rechenzeit:** Ein Worker darf im kostenlosen Tarif 10 ms je Anfrage rechnen, Passwort-Hashing läuft deshalb in einem Durable
   Object. Vor dem Bau der Konten im echten Betrieb messen.
 

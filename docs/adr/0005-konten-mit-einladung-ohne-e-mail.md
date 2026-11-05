@@ -33,6 +33,24 @@ der Klärung von Phase 3 kamen drei Fakten dazu, Stand 2026-11-04:
 - **Spielraum und Einmal-Quiz gehen ohne Konto.** Ein Konto braucht nur, wer Quizze speichern oder öffentliche Quizze kopieren
   will. Auch mit Konto findet der Quiz-Master über das Token im Browser in die Partie zurück.
 
+## Messung
+
+Test im echten Betrieb am 2026-11-05 mit Better Auth 1.7.17 auf einem eigenen Wegwerf-Worker im kostenlosen Tarif. Je Weg 60
+Anfragen in zwei Läufen, CPU-Zeit aus `wrangler tail` (Stichprobe, nicht jede Anfrage erscheint dort):
+
+| Weg | Log-Zeilen | CPU P50 | CPU P90 | CPU max | Abgebrochen |
+|---|---|---:|---:|---:|---:|
+| Hashing im Durable Object | 47 | 135 ms | 163 ms | 179 ms | 0 von 60 |
+| Hashing direkt im Worker | 35 | 131 ms | 201 ms | 216 ms | 2 von 60 |
+| Anmelden, Teil im Worker | 22 | 7 ms | 15 ms | 19 ms | 0 von 60 |
+| Registrieren, Teil im Worker | 2 | – | – | 49 ms | 0 von 2 |
+
+Größe 1,77 MiB (Grenze 64 MiB), Start 41 bis 60 ms (Grenze 1 Sekunde).
+
+**Urteil:** Das Hashing im Durable Object hält. Der Rest von Anmelden und Registrieren im Worker liegt zum Teil über den 10 ms,
+ohne dass Cloudflare abgebrochen hat. Der Entwickler hat diesen Grenzfall am 2026-11-05 angenommen, weil Anmeldungen selten sind
+und Spielräume den Weg nicht nutzen. Es bleibt das Risiko, dass eine Anmeldung selten mit einer Fehlerseite abbricht.
+
 ## Alternativen
 
 - **Eigene Domain mit Mail-Dienst:** Der saubere Weg mit Bestätigung, Zurücksetzen und Magic Link, aber der Entwickler möchte

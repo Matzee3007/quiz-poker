@@ -25,6 +25,8 @@ alle benutzten Befehle, Fehler.
 | [[projects/quiz-poker/docs/tools/Cloudflare Workers und Durable Objects\|Cloudflare Workers und Durable Objects]] | 2026-11-02 | Server, Echtzeit und Hosting |
 | [[projects/quiz-poker/docs/tools/Vitest, ESLint und Prettier\|Vitest, ESLint und Prettier]] | 2026-11-02 | Tests, Fehlersuche und einheitliche Formatierung |
 | [[projects/quiz-poker/docs/tools/GitHub Actions - Einrichtung\|GitHub Actions]] | 2026-11-03 | Prüft jeden Pull Request automatisch |
+| [[projects/quiz-poker/docs/tools/Better Auth\|Better Auth]] | 2026-11-05 | Login, Sitzungen und Konten |
+| [[projects/quiz-poker/docs/tools/Cloudflare D1\|Cloudflare D1]] | 2026-11-05 | SQL-Datenbank für Konten und später die Quiz-Sammlung |
 
 ## Geplant
 

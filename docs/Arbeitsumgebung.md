@@ -20,6 +20,15 @@ Die Einrichtung des Rechners für alle Projekte (Terminal, Statuszeile, `install
 Geheimnisse stehen in `.env` (nicht im Repo, Claude darf sie nicht lesen). Welche Variablen es gibt, steht
 ohne Werte in `.env.example`, sobald die erste gebraucht wird.
 
+Für die Konten braucht `npm run dev` eine Datei `.dev.vars` (nicht im Repo) mit zwei Werten:
+
+```bash
+BETTER_AUTH_SECRET=...                    # lokaler Zufallswert: openssl rand -hex 32
+BETTER_AUTH_URL=http://localhost:5173     # Adresse aus der Ausgabe von npm run dev
+```
+
+Im Betrieb liegt `BETTER_AUTH_SECRET` als Geheimnis bei Cloudflare (`npx wrangler secret put BETTER_AUTH_SECRET`), die Adresse steht in `wrangler.jsonc`.
+
 ## Starten und stoppen
 
 ```bash

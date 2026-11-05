@@ -2,11 +2,23 @@ import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
 import type { Quiz } from "../src/regeln/partie";
 import { quizPruefen, type QuizFehlerCode } from "../src/regeln/quizpruefung";
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
+import { aufraeumen } from "./aufraeumen";
+import { auth } from "./auth";
+import { kontoRegistrieren, passwortNeuSetzen } from "./konto";
 
+export { Passwortrechner } from "./passwortrechner";
 export { Raumzaehler } from "./raumzaehler";
 export { Spielraum } from "./spielraum";
 
 const RAUMCODE_VERSUCHE = 10;
+// Better Auth bietet viel mehr an, zum Beispiel Namen ändern. Alles andere endet hier,
+// auch bevor sein Zähler für unbekannte Pfade neue Zeilen in D1 schreibt.
+const AUTH_WEGE = new Set([
+  "/api/auth/sign-in/email",
+  "/api/auth/sign-out",
+  "/api/auth/get-session",
+  "/api/auth/delete-user",
+]);
 const ANFRAGE_HOECHSTGROESSE = 256 * 1024;
 
 /** Ohne Inhalt gilt das Beispiel-Quiz, sonst das mitgeschickte Einmal-Quiz. */
@@ -111,6 +123,18 @@ export default {
       return Response.json({ status: "ok" });
     }
 
+    if (AUTH_WEGE.has(pathname)) {
+      return auth.handler(anfrage);
+    }
+
+    if (pathname === "/api/konto/registrieren" && anfrage.method === "POST") {
+      return kontoRegistrieren(anfrage, env);
+    }
+
+    if (pathname === "/api/konto/passwort-neu" && anfrage.method === "POST") {
+      return passwortNeuSetzen(anfrage, env);
+    }
+
     if (pathname === "/api/raeume" && anfrage.method === "POST") {
       return raumEroeffnen(anfrage, env);
     }
@@ -137,5 +161,10 @@ export default {
     }
 
     return new Response("Nicht gefunden", { status: 404 });
+  },
+
+  // Einstieg für den täglichen Lauf (siehe triggers in wrangler.jsonc).
+  async scheduled(ereignis: ScheduledController, env: Env): Promise<void> {
+    await aufraeumen(env, ereignis.scheduledTime);
   },
 };

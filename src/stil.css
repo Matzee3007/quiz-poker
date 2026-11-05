@@ -636,3 +636,46 @@ button.editor-wahl {
 .frage-block .feld + .feld {
   margin-top: 6px;
 }
+
+/* Konto-Ansichten */
+.feld-hilfe {
+  margin-top: 6px;
+}
+
+.feld-fehler label {
+  color: var(--rot);
+  font-weight: 600;
+}
+
+.feld-fehler input {
+  border-color: var(--rot);
+  box-shadow: 0 0 0 1px var(--rot);
+  background: #23101a;
+}
+
+.notiz.warnung {
+  border-left-color: var(--rot);
+}
+
+button.voll {
+  width: 100%;
+}
+
+.adresse {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.kopf .rest strong {
+  color: var(--schrift);
+  padding: 4px;
+}
+
+.seiten-fuss {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px 18px;
+  font-size: 13px;
+}

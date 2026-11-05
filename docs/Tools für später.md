@@ -22,21 +22,6 @@ Aufbau je Eintrag:
 - **Wann prüfen:** <Phase oder Anlass>
 ```
 
-## Cloudflare D1
-
-- **Link:** https://developers.cloudflare.com/d1/, Dienst von Cloudflare
-- **Was:** SQL-Datenbank für die Quiz-Sammlung und die Konten (siehe [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]).
-- **Warum noch nicht:** Bis Phase 2 reicht ein fest eingebautes Beispiel-Quiz.
-- **Wann prüfen:** Start von Phase 3.
-
-## Better Auth
-
-- **Link:** https://www.better-auth.com/, MIT (geprüft am 2026-11-04, Version 1.7.17)
-- **Was:** Bibliothek für Login mit E-Mail und Passwort (siehe [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]).
-  Bindet D1 seit Version 1.5 direkt an.
-- **Warum noch nicht:** Die Konten sind Schritt 2 von Phase 3.
-- **Wann prüfen:** Vor Schritt 2 mit einem Test im echten Betrieb: Hashing im Durable Object und Größe des Workers.
-
 ## Magic Link
 
 - **Link:** https://www.better-auth.com/docs/plugins/magic-link, Teil von Better Auth
