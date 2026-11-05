@@ -25,6 +25,7 @@ Das Quiz kommt entweder fest eingebaut oder entsteht im Editor als Einmal-Quiz f
 |---|---|
 | Oberfläche | Svelte 5 mit Vite, eine einzelne Seite, TypeScript |
 | Server und Echtzeit | Cloudflare Workers, ein Durable Object je Spielraum, WebSockets |
+| Konten und Daten | Better Auth mit Einladungscode, Cloudflare D1 |
 | Tests | Vitest, die Server-Tests laufen in der Laufzeit von Cloudflare |
 | Qualität | ESLint, Prettier, `svelte-check`, CI mit GitHub Actions bei jedem Pull Request |
 
@@ -47,10 +48,12 @@ npm run dev     # App und Worker lokal starten
 npm run check   # Linter, Formatprüfung, Typprüfung, Tests und Build
 ```
 
+Für die Konten braucht `npm run dev` eine Datei `.dev.vars`, siehe [`docs/Arbeitsumgebung.md`](docs/Arbeitsumgebung.md).
+
 ## Stand
 
-Spielbar sind Partien mit dem Beispiel-Quiz und mit eigenen Einmal-Quizzen. Als Nächstes kommen Konten für Quiz-Master,
-damit sie Quizze speichern können. Die Roadmap steht in [`docs/Projektvision.md`](docs/Projektvision.md).
+Spielbar sind Partien mit dem Beispiel-Quiz und mit eigenen Einmal-Quizzen. Quiz-Master können ein Konto mit
+Einladungscode anlegen. Als Nächstes speichern sie ihre Quizze dort, danach folgen öffentliche Quizze und Kopien. Die Roadmap steht in [`docs/Projektvision.md`](docs/Projektvision.md).
 
 ## Wie es entsteht
 

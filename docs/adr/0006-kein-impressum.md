@@ -33,3 +33,9 @@ Die Entscheidung ist nicht rechtlich geprüft, und das Risiko trägt der Entwick
 
 - Die Datenschutzhinweise sind kein vollständiger Datenschutztext.
 - Wird die Seite beworben, geschäftlich genutzt oder für Fremde geöffnet, muss diese Entscheidung neu geprüft werden.
+
+## Nachtrag 2026-11-06: Repo im GitHub-Profil
+
+Das Repo wird öffentlich und steht mit dem Live-Link im GitHub-Profil, das der Entwickler in seinem Lebenslauf nennt.
+Neu geprüft: Der Entwickler bleibt bei **kein Impressum**. Profil und README nennen weder Klarnamen noch Anschrift, die Seite
+wird damit nicht beworben. Auch diese Einschätzung ist nicht rechtlich geprüft.
