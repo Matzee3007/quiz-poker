@@ -37,6 +37,8 @@ const MELDUNGEN: Record<string, string> = {
   "ungueltige-email": "Das ist keine gültige E-Mail-Adresse.",
   "passwort-laenge": "Das Passwort braucht 8 bis 128 Zeichen.",
   "passwort-falsch": "Das Passwort stimmt nicht. Dein Konto bleibt bestehen.",
+  "sitzung-abgelaufen":
+    "Deine Anmeldung gilt nicht mehr. Bitte melde dich neu an.",
   "link-ungueltig": "Dieser Link gilt nicht mehr.",
 };
 

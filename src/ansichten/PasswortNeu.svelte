@@ -3,13 +3,14 @@
   import { meldungFuer } from "../meldungen";
 
   interface Props {
+    onGesetzt: () => void;
     onAnmelden: () => void;
     onZurueck: () => void;
   }
 
-  let { onAnmelden, onZurueck }: Props = $props();
+  let { onGesetzt, onAnmelden, onZurueck }: Props = $props();
 
-  // Nach dem ersten Absenden steht das Token nicht mehr in der Adresse, ein zweiter Versuch nimmt es von hier.
+  // Das Token bleibt bis zum Erfolg in der Adresse: Auch nach Neuladen klappt ein zweiter Versuch.
   const token = new URLSearchParams(location.search).get("token");
 
   let passwort = $state("");
@@ -26,11 +27,12 @@
     }
     fehler = null;
     sendetGerade = true;
-    history.replaceState(null, "", location.pathname);
     const ergebnis = await passwortNeu(token, passwort);
     sendetGerade = false;
     if (ergebnis.ok) {
+      history.replaceState(null, "", location.pathname);
       zustand = "geklappt";
+      onGesetzt();
     } else if (ergebnis.code === "link-ungueltig") {
       zustand = "ungueltig";
     } else {

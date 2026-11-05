@@ -45,8 +45,9 @@
 
   let imEditor = $state(location.pathname === EDITOR_PFAD);
   let kontoPfad = $state(kontoPfadAusAdresse());
-  // undefined: Der Server hat noch nicht geantwortet.
+  // undefined: Der Server hat noch nicht oder mit einem Fehler geantwortet.
   let adresse = $state<string | null | undefined>(undefined);
+  let kontoLaedt = $state(false);
   let raumcode = $state(raumcodeAusPfad());
   let token = $state(raumcodeAusPfad() ? tokenLesen(raumcodeAusPfad()!) : null);
   let verbindung = $state<Verbindung | null>(null);
@@ -54,7 +55,9 @@
 
   // In einer Partie ist das Konto egal, dort bleibt diese Anfrage aus.
   async function kontoLaden() {
+    kontoLaedt = true;
     adresse = await angemeldeteAdresse();
+    kontoLaedt = false;
   }
   if (!raumcodeAusPfad()) {
     void kontoLaden();
@@ -62,7 +65,11 @@
 
   $effect(() => {
     if (kontoPfad === "/konto" && adresse === null) {
-      untrack(() => zu("/anmelden"));
+      // Ersetzen statt anhängen: Sonst führt der Zurück-Knopf immer wieder hierher.
+      untrack(() => {
+        history.replaceState(null, "", "/anmelden");
+        adresseUebernehmen();
+      });
     }
   });
 
@@ -227,7 +234,11 @@
 {:else if kontoPfad === "/registrieren"}
   <Registrieren onRegistriert={zumKonto} onZurueck={zumStart} />
 {:else if kontoPfad === "/passwort-neu"}
-  <PasswortNeu onAnmelden={() => zu("/anmelden")} onZurueck={zumStart} />
+  <PasswortNeu
+    onGesetzt={() => (adresse = null)}
+    onAnmelden={() => zu("/anmelden")}
+    onZurueck={zumStart}
+  />
 {:else if kontoPfad === "/datenschutz"}
   <Datenschutz />
 {:else if kontoPfad === "/konto"}
@@ -238,7 +249,16 @@
       onGeloescht={() => kontoVerlassen("Dein Konto ist gelöscht.")}
     />
   {:else}
-    <main class="seite"><p class="matt">Einen Moment …</p></main>
+    <main class="seite stapel">
+      {#if kontoLaedt}
+        <p class="matt">Einen Moment …</p>
+      {:else}
+        <p class="hinweis fehler" role="alert">
+          {meldungFuer("keine-verbindung")}
+        </p>
+        <div><button onclick={kontoLaden}>Noch einmal versuchen</button></div>
+      {/if}
+    </main>
   {/if}
 {:else if imEditor}
   <QuizEditor onEintritt={eintreten} onZurueck={zumStart} />

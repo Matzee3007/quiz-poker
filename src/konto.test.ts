@@ -127,6 +127,15 @@ describe("kontoLoeschen", () => {
     });
   });
 
+  it("unterscheidet eine abgelaufene Sitzung vom falschen Passwort", async () => {
+    antwortet(401, { message: "Unauthorized" });
+
+    expect(await kontoLoeschen("geheim-123")).toEqual({
+      ok: false,
+      code: "sitzung-abgelaufen",
+    });
+  });
+
   it("meldet ein falsches Passwort", async () => {
     antwortet(400, { code: "INVALID_PASSWORD" });
 
@@ -163,18 +172,18 @@ describe("angemeldeteAdresse", () => {
     expect(await angemeldeteAdresse()).toBeNull();
   });
 
-  it("liefert null bei einem Fehler, Spielen geht auch ohne Konto", async () => {
+  it("liefert undefined bei einem Fehler, denn dann ist nichts bekannt", async () => {
     vi.stubGlobal("fetch", () =>
       Promise.resolve(new Response("Fehlerseite", { status: 503 })),
     );
 
-    expect(await angemeldeteAdresse()).toBeNull();
+    expect(await angemeldeteAdresse()).toBeUndefined();
   });
 
-  it("liefert null ohne Netz", async () => {
+  it("liefert undefined ohne Netz", async () => {
     vi.stubGlobal("fetch", () => Promise.reject(new TypeError("kein Netz")));
 
-    expect(await angemeldeteAdresse()).toBeNull();
+    expect(await angemeldeteAdresse()).toBeUndefined();
   });
 });
 
@@ -187,6 +196,7 @@ describe("Meldungen", () => {
     "ungueltige-email",
     "passwort-laenge",
     "passwort-falsch",
+    "sitzung-abgelaufen",
     "link-ungueltig",
   ])("kennt eine eigene Meldung für %s", (code) => {
     expect(meldungFuer(code)).not.toBe(meldungFuer("gibt-es-nicht"));

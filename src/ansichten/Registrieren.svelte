@@ -9,7 +9,7 @@
 
   let { onRegistriert, onZurueck }: Props = $props();
 
-  // Nach dem ersten Absenden steht der Code nicht mehr in der Adresse, ein zweiter Versuch nimmt ihn von hier.
+  // Der Code bleibt bis zum Erfolg in der Adresse: Auch nach Neuladen klappt ein zweiter Versuch.
   const code = new URLSearchParams(location.search).get("code");
 
   let email = $state("");
@@ -27,10 +27,10 @@
     fehler = null;
     adresseVergeben = false;
     sendetGerade = true;
-    history.replaceState(null, "", location.pathname);
     const ergebnis = await registrieren(code, email, passwort);
     sendetGerade = false;
     if (ergebnis.ok) {
+      history.replaceState(null, "", location.pathname);
       onRegistriert();
     } else if (ergebnis.code === "einladung-ungueltig") {
       gueltig = false;

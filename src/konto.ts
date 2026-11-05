@@ -65,24 +65,24 @@ export function kontoLoeschen(passwort: string): Promise<KontoErgebnis> {
     { password: passwort },
     {
       400: "passwort-falsch",
-      401: "passwort-falsch",
+      401: "sitzung-abgelaufen",
       429: "zu-viele-versuche",
     },
   );
 }
 
-/** Ein Fehler zählt wie „nicht angemeldet“: Spielen geht auch ohne Konto. */
-export async function angemeldeteAdresse(): Promise<string | null> {
+/** Die Adresse, null ohne Anmeldung, undefined wenn der Server gerade nicht antwortet. */
+export async function angemeldeteAdresse(): Promise<string | null | undefined> {
   try {
     const antwort = await fetch("/api/auth/get-session");
     if (!antwort.ok) {
-      return null;
+      return undefined;
     }
     const sitzung = (await antwort.json()) as {
       user: { email: string };
     } | null;
     return sitzung?.user.email ?? null;
   } catch {
-    return null;
+    return undefined;
   }
 }
