@@ -91,8 +91,10 @@ export async function kontoRegistrieren(
       .bind(codeHash)
       .run();
 
-  const vorher = await kontoFinden();
+  // undefined: unbekannt, weil schon die Suche gescheitert ist.
+  let vorher: Awaited<ReturnType<typeof kontoFinden>> | undefined;
   try {
+    vorher = await kontoFinden();
     const { headers } = await auth.api.signUpEmail({
       body: { email, password: passwort, name: KONTONAME },
       headers: anfrage.headers,
@@ -113,17 +115,17 @@ export async function kontoRegistrieren(
       await einladungFreigeben();
       return fehler(422, "ungueltige-email");
     }
-    const jetzt = await kontoFinden();
+    const jetzt = await kontoFinden().catch(() => undefined);
     // Zwei Anfragen mit derselben Adresse: Beim Verlierer scheitert das Anlegen am eindeutigen Index.
     if (fehlercode === "FAILED_TO_CREATE_USER" && jetzt) {
       await einladungFreigeben();
       return fehler(409, "email-vergeben");
     }
-    if (!vorher && jetzt?.passwortEintrag) {
+    if (vorher === null && jetzt?.passwortEintrag) {
       // Nur die Sitzung fehlt. Adresse und Passwort gelten, also bleibt der Code verbraucht.
       return fehler(409, "konto-angelegt");
     }
-    if (!vorher && jetzt) {
+    if (vorher === null && jetzt) {
       // D1 kennt hier keine Transaktion: Ohne Passwort-Eintrag käme niemand je in dieses Konto.
       await env.DB.prepare('DELETE FROM "user" WHERE id = ?')
         .bind(jetzt.id)

@@ -27,8 +27,9 @@
   <section class="karte stapel">
     <h2>IP-Adressen</h2>
     <p class="matt">
-      Beim Anmelden wird deine IP-Adresse gespeichert, um Anmeldeversuche zu
-      begrenzen. Sie wird nach etwa einem Tag automatisch gelöscht.
+      Beim Anmelden, Abmelden und Löschen eines Kontos wird deine IP-Adresse
+      gespeichert, um Versuche zu begrenzen. Sie wird nach etwa einem Tag
+      automatisch gelöscht.
     </p>
   </section>
   <section class="karte stapel">

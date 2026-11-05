@@ -559,6 +559,62 @@ describe("Registrieren bei Fehlern des Servers", () => {
     expect(danach.status).toBe(201);
   });
 
+  /** Lässt die Suche nach dem Konto scheitern, nachdem sie erlaubt-mal geklappt hat. */
+  function umgebungMitKaputterSuche(erlaubt: number) {
+    let suchen = 0;
+    return {
+      BETTER_AUTH_URL: env.BETTER_AUTH_URL,
+      DB: {
+        prepare: (sql: string) => {
+          if (sql.startsWith("SELECT") && ++suchen > erlaubt) {
+            throw new Error("D1-Aussetzer");
+          }
+          return env.DB.prepare(sql);
+        },
+      },
+    } as unknown as Env;
+  }
+
+  function direktMit(umgebung: Env, code: string, email: string) {
+    return kontoRegistrieren(
+      new Request(`${BASIS}/api/konto/registrieren`, {
+        method: "POST",
+        headers: { Origin: BASIS },
+        body: JSON.stringify({ code, email, passwort: PASSWORT }),
+      }),
+      umgebung,
+    );
+  }
+
+  it("gibt den Code frei, wenn die Suche vor dem Anlegen scheitert", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+
+    await expect(
+      direktMit(umgebungMitKaputterSuche(0), einladung, email),
+    ).rejects.toThrow("D1-Aussetzer");
+
+    const danach = await direkt(einladung, email);
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
+  it("gibt den Code frei, wenn auch die Suche nach dem Fehler scheitert", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    vi.spyOn(auth.api, "signUpEmail").mockRejectedValueOnce(
+      new Error("Erster Fehler"),
+    );
+
+    await expect(
+      direktMit(umgebungMitKaputterSuche(1), einladung, email),
+    ).rejects.toThrow("Erster Fehler");
+
+    const danach = await direkt(einladung, email);
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
   it("macht aus einem gescheiterten Anlegen bei vergebener Adresse email-vergeben", async () => {
     const einladung = await einladungAnlegen();
     const email = neueAdresse();
