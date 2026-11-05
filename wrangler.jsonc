@@ -19,8 +19,20 @@
     { "tag": "v2", "new_sqlite_classes": ["Raumzaehler"] },
     { "tag": "v3", "new_sqlite_classes": ["Passwortrechner"] },
   ],
-  // Schützt das Tageslimit des kostenlosen Tarifs vor Skripten, siehe Projektvision.
-  "vars": { "RAEUME_PRO_STUNDE": "30" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "quiz-poker",
+      "database_id": "7ab68b2f-c445-42e4-899d-e9d4a7fa5901",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "vars": {
+    // Schützt das Tageslimit des kostenlosen Tarifs vor Skripten, siehe Projektvision.
+    "RAEUME_PRO_STUNDE": "30",
+    // Lokal überschreibt .dev.vars diese Adresse. BETTER_AUTH_SECRET ist ein Geheimnis und steht deshalb nicht hier.
+    "BETTER_AUTH_URL": "https://quiz-poker.quiz-poker.workers.dev",
+  },
   "assets": {
     // Unbekannte Pfade liefern index.html, die Oberfläche kümmert sich um sie.
     "not_found_handling": "single-page-application",
