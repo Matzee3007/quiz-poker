@@ -89,15 +89,25 @@ export async function kontoRegistrieren(
     }
     return new Response(null, { status: 201, headers: antwort });
   } catch (grund) {
-    await env.DB.prepare(
-      "UPDATE einladung SET benutzt_am = NULL WHERE code_hash = ?",
-    )
-      .bind(codeHash)
-      .run();
-    if (isAPIError(grund)) {
-      return grund.statusCode === 422
-        ? fehler(409, "email-vergeben")
-        : fehler(422, "ungueltige-email");
+    const fehlercode = isAPIError(grund) ? grund.body?.code : undefined;
+    // Scheitert erst die Sitzung, gibt es das Konto schon. Dann bleibt der Code verbraucht.
+    const kontoDa =
+      fehlercode !== "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" &&
+      (await env.DB.prepare('SELECT id FROM "user" WHERE email = ?')
+        .bind(email.toLowerCase())
+        .first()) !== null;
+    if (!kontoDa) {
+      await env.DB.prepare(
+        "UPDATE einladung SET benutzt_am = NULL WHERE code_hash = ?",
+      )
+        .bind(codeHash)
+        .run();
+    }
+    if (fehlercode === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+      return fehler(409, "email-vergeben");
+    }
+    if (fehlercode === "INVALID_EMAIL" || fehlercode === "VALIDATION_ERROR") {
+      return fehler(422, "ungueltige-email");
     }
     throw grund;
   }
@@ -121,10 +131,11 @@ export async function passwortNeuSetzen(
 
   // Ein einziges UPDATE: Von zwei gleichzeitigen Anfragen kann nur eine den Link verbrauchen.
   const jetzt = Date.now();
+  const tokenHash = await geheimnisHash(token);
   const link = await env.DB.prepare(
     "UPDATE passwort_link SET benutzt_am = ? WHERE token_hash = ? AND benutzt_am IS NULL AND gueltig_bis > ? RETURNING email",
   )
-    .bind(jetzt, await geheimnisHash(token), jetzt)
+    .bind(jetzt, tokenHash, jetzt)
     .first<{ email: string }>();
   if (!link) {
     return fehler(403, "link-ungueltig");
@@ -136,13 +147,26 @@ export async function passwortNeuSetzen(
     return fehler(403, "link-ungueltig");
   }
 
-  const hash = await env.PASSWORTRECHNER.getByName("global").hashen(passwort);
-  // Wer ein Passwort zurücksetzt, wirft damit auch jemanden hinaus, der es kannte.
-  await env.DB.batch([
-    env.DB.prepare(
-      "UPDATE account SET password = ?, updatedAt = ? WHERE userId = ? AND providerId = 'credential'",
-    ).bind(hash, new Date(jetzt).toISOString(), konto.id),
-    env.DB.prepare("DELETE FROM session WHERE userId = ?").bind(konto.id),
-  ]);
+  try {
+    const hash = await env.PASSWORTRECHNER.getByName("global").hashen(passwort);
+    // Wer ein Passwort zurücksetzt, wirft damit auch jemanden hinaus, der es kannte.
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE account SET password = ?, updatedAt = ? WHERE userId = ? AND providerId = 'credential'",
+      ).bind(hash, new Date(jetzt).toISOString(), konto.id),
+      env.DB.prepare("DELETE FROM session WHERE userId = ?").bind(konto.id),
+      env.DB.prepare("DELETE FROM passwort_link WHERE email = ?").bind(
+        link.email,
+      ),
+    ]);
+  } catch (grund) {
+    // Das Passwort gilt noch nicht, also darf der Link nicht verloren sein.
+    await env.DB.prepare(
+      "UPDATE passwort_link SET benutzt_am = NULL WHERE token_hash = ?",
+    )
+      .bind(tokenHash)
+      .run();
+    throw grund;
+  }
   return new Response(null, { status: 204 });
 }

@@ -1,5 +1,7 @@
 import { env, exports } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
+import { APIError } from "better-auth/api";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { auth } from "./auth";
 import { geheimnisErzeugen, geheimnisHash } from "./geheimnis";
 import {
   BASIS,
@@ -8,6 +10,7 @@ import {
   kontoAnlegen,
   neueAdresse,
 } from "./testhilfen";
+import { kontoRegistrieren, passwortNeuSetzen } from "./konto";
 
 const PASSWORT = "geheim-123";
 
@@ -34,6 +37,10 @@ async function kontenMit(email: string) {
     .first<{ anzahl: number }>();
   return zeile?.anzahl;
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("Registrieren mit Einladungscode", () => {
   it("legt mit gültigem Code ein Konto an und meldet es sicher an", async () => {
@@ -426,5 +433,151 @@ describe("Passwort über Link neu setzen", () => {
 
     expect(antwort.status).toBe(422);
     expect(await code(antwort)).toBe("ungueltige-nachricht");
+  });
+});
+
+describe("Registrieren bei Fehlern des Servers", () => {
+  function direkt(code: string, email: string) {
+    return kontoRegistrieren(
+      new Request(`${BASIS}/api/konto/registrieren`, {
+        method: "POST",
+        headers: { Origin: BASIS },
+        body: JSON.stringify({ code, email, passwort: PASSWORT }),
+      }),
+      env,
+    );
+  }
+
+  it("meldet einen Datenbankfehler nicht als vergebene Adresse und gibt den Code frei", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    vi.spyOn(auth.api, "signUpEmail").mockRejectedValueOnce(
+      new APIError("UNPROCESSABLE_ENTITY", {
+        code: "FAILED_TO_CREATE_USER",
+        message: "Failed to create user",
+      }),
+    );
+
+    await expect(direkt(einladung, email)).rejects.toThrow();
+
+    const danach = await direkt(einladung, email);
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
+  it("gibt den Code nicht frei, wenn das Konto schon angelegt ist", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    vi.spyOn(auth.api, "signUpEmail").mockRejectedValueOnce(
+      new APIError("BAD_REQUEST", {
+        code: "FAILED_TO_CREATE_SESSION",
+        message: "Failed to create session",
+      }),
+    );
+
+    await expect(direkt(einladung, email)).rejects.toThrow();
+
+    const danach = await direkt(einladung, neueAdresse());
+    expect(danach.status).toBe(403);
+    expect(await code(danach)).toBe("einladung-ungueltig");
+  });
+});
+
+describe("Passwort-Links aufräumen", () => {
+  async function linkAnlegen(email: string) {
+    const token = geheimnisErzeugen();
+    await env.DB.prepare(
+      "INSERT INTO passwort_link (token_hash, email, gueltig_bis) VALUES (?, ?, ?)",
+    )
+      .bind(await geheimnisHash(token), email, Date.now() + 3_600_000)
+      .run();
+    return token;
+  }
+
+  function neuSetzen(token: string, passwort: string) {
+    return exports.default.fetch(`${BASIS}/api/konto/passwort-neu`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: BASIS },
+      body: JSON.stringify({ token, passwort }),
+    });
+  }
+
+  it("macht andere Links derselben Adresse ungültig, wenn einer benutzt wird", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const erster = await linkAnlegen(email);
+    const zweiter = await linkAnlegen(email);
+
+    const benutzt = await neuSetzen(erster, "ganz-neu-456");
+    await benutzt.text();
+    expect(benutzt.status).toBe(204);
+
+    const danach = await neuSetzen(zweiter, "noch-neuer-789");
+    expect(danach.status).toBe(403);
+    expect(await code(danach)).toBe("link-ungueltig");
+  });
+
+  it("entfernt Links beim Löschen des Kontos, ein neues Konto mit derselben Adresse ist sicher", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+
+    const geloescht = await exports.default.fetch(
+      `${BASIS}/api/auth/delete-user`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: BASIS,
+          Cookie: cookie,
+        },
+        body: JSON.stringify({ password: PASSWORT }),
+      },
+    );
+    await geloescht.text();
+    expect(geloescht.status).toBe(200);
+
+    const zeile = await env.DB.prepare(
+      "SELECT email FROM passwort_link WHERE email = ?",
+    )
+      .bind(email)
+      .first();
+    expect(zeile).toBeNull();
+
+    await kontoAnlegen(email, "neues-konto-123");
+    const danach = await neuSetzen(token, "uebernahme-123");
+    expect(danach.status).toBe(403);
+    expect(await code(danach)).toBe("link-ungueltig");
+  });
+
+  it("lässt den Link gültig, wenn das Hashing scheitert", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+    const kaputt = {
+      DB: env.DB,
+      BETTER_AUTH_URL: env.BETTER_AUTH_URL,
+      PASSWORTRECHNER: {
+        getByName: () => ({
+          hashen: () => Promise.reject(new Error("Neustart")),
+        }),
+      },
+    } as unknown as Env;
+
+    await expect(
+      passwortNeuSetzen(
+        new Request(`${BASIS}/api/konto/passwort-neu`, {
+          method: "POST",
+          headers: { Origin: BASIS },
+          body: JSON.stringify({ token, passwort: "ganz-neu-456" }),
+        }),
+        kaputt,
+      ),
+    ).rejects.toThrow("Neustart");
+
+    const danach = await neuSetzen(token, "ganz-neu-456");
+    await danach.text();
+    expect(danach.status).toBe(204);
   });
 });

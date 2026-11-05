@@ -210,3 +210,69 @@ describe("Better Auth", () => {
     expect(await antwort.json()).toBeNull();
   });
 });
+
+describe("Offene Wege", () => {
+  it("löscht kein Konto ohne Passwort, auch nicht bei frischer Sitzung", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+
+    for (const inhalt of [{}, { password: "" }]) {
+      const antwort = await anAuth("/delete-user", inhalt, { Cookie: cookie });
+      await antwort.text();
+
+      expect(antwort.status).toBe(400);
+    }
+    expect(await sitzung(cookie)).toMatchObject({ user: { email } });
+  });
+
+  it.each([
+    "/update-user",
+    "/change-password",
+    "/change-email",
+    "/list-sessions",
+    "/gibt-es-nicht",
+    "/sign-in/email/",
+  ])("beantwortet %s mit 404", async (pfad) => {
+    const cookie = await kontoAnlegen(neueAdresse(), PASSWORT);
+
+    const antwort = await anAuth(
+      pfad,
+      { name: "Max", newPassword: "x", currentPassword: "y" },
+      { Cookie: cookie },
+    );
+    await antwort.text();
+
+    expect(antwort.status).toBe(404);
+  });
+
+  it("schreibt für unbekannte Pfade keine IP-Adresse in die Datenbank", async () => {
+    const ip = "192.0.2.88";
+    const antwort = await anAuth("/gibt-es-nicht-1", undefined, {
+      "cf-connecting-ip": ip,
+    });
+    await antwort.text();
+
+    const { results } = await env.DB.prepare(
+      'SELECT key FROM "rateLimit" WHERE key LIKE ?',
+    )
+      .bind(`${ip}|%`)
+      .all();
+    expect(results).toEqual([]);
+  });
+
+  it("speichert keinen anderen Namen als Quiz-Master", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+
+    const antwort = await anAuth(
+      "/update-user",
+      { name: "Max Mustermann" },
+      { Cookie: cookie },
+    );
+    await antwort.text();
+
+    expect(await sitzung(cookie)).toMatchObject({
+      user: { name: "Quiz-Master" },
+    });
+  });
+});

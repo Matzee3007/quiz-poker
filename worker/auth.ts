@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 
 const DREISSIG_TAGE = 30 * 24 * 60 * 60;
 
@@ -29,7 +30,28 @@ export const auth = betterAuth({
     },
   },
   session: { expiresIn: DREISSIG_TAGE, disableSessionRefresh: true },
-  user: { deleteUser: { enabled: true } },
+  user: {
+    deleteUser: {
+      enabled: true,
+      // Ein alter Link darf nicht das Passwort eines neuen Kontos mit derselben Adresse setzen.
+      afterDelete: async (konto) => {
+        await env.DB.prepare("DELETE FROM passwort_link WHERE email = ?")
+          .bind(konto.email)
+          .run();
+      },
+    },
+  },
+  hooks: {
+    // Better Auth prüft das Passwort nur, wenn eines mitkommt. Löschen ist endgültig, also immer verlangen.
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/delete-user" && !ctx.body?.password) {
+        throw new APIError("BAD_REQUEST", {
+          code: "PASSWORD_REQUIRED",
+          message: "Password required",
+        });
+      }
+    }),
+  },
   rateLimit: {
     enabled: true,
     // Im Speicher des Workers zählt jede Instanz für sich, deshalb in D1.
