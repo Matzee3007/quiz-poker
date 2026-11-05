@@ -78,7 +78,7 @@ export async function kontoRegistrieren(
   }
 
   const adresse = email.toLowerCase();
-  const kontoFinden = () =>
+  const kontoFinden = async () =>
     env.DB.prepare(
       `SELECT u.id, a.id AS passwortEintrag FROM "user" u
        LEFT JOIN account a ON a.userId = u.id AND a.providerId = 'credential'
