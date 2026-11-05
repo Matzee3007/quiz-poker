@@ -44,5 +44,8 @@
     "esbuild": false,
     "workerd": false,
     "fsevents": false
+  },
+  "dependencies": {
+    "better-auth": "1.7.17"
   }
 }
