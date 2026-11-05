@@ -27,4 +27,14 @@ export const auth = betterAuth({
   session: { expiresIn: DREISSIG_TAGE, disableSessionRefresh: true },
   user: { deleteUser: { enabled: true } },
   rateLimit: { storage: "database" },
+  databaseHooks: {
+    session: {
+      create: {
+        // Außer E-Mail und Passwort-Hash werden keine persönlichen Daten gespeichert (ADR 0003).
+        before: async (sitzung) => ({
+          data: { ...sitzung, ipAddress: null, userAgent: null },
+        }),
+      },
+    },
+  },
 });

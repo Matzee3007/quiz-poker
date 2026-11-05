@@ -3,6 +3,7 @@ import type { Quiz } from "../src/regeln/partie";
 import { quizPruefen, type QuizFehlerCode } from "../src/regeln/quizpruefung";
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
 import { auth } from "./auth";
+import { kontoRegistrieren } from "./konto";
 
 export { Passwortrechner } from "./passwortrechner";
 export { Raumzaehler } from "./raumzaehler";
@@ -115,6 +116,10 @@ export default {
 
     if (pathname.startsWith("/api/auth/")) {
       return auth.handler(anfrage);
+    }
+
+    if (pathname === "/api/konto/registrieren" && anfrage.method === "POST") {
+      return kontoRegistrieren(anfrage, env);
     }
 
     if (pathname === "/api/raeume" && anfrage.method === "POST") {
