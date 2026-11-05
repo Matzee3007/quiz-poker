@@ -34,7 +34,11 @@ export const auth = betterAuth({
     enabled: true,
     // Im Speicher des Workers zählt jede Instanz für sich, deshalb in D1.
     storage: "database",
-    customRules: { "/sign-in/email": { window: 60, max: 10 } },
+    customRules: {
+      "/sign-in/email": { window: 60, max: 10 },
+      // Die Startseite fragt das bei jedem Besuch ab. So bleibt von Gästen keine IP-Adresse in D1.
+      "/get-session": false,
+    },
   },
   databaseHooks: {
     session: {

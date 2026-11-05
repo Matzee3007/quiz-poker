@@ -2,6 +2,7 @@
   import { untrack } from "svelte";
   import Anmelden from "./ansichten/Anmelden.svelte";
   import Aufloesung from "./ansichten/Aufloesung.svelte";
+  import Datenschutz from "./ansichten/Datenschutz.svelte";
   import Ende from "./ansichten/Ende.svelte";
   import Konto from "./ansichten/Konto.svelte";
   import PasswortNeu from "./ansichten/PasswortNeu.svelte";
@@ -30,7 +31,13 @@
   }
 
   const EDITOR_PFAD = "/quiz-erstellen";
-  const KONTO_PFADE = ["/anmelden", "/registrieren", "/passwort-neu", "/konto"];
+  const KONTO_PFADE = [
+    "/anmelden",
+    "/registrieren",
+    "/passwort-neu",
+    "/konto",
+    "/datenschutz",
+  ];
 
   function kontoPfadAusAdresse(): string | null {
     return KONTO_PFADE.includes(location.pathname) ? location.pathname : null;
@@ -171,6 +178,8 @@
       <button class="text" onclick={zumStart}>Zum Start</button>
       {#if kontoPfad === "/konto"}
         <strong>Konto</strong>
+      {:else if adresse}
+        <button class="text" onclick={() => zu("/konto")}>Konto</button>
       {:else if kontoPfad !== "/anmelden"}
         <button class="text" onclick={() => zu("/anmelden")}>Anmelden</button>
       {/if}
@@ -219,6 +228,8 @@
   <Registrieren onRegistriert={zumKonto} onZurueck={zumStart} />
 {:else if kontoPfad === "/passwort-neu"}
   <PasswortNeu onAnmelden={() => zu("/anmelden")} onZurueck={zumStart} />
+{:else if kontoPfad === "/datenschutz"}
+  <Datenschutz />
 {:else if kontoPfad === "/konto"}
   {#if adresse}
     <Konto
@@ -318,4 +329,10 @@
   {/if}
 {:else}
   <main class="seite"><p class="matt">Verbinden …</p></main>
+{/if}
+
+{#if !imEditor && !raumcode && kontoPfad !== "/datenschutz"}
+  <footer class="seiten-fuss">
+    <button class="text" onclick={() => zu("/datenschutz")}>Datenschutz</button>
+  </footer>
 {/if}

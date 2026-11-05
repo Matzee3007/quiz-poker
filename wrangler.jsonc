@@ -19,6 +19,8 @@
     { "tag": "v2", "new_sqlite_classes": ["Raumzaehler"] },
     { "tag": "v3", "new_sqlite_classes": ["Passwortrechner"] },
   ],
+  // Täglich alte IP-Adressen und abgelaufene Links löschen.
+  "triggers": { "crons": ["17 3 * * *"] },
   "d1_databases": [
     {
       "binding": "DB",

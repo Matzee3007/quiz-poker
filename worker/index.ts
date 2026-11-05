@@ -2,6 +2,7 @@ import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
 import type { Quiz } from "../src/regeln/partie";
 import { quizPruefen, type QuizFehlerCode } from "../src/regeln/quizpruefung";
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
+import { aufraeumen } from "./aufraeumen";
 import { auth } from "./auth";
 import { kontoRegistrieren, passwortNeuSetzen } from "./konto";
 
@@ -152,5 +153,10 @@ export default {
     }
 
     return new Response("Nicht gefunden", { status: 404 });
+  },
+
+  // Einstieg für den täglichen Lauf (siehe triggers in wrangler.jsonc).
+  async scheduled(ereignis: ScheduledController, env: Env): Promise<void> {
+    await aufraeumen(env, ereignis.scheduledTime);
   },
 };
