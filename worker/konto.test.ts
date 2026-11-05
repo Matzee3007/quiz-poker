@@ -615,6 +615,71 @@ describe("Registrieren bei Fehlern des Servers", () => {
     expect(danach.status).toBe(201);
   });
 
+  it("gibt den Code frei, auch wenn das Aufräumen scheitert", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    vi.spyOn(auth.api, "signUpEmail").mockImplementationOnce(async () => {
+      await kontozeileEintragen(email, false);
+      throw new Error("linkAccount gescheitert");
+    });
+    const umgebung = {
+      BETTER_AUTH_URL: env.BETTER_AUTH_URL,
+      DB: {
+        prepare: (sql: string) => {
+          if (sql.startsWith("DELETE")) {
+            throw new Error("D1-Aussetzer");
+          }
+          return env.DB.prepare(sql);
+        },
+      },
+    } as unknown as Env;
+
+    await expect(direktMit(umgebung, einladung, email)).rejects.toThrow();
+
+    const danach = await direkt(einladung, neueAdresse());
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
+  it("löscht kein Konto, das inzwischen einen Passwort-Eintrag hat", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    vi.spyOn(auth.api, "signUpEmail").mockImplementationOnce(async () => {
+      await kontozeileEintragen(email, true);
+      throw new Error("Anderer Fehler");
+    });
+    // Die Suche nach dem Fehler sieht noch keinen Passwort-Eintrag, wie in einem engen Zeitfenster.
+    let suchen = 0;
+    const umgebung = {
+      BETTER_AUTH_URL: env.BETTER_AUTH_URL,
+      DB: {
+        prepare: (sql: string) => {
+          if (sql.startsWith("SELECT") && ++suchen === 2) {
+            return {
+              bind: () => ({
+                first: async () => {
+                  const zeile = await env.DB.prepare(
+                    'SELECT id FROM "user" WHERE email = ?',
+                  )
+                    .bind(email)
+                    .first<{ id: string }>();
+                  return { id: zeile?.id, passwortEintrag: null };
+                },
+              }),
+            };
+          }
+          return env.DB.prepare(sql);
+        },
+      },
+    } as unknown as Env;
+
+    await expect(direktMit(umgebung, einladung, email)).rejects.toThrow(
+      "Anderer Fehler",
+    );
+
+    expect(await kontenMit(email)).toBe(1);
+  });
+
   it("macht aus einem gescheiterten Anlegen bei vergebener Adresse email-vergeben", async () => {
     const einladung = await einladungAnlegen();
     const email = neueAdresse();

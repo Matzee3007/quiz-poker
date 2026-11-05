@@ -125,13 +125,21 @@ export async function kontoRegistrieren(
       // Nur die Sitzung fehlt. Adresse und Passwort gelten, also bleibt der Code verbraucht.
       return fehler(409, "konto-angelegt");
     }
+    // Zuerst freigeben: Scheitert danach das Aufräumen, bleibt wenigstens die Einladung erhalten.
+    await einladungFreigeben();
     if (vorher === null && jetzt) {
       // D1 kennt hier keine Transaktion: Ohne Passwort-Eintrag käme niemand je in dieses Konto.
-      await env.DB.prepare('DELETE FROM "user" WHERE id = ?')
-        .bind(jetzt.id)
-        .run();
+      // NOT EXISTS: Ist der Eintrag inzwischen doch entstanden, bleibt das Konto stehen.
+      try {
+        await env.DB.prepare(
+          'DELETE FROM "user" WHERE id = ? AND NOT EXISTS (SELECT 1 FROM account WHERE userId = ?)',
+        )
+          .bind(jetzt.id, jetzt.id)
+          .run();
+      } catch {
+        // Der ursprüngliche Fehler ist wichtiger. Das Konto ohne Passwort blockiert dann nur die Adresse.
+      }
     }
-    await einladungFreigeben();
     throw grund;
   }
 }
