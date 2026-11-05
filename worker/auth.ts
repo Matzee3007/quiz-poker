@@ -12,7 +12,11 @@ export const auth = betterAuth({
   telemetry: { enabled: false },
   // Die Prüfung läuft beim Start und merkt sich fehlende Tabellen je Instanz, auch nach der Migration.
   // Dass die Tabellen passen, prüft stattdessen ein Test in worker/auth.test.ts.
-  advanced: { database: { validateSchema: false } },
+  advanced: {
+    database: { validateSchema: false },
+    // Diesen Header setzt Cloudflare selbst, ein Angreifer kann ihn nicht fälschen.
+    ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
+  },
   // Registrieren geht nur über /api/konto/registrieren, mit Einladungscode (ADR 0005).
   disabledPaths: ["/sign-up/email"],
   emailAndPassword: {
@@ -26,7 +30,12 @@ export const auth = betterAuth({
   },
   session: { expiresIn: DREISSIG_TAGE, disableSessionRefresh: true },
   user: { deleteUser: { enabled: true } },
-  rateLimit: { storage: "database" },
+  rateLimit: {
+    enabled: true,
+    // Im Speicher des Workers zählt jede Instanz für sich, deshalb in D1.
+    storage: "database",
+    customRules: { "/sign-in/email": { window: 60, max: 10 } },
+  },
   databaseHooks: {
     session: {
       create: {

@@ -1,8 +1,50 @@
-import { exports } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import type { Aktion, ServerNachricht } from "../src/protokoll";
 import type { QuizMasterAnsicht, SpielerAnsicht } from "../src/regeln/ansicht";
+import { geheimnisErzeugen, geheimnisHash } from "./geheimnis";
 
-const BASIS = "https://quiz-poker.test";
+export const BASIS = "https://quiz-poker.test";
+
+export function neueAdresse() {
+  return `konto-${crypto.randomUUID()}@beispiel.test`;
+}
+
+export async function einladungAnlegen() {
+  const code = geheimnisErzeugen();
+  await env.DB.prepare("INSERT INTO einladung (code_hash) VALUES (?)")
+    .bind(await geheimnisHash(code))
+    .run();
+  return code;
+}
+
+/** Macht aus den Set-Cookie-Zeilen einer Antwort den Header Cookie für die nächste Anfrage. */
+export function cookieAus(antwort: Response) {
+  return antwort.headers
+    .getSetCookie()
+    .map((zeile) => zeile.split(";")[0])
+    .join("; ");
+}
+
+/** Legt ein Konto über den echten Weg an und liefert das Cookie seiner Sitzung. */
+export async function kontoAnlegen(email: string, passwort: string) {
+  const antwort = await exports.default.fetch(
+    `${BASIS}/api/konto/registrieren`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: BASIS },
+      body: JSON.stringify({
+        code: await einladungAnlegen(),
+        email,
+        passwort,
+      }),
+    },
+  );
+  await antwort.text();
+  if (antwort.status !== 201) {
+    throw new Error(`Konto nicht angelegt: ${antwort.status}`);
+  }
+  return cookieAus(antwort);
+}
 
 export async function post(pfad: string, daten?: unknown) {
   const antwort = await exports.default.fetch(`${BASIS}${pfad}`, {

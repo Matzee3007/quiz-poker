@@ -1,23 +1,8 @@
 import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { geheimnisErzeugen, geheimnisHash } from "./geheimnis";
+import { BASIS, cookieAus, einladungAnlegen, neueAdresse } from "./testhilfen";
 
-const BASIS = "https://quiz-poker.test";
 const PASSWORT = "geheim-123";
-
-let laufendeNummer = 0;
-function neueAdresse() {
-  laufendeNummer += 1;
-  return `konto-${laufendeNummer}-${crypto.randomUUID()}@beispiel.test`;
-}
-
-async function einladungAnlegen() {
-  const code = geheimnisErzeugen();
-  await env.DB.prepare("INSERT INTO einladung (code_hash) VALUES (?)")
-    .bind(await geheimnisHash(code))
-    .run();
-  return code;
-}
 
 function registrieren(
   daten: unknown,
@@ -41,13 +26,6 @@ async function kontenMit(email: string) {
     .bind(email)
     .first<{ anzahl: number }>();
   return zeile?.anzahl;
-}
-
-function cookieAus(antwort: Response) {
-  return antwort.headers
-    .getSetCookie()
-    .map((zeile) => zeile.split(";")[0])
-    .join("; ");
 }
 
 describe("Registrieren mit Einladungscode", () => {
