@@ -465,22 +465,114 @@ describe("Registrieren bei Fehlern des Servers", () => {
     expect(danach.status).toBe(201);
   });
 
-  it("gibt den Code nicht frei, wenn das Konto schon angelegt ist", async () => {
+  async function kontozeileEintragen(email: string, mitPasswort: boolean) {
+    const id = crypto.randomUUID();
+    const jetzt = new Date().toISOString();
+    await env.DB.prepare(
+      'INSERT INTO "user" (id, name, email, emailVerified, createdAt, updatedAt) VALUES (?, ?, ?, 0, ?, ?)',
+    )
+      .bind(id, "Quiz-Master", email, jetzt, jetzt)
+      .run();
+    if (mitPasswort) {
+      await env.DB.prepare(
+        "INSERT INTO account (id, accountId, providerId, userId, password, createdAt, updatedAt) VALUES (?, ?, 'credential', ?, 'hash', ?, ?)",
+      )
+        .bind(crypto.randomUUID(), id, id, jetzt, jetzt)
+        .run();
+    }
+  }
+
+  it("meldet ein angelegtes Konto, wenn nur die Sitzung scheitert, und verbraucht den Code", async () => {
     const einladung = await einladungAnlegen();
     const email = neueAdresse();
-    await kontoAnlegen(email, PASSWORT);
-    vi.spyOn(auth.api, "signUpEmail").mockRejectedValueOnce(
-      new APIError("BAD_REQUEST", {
+    vi.spyOn(auth.api, "signUpEmail").mockImplementationOnce(async () => {
+      await kontozeileEintragen(email, true);
+      throw new APIError("BAD_REQUEST", {
         code: "FAILED_TO_CREATE_SESSION",
         message: "Failed to create session",
-      }),
-    );
+      });
+    });
 
-    await expect(direkt(einladung, email)).rejects.toThrow();
+    const antwort = await direkt(einladung, email);
+    expect(antwort.status).toBe(409);
+    expect(await code(antwort)).toBe("konto-angelegt");
 
     const danach = await direkt(einladung, neueAdresse());
     expect(danach.status).toBe(403);
     expect(await code(danach)).toBe("einladung-ungueltig");
+  });
+
+  it("gibt den Code frei, wenn die Adresse schon vorher vergeben war und der Server scheitert", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    vi.spyOn(auth.api, "signUpEmail").mockRejectedValueOnce(
+      new Error("D1-Aussetzer"),
+    );
+
+    await expect(direkt(einladung, email)).rejects.toThrow("D1-Aussetzer");
+
+    const danach = await direkt(einladung, neueAdresse());
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
+  it("räumt ein Konto ohne Passwort auf und gibt den Code frei", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    vi.spyOn(auth.api, "signUpEmail").mockImplementationOnce(async () => {
+      await kontozeileEintragen(email, false);
+      throw new Error("linkAccount gescheitert");
+    });
+
+    await expect(direkt(einladung, email)).rejects.toThrow(
+      "linkAccount gescheitert",
+    );
+    expect(await kontenMit(email)).toBe(0);
+
+    const danach = await direkt(einladung, email);
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
+  it("meldet beim Verlieren eines Wettlaufs die vergebene Adresse und lässt den Code gültig", async () => {
+    const einladungen = [await einladungAnlegen(), await einladungAnlegen()];
+    const email = neueAdresse();
+
+    const antworten = await Promise.all(
+      einladungen.map((einladung) =>
+        registrieren({ code: einladung, email, passwort: PASSWORT }),
+      ),
+    );
+    await Promise.all(antworten.map((antwort) => antwort.text()));
+    expect(antworten.map((antwort) => antwort.status).sort()).toEqual([
+      201, 409,
+    ]);
+
+    const verlierer = einladungen[antworten[0].status === 201 ? 1 : 0];
+    const danach = await registrieren({
+      code: verlierer,
+      email: neueAdresse(),
+      passwort: PASSWORT,
+    });
+    await danach.text();
+    expect(danach.status).toBe(201);
+  });
+
+  it("macht aus einem gescheiterten Anlegen bei vergebener Adresse email-vergeben", async () => {
+    const einladung = await einladungAnlegen();
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    vi.spyOn(auth.api, "signUpEmail").mockRejectedValueOnce(
+      new APIError("UNPROCESSABLE_ENTITY", {
+        code: "FAILED_TO_CREATE_USER",
+        message: "Failed to create user",
+      }),
+    );
+
+    const antwort = await direkt(einladung, email);
+    expect(antwort.status).toBe(409);
+    expect(await code(antwort)).toBe("email-vergeben");
   });
 });
 
@@ -575,6 +667,79 @@ describe("Passwort-Links aufräumen", () => {
         kaputt,
       ),
     ).rejects.toThrow("Neustart");
+
+    const danach = await neuSetzen(token, "ganz-neu-456");
+    await danach.text();
+    expect(danach.status).toBe(204);
+  });
+
+  it("meldet keinen Erfolg für ein Konto ohne Passwort", async () => {
+    const email = neueAdresse();
+    const jetzt = new Date().toISOString();
+    await env.DB.prepare(
+      'INSERT INTO "user" (id, name, email, emailVerified, createdAt, updatedAt) VALUES (?, ?, ?, 0, ?, ?)',
+    )
+      .bind(crypto.randomUUID(), "Quiz-Master", email, jetzt, jetzt)
+      .run();
+
+    const antwort = await neuSetzen(await linkAnlegen(email), "ganz-neu-456");
+
+    expect(antwort.status).toBe(403);
+    expect(await code(antwort)).toBe("link-ungueltig");
+  });
+
+  it("lässt den Link gültig, wenn die Suche nach dem Konto scheitert", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+    const kaputt = {
+      BETTER_AUTH_URL: env.BETTER_AUTH_URL,
+      PASSWORTRECHNER: env.PASSWORTRECHNER,
+      DB: {
+        prepare: (sql: string) => {
+          if (sql.startsWith("SELECT")) {
+            throw new Error("D1-Aussetzer");
+          }
+          return env.DB.prepare(sql);
+        },
+      },
+    } as unknown as Env;
+
+    await expect(
+      passwortNeuSetzen(
+        new Request(`${BASIS}/api/konto/passwort-neu`, {
+          method: "POST",
+          headers: { Origin: BASIS },
+          body: JSON.stringify({ token, passwort: "ganz-neu-456" }),
+        }),
+        kaputt,
+      ),
+    ).rejects.toThrow("D1-Aussetzer");
+
+    const danach = await neuSetzen(token, "ganz-neu-456");
+    await danach.text();
+    expect(danach.status).toBe(204);
+  });
+
+  it("behält Links, wenn das Löschen am falschen Passwort scheitert", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+
+    const abgelehnt = await exports.default.fetch(
+      `${BASIS}/api/auth/delete-user`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: BASIS,
+          Cookie: cookie,
+        },
+        body: JSON.stringify({ password: "falsch-falsch" }),
+      },
+    );
+    await abgelehnt.text();
+    expect(abgelehnt.status).toBe(400);
 
     const danach = await neuSetzen(token, "ganz-neu-456");
     await danach.text();

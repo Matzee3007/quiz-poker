@@ -40,6 +40,8 @@ const MELDUNGEN: Record<string, string> = {
   "sitzung-abgelaufen":
     "Deine Anmeldung gilt nicht mehr. Bitte melde dich neu an.",
   "link-ungueltig": "Dieser Link gilt nicht mehr.",
+  "konto-angelegt":
+    "Dein Konto ist angelegt, nur die Anmeldung hat nicht geklappt. Bitte melde dich mit deiner Adresse und deinem Passwort an.",
   "fremde-herkunft":
     "Das ging nicht über diese Seite. Bitte lade sie neu und versuche es noch einmal.",
 };

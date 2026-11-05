@@ -54,10 +54,21 @@
   let startMeldung = $state<string | null>(null);
 
   // In einer Partie ist das Konto egal, dort bleibt diese Anfrage aus.
+  // Nur die neueste Abfrage zählt: Eine langsame alte darf keine frische Anmeldung überschreiben.
+  let letzteKontoAbfrage = 0;
   async function kontoLaden() {
+    const abfrage = ++letzteKontoAbfrage;
     kontoLaedt = true;
-    adresse = await angemeldeteAdresse();
+    const ergebnis = await angemeldeteAdresse();
+    if (abfrage === letzteKontoAbfrage) {
+      adresse = ergebnis;
+      kontoLaedt = false;
+    }
+  }
+  function kontoLeeren() {
+    letzteKontoAbfrage++;
     kontoLaedt = false;
+    adresse = null;
   }
   if (!raumcodeAusPfad()) {
     void kontoLaden();
@@ -145,9 +156,15 @@
   }
 
   function kontoVerlassen(meldung: string) {
-    adresse = null;
+    kontoLeeren();
     zumStart();
     startMeldung = meldung;
+  }
+
+  function sitzungAbgelaufen() {
+    kontoLeeren();
+    zu("/anmelden");
+    startMeldung = meldungFuer("sitzung-abgelaufen");
   }
 
   function eintreten(
@@ -195,7 +212,7 @@
     <div class="rest">
       {#if adresse}
         <button class="text" onclick={() => zu("/konto")}>Konto</button>
-      {:else if adresse === null}
+      {:else if !kontoLaedt}
         <span>Spielen geht ohne Konto</span>
         <button class="text" onclick={() => zu("/anmelden")}>Anmelden</button>
       {/if}
@@ -230,12 +247,12 @@
 </header>
 
 {#if kontoPfad === "/anmelden"}
-  <Anmelden onAngemeldet={zumKonto} />
+  <Anmelden meldung={startMeldung} onAngemeldet={zumKonto} />
 {:else if kontoPfad === "/registrieren"}
   <Registrieren onRegistriert={zumKonto} onZurueck={zumStart} />
 {:else if kontoPfad === "/passwort-neu"}
   <PasswortNeu
-    onGesetzt={() => (adresse = null)}
+    onGesetzt={() => void kontoLaden()}
     onAnmelden={() => zu("/anmelden")}
     onZurueck={zumStart}
   />
@@ -247,6 +264,7 @@
       {adresse}
       onAbgemeldet={() => kontoVerlassen("Du bist abgemeldet.")}
       onGeloescht={() => kontoVerlassen("Dein Konto ist gelöscht.")}
+      onSitzungAbgelaufen={sitzungAbgelaufen}
     />
   {:else}
     <main class="seite stapel">

@@ -6,9 +6,11 @@
     adresse: string;
     onAbgemeldet: () => void;
     onGeloescht: () => void;
+    onSitzungAbgelaufen: () => void;
   }
 
-  let { adresse, onAbgemeldet, onGeloescht }: Props = $props();
+  let { adresse, onAbgemeldet, onGeloescht, onSitzungAbgelaufen }: Props =
+    $props();
 
   let loeschenOffen = $state(false);
   let passwort = $state("");
@@ -36,6 +38,8 @@
     sendetGerade = false;
     if (ergebnis.ok) {
       onGeloescht();
+    } else if (ergebnis.code === "sitzung-abgelaufen") {
+      onSitzungAbgelaufen();
     } else {
       loeschFehler = meldungFuer(ergebnis.code);
     }

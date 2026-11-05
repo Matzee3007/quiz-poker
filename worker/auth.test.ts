@@ -171,6 +171,27 @@ describe("Konto löschen", () => {
     expect(danach.status).toBe(401);
   });
 
+  it("begrenzt die Passwortversuche beim Löschen wie beim Anmelden", async () => {
+    const cookie = await kontoAnlegen(neueAdresse(), PASSWORT);
+    const ip = neueIp();
+    const versuch = () =>
+      anAuth(
+        "/delete-user",
+        { password: "falsch-123" },
+        { Cookie: cookie, "cf-connecting-ip": ip },
+      );
+
+    for (let nummer = 0; nummer < 10; nummer++) {
+      const antwort = await versuch();
+      await antwort.text();
+      expect(antwort.status).toBe(400);
+    }
+    const elfter = await versuch();
+    await elfter.text();
+
+    expect(elfter.status).toBe(429);
+  });
+
   it("verlangt eine Anmeldung", async () => {
     const antwort = await anAuth("/delete-user", { password: PASSWORT });
     await antwort.text();

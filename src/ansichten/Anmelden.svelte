@@ -3,10 +3,11 @@
   import { meldungFuer } from "../meldungen";
 
   interface Props {
+    meldung: string | null;
     onAngemeldet: () => void;
   }
 
-  let { onAngemeldet }: Props = $props();
+  let { meldung, onAngemeldet }: Props = $props();
 
   let email = $state("");
   let passwort = $state("");
@@ -33,6 +34,9 @@
     <h1>Anmelden</h1>
     <p class="matt">Zum Spielen brauchst du kein Konto.</p>
   </section>
+  {#if meldung && !fehler}
+    <p class="hinweis">{meldung}</p>
+  {/if}
   {#if fehler}
     <p class="hinweis fehler" role="alert">{fehler}</p>
   {/if}

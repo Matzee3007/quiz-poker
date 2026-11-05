@@ -34,7 +34,8 @@ export const auth = betterAuth({
     deleteUser: {
       enabled: true,
       // Ein alter Link darf nicht das Passwort eines neuen Kontos mit derselben Adresse setzen.
-      afterDelete: async (konto) => {
+      // Vor dem Löschen: Scheitert das, bleibt das Konto bestehen, statt dass der Link überlebt.
+      beforeDelete: async (konto) => {
         await env.DB.prepare("DELETE FROM passwort_link WHERE email = ?")
           .bind(konto.email)
           .run();
@@ -58,6 +59,8 @@ export const auth = betterAuth({
     storage: "database",
     customRules: {
       "/sign-in/email": { window: 60, max: 10 },
+      // Das Passwort ist hier die einzige Hürde, also dieselbe Grenze wie beim Anmelden.
+      "/delete-user": { window: 60, max: 10 },
       // Die Startseite fragt das bei jedem Besuch ab. So bleibt von Gästen keine IP-Adresse in D1.
       "/get-session": false,
     },
