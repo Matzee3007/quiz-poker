@@ -30,6 +30,14 @@ const MELDUNGEN: Record<string, string> = {
   "raum-unbekannt": "Diesen Spielraum gibt es nicht.",
   "zu-viele-raeume":
     "Gerade wurden zu viele Spielräume eröffnet. Bitte versuche es später noch einmal.",
+  "anmeldung-falsch": "E-Mail oder Passwort stimmt nicht.",
+  "zu-viele-versuche": "Zu viele Versuche, bitte warte eine Minute.",
+  "einladung-ungueltig": "Diese Einladung gilt nicht mehr.",
+  "email-vergeben": "Diese Adresse ist schon vergeben.",
+  "ungueltige-email": "Das ist keine gültige E-Mail-Adresse.",
+  "passwort-laenge": "Das Passwort braucht 8 bis 128 Zeichen.",
+  "passwort-falsch": "Das Passwort stimmt nicht. Dein Konto bleibt bestehen.",
+  "link-ungueltig": "Dieser Link gilt nicht mehr.",
 };
 
 export function meldungFuer(code: string): string {

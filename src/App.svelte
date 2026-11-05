@@ -1,13 +1,18 @@
 <script lang="ts">
   import { untrack } from "svelte";
+  import Anmelden from "./ansichten/Anmelden.svelte";
   import Aufloesung from "./ansichten/Aufloesung.svelte";
   import Ende from "./ansichten/Ende.svelte";
+  import Konto from "./ansichten/Konto.svelte";
+  import PasswortNeu from "./ansichten/PasswortNeu.svelte";
   import QuizEditor from "./ansichten/QuizEditor.svelte";
   import QuizMasterRunde from "./ansichten/QuizMasterRunde.svelte";
+  import Registrieren from "./ansichten/Registrieren.svelte";
   import RueckkehrHinweise from "./ansichten/RueckkehrHinweise.svelte";
   import SpielerRunde from "./ansichten/SpielerRunde.svelte";
   import Start from "./ansichten/Start.svelte";
   import Warten from "./ansichten/Warten.svelte";
+  import { angemeldeteAdresse } from "./konto";
   import { meldungFuer } from "./meldungen";
   import { istGueltigerRaumcode } from "./regeln/raumcode";
   import {
@@ -25,12 +30,34 @@
   }
 
   const EDITOR_PFAD = "/quiz-erstellen";
+  const KONTO_PFADE = ["/anmelden", "/registrieren", "/passwort-neu", "/konto"];
+
+  function kontoPfadAusAdresse(): string | null {
+    return KONTO_PFADE.includes(location.pathname) ? location.pathname : null;
+  }
 
   let imEditor = $state(location.pathname === EDITOR_PFAD);
+  let kontoPfad = $state(kontoPfadAusAdresse());
+  // undefined: Der Server hat noch nicht geantwortet.
+  let adresse = $state<string | null | undefined>(undefined);
   let raumcode = $state(raumcodeAusPfad());
   let token = $state(raumcodeAusPfad() ? tokenLesen(raumcodeAusPfad()!) : null);
   let verbindung = $state<Verbindung | null>(null);
   let startMeldung = $state<string | null>(null);
+
+  // In einer Partie ist das Konto egal, dort bleibt diese Anfrage aus.
+  async function kontoLaden() {
+    adresse = await angemeldeteAdresse();
+  }
+  if (!raumcodeAusPfad()) {
+    void kontoLaden();
+  }
+
+  $effect(() => {
+    if (kontoPfad === "/konto" && adresse === null) {
+      untrack(() => zu("/anmelden"));
+    }
+  });
 
   $effect(() => {
     if (!raumcode || !token) {
@@ -69,6 +96,11 @@
     const neuesToken = code ? tokenLesen(code) : null;
     startMeldung = null;
     imEditor = location.pathname === EDITOR_PFAD;
+    kontoPfad = kontoPfadAusAdresse();
+    // Wer direkt in einem Spielraum startete, hat das Konto noch nicht geladen.
+    if (adresse === undefined && !code) {
+      void kontoLaden();
+    }
     // Gleicher Raum und gleiches Token: Die offene Verbindung bleibt gültig.
     if (code === raumcode && neuesToken === token) {
       return;
@@ -86,6 +118,22 @@
   function zumEditor() {
     history.pushState(null, "", EDITOR_PFAD);
     adresseUebernehmen();
+  }
+
+  function zu(pfad: string) {
+    history.pushState(null, "", pfad);
+    adresseUebernehmen();
+  }
+
+  async function zumKonto() {
+    await kontoLaden();
+    zu("/konto");
+  }
+
+  function kontoVerlassen(meldung: string) {
+    adresse = null;
+    zumStart();
+    startMeldung = meldung;
   }
 
   function eintreten(
@@ -118,6 +166,25 @@
   {#if imEditor}
     <span class="matt rest">Einmal-Quiz erstellen, ohne Konto</span>
   {/if}
+  {#if kontoPfad}
+    <div class="rest">
+      <button class="text" onclick={zumStart}>Zum Start</button>
+      {#if kontoPfad === "/konto"}
+        <strong>Konto</strong>
+      {:else if kontoPfad !== "/anmelden"}
+        <button class="text" onclick={() => zu("/anmelden")}>Anmelden</button>
+      {/if}
+    </div>
+  {:else if !imEditor && !raumcode}
+    <div class="rest">
+      {#if adresse}
+        <button class="text" onclick={() => zu("/konto")}>Konto</button>
+      {:else if adresse === null}
+        <span>Spielen geht ohne Konto</span>
+        <button class="text" onclick={() => zu("/anmelden")}>Anmelden</button>
+      {/if}
+    </div>
+  {/if}
   {#if raumcode && token}
     <span class="matt">Spielraum <strong>{raumcode}</strong></span>
   {/if}
@@ -146,7 +213,23 @@
   {/if}
 </header>
 
-{#if imEditor}
+{#if kontoPfad === "/anmelden"}
+  <Anmelden onAngemeldet={zumKonto} />
+{:else if kontoPfad === "/registrieren"}
+  <Registrieren onRegistriert={zumKonto} onZurueck={zumStart} />
+{:else if kontoPfad === "/passwort-neu"}
+  <PasswortNeu onAnmelden={() => zu("/anmelden")} onZurueck={zumStart} />
+{:else if kontoPfad === "/konto"}
+  {#if adresse}
+    <Konto
+      {adresse}
+      onAbgemeldet={() => kontoVerlassen("Du bist abgemeldet.")}
+      onGeloescht={() => kontoVerlassen("Dein Konto ist gelöscht.")}
+    />
+  {:else}
+    <main class="seite"><p class="matt">Einen Moment …</p></main>
+  {/if}
+{:else if imEditor}
   <QuizEditor onEintritt={eintreten} onZurueck={zumStart} />
 {:else if !raumcode || !token}
   <Start
