@@ -50,6 +50,10 @@ _Nicht verwenden_: Gast-Quiz, Sitzungs-Quiz, temporäres Quiz
 Der einmal gültige Code, ohne den sich niemand ein Konto anlegen kann.
 _Nicht verwenden_: Freischaltcode, Raumcode, Token
 
+**Betreiber**:
+Die Person, die die Seite betreibt, Einladungen verschickt und Links zum Zurücksetzen erzeugt.
+_Nicht verwenden_: Admin
+
 **Spielraum**:
 Der Ort, an dem genau eine Partie läuft und dem Quiz-Master und Spieler beitreten.
 _Nicht verwenden_: Lobby, Quiz-Raum

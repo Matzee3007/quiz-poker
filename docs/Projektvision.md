@@ -126,7 +126,7 @@ Begründung und Alternativen: [[projects/quiz-poker/docs/adr/0001-stack|ADR 0001
 | Sprache | TypeScript |
 | Oberfläche | Svelte 5 mit Vite 8 |
 | Server und Echtzeit | Cloudflare Workers und Durable Objects, WebSockets |
-| Quiz-Sammlung und Konten (ab Phase 3) | Cloudflare D1, Login-Bibliothek (Kandidat Better Auth) |
+| Quiz-Sammlung und Konten (ab Phase 3) | Cloudflare D1, Better Auth |
 | Hosting | Cloudflare (kostenloser Tarif), `wrangler` |
 | Tests | Vitest 4 |
 | Qualität | ESLint, Prettier, `svelte-check` |

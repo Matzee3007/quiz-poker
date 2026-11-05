@@ -9,7 +9,7 @@ stehen in der globalen `~/.claude/CLAUDE.md` (Repo `claude-ecosystem`, `config/C
 
 Quiz-Poker ist ein Online-Quiz im Browser für Spieleabende in der Freundesrunde. Ein Quiz-Master erstellt Kategorien,
 Runden, Fragen und Antworten, die Spieler setzen Pokerchips auf ihre Antworten, am Ende gewinnt, wer die meisten Chips hat.
-Frei erreichbar, aber keine beworbene Plattform. Konten nur für eingeladene Quiz-Master, die Quizze speichern wollen (ADR 0003, ADR 0005), Spieler sind Gäste, kein Echtgeld.
+Frei erreichbar, aber keine beworbene Plattform. Konten nur für eingeladene Quiz-Master, die Quizze speichern wollen (ADR 0003, ADR 0005), Spieler sind Gäste, kein Echtgeld. Kein Impressum, kurze Datenschutzhinweise (ADR 0006).
 
 Gleichwertiges Ziel ist das **Lernen**: Echtzeit-Multiplayer mit WebSockets, Rollen und Rechte (Spieler sehen Lösungen erst nach der Auflösung), testgetriebene Spiellogik und ein neuer Stack aus Svelte und Cloudflare.
 
@@ -44,6 +44,7 @@ quiz-poker/
 │   ├── App.svelte      Wählt je nach Adresse, Token und Ansicht, was zu sehen ist
 │   ├── ansichten/      Eine Komponente je Ansicht (Start, Editor, Warten, Runde, Auflösung, Ende)
 │   ├── entwurfSpeicher.ts  Entwurf des Einmal-Quiz im localStorage
+│   ├── konto.ts        Anfragen für Anmelden, Registrieren, Passwort und Konto
 │   ├── main.ts         Einstieg im Browser
 │   ├── meldungen.ts    Fehlercodes als deutsche Meldungen
 │   ├── stil.css        Stil C aus dem Mock
@@ -61,11 +62,19 @@ quiz-poker/
 │       ├── raumcode.ts Raumcode erzeugen und prüfen
 │       └── raumgrenze.ts  Höchstens 30 neue Spielräume pro Stunde
 ├── worker/             Server (Cloudflare Worker)
-│   ├── index.ts        beantwortet Anfragen an /api/*
+│   ├── index.ts        beantwortet Anfragen an /api/*, täglicher Lauf
 │   ├── spielraum.ts    Durable Object je Spielraum: Verbindungen und Speicher
 │   ├── raumzaehler.ts  Durable Object: Grenze für neue Spielräume
+│   ├── passwortrechner.ts  Durable Object: Passwort-Hashing
+│   ├── auth.ts         Einrichtung von Better Auth
+│   ├── konto.ts        Registrieren mit Einladungscode, Passwort über Link
+│   ├── betrieb.ts      SQL für die Befehle des Betreibers
+│   ├── geheimnis.ts    Codes und Links erzeugen und hashen
+│   ├── aufraeumen.ts   Löscht täglich alte IP-Adressen und abgelaufene Links
 │   ├── testhilfen.ts   Hilfen für Tests mit WebSockets
 │   └── *.test.ts       Tests des Workers
+├── migrations/         Tabellen in D1 als SQL-Dateien
+├── scripts/            Befehle für den Betreiber, siehe docs/Betrieb.md
 ├── docs/               Doku, zugleich Teil des Obsidian-Vaults
 ├── index.html          Seite, in die Svelte die Oberfläche einhängt
 ├── wrangler.jsonc      Cloudflare-Einstellungen
@@ -87,6 +96,8 @@ npm run test:watch     # Vitest bei jeder Änderung neu ausführen
 npm run build          # Oberfläche und Worker für den Betrieb bauen
 npm run check          # Alle Prüfungen auf einmal: Linter, Format, Typen, Tests, Build
 npm run deploy         # Zu Cloudflare hochladen (braucht Konto und wrangler login)
+npm run einladung      # Einladungslink erzeugen, siehe docs/Betrieb.md
+npm run passwort-link -- <email>   # Link zum Zurücksetzen erzeugen, siehe docs/Betrieb.md
 ```
 
 Vor jedem Commit: `npm run check` (Linter, Format, Typen, Tests und Build)
