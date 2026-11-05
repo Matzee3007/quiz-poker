@@ -1,6 +1,13 @@
 import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { BASIS, cookieAus, einladungAnlegen, neueAdresse } from "./testhilfen";
+import { geheimnisErzeugen, geheimnisHash } from "./geheimnis";
+import {
+  BASIS,
+  cookieAus,
+  einladungAnlegen,
+  kontoAnlegen,
+  neueAdresse,
+} from "./testhilfen";
 
 const PASSWORT = "geheim-123";
 
@@ -257,6 +264,165 @@ describe("Registrieren mit Einladungscode", () => {
     ["null als Inhalt", "null"],
   ])("antwortet bei %s mit 422", async (_fall, inhalt) => {
     const antwort = await registrieren(inhalt);
+
+    expect(antwort.status).toBe(422);
+    expect(await code(antwort)).toBe("ungueltige-nachricht");
+  });
+});
+
+describe("Passwort über Link neu setzen", () => {
+  const NEU = "ganz-neu-456";
+  const STUNDE = 60 * 60 * 1000;
+
+  async function linkAnlegen(email: string, gueltigFuer = STUNDE) {
+    const token = geheimnisErzeugen();
+    await env.DB.prepare(
+      "INSERT INTO passwort_link (token_hash, email, gueltig_bis) VALUES (?, ?, ?)",
+    )
+      .bind(await geheimnisHash(token), email, Date.now() + gueltigFuer)
+      .run();
+    return token;
+  }
+
+  function neuSetzen(
+    daten: unknown,
+    kopf: Record<string, string> = { Origin: BASIS },
+  ) {
+    return exports.default.fetch(`${BASIS}/api/konto/passwort-neu`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...kopf },
+      body: JSON.stringify(daten),
+    });
+  }
+
+  let letzteAdresse = 0;
+
+  async function anmeldeStatus(email: string, passwort: string) {
+    letzteAdresse += 1;
+    const antwort = await exports.default.fetch(
+      `${BASIS}/api/auth/sign-in/email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: BASIS,
+          "cf-connecting-ip": `198.51.100.${letzteAdresse}`,
+        },
+        body: JSON.stringify({ email, password: passwort }),
+      },
+    );
+    await antwort.text();
+    return antwort.status;
+  }
+
+  it("setzt das Passwort neu und beendet alte Sitzungen", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+
+    const antwort = await neuSetzen({
+      token: await linkAnlegen(email),
+      passwort: NEU,
+    });
+    await antwort.text();
+
+    expect(antwort.status).toBe(204);
+    expect(await anmeldeStatus(email, NEU)).toBe(200);
+    expect(await anmeldeStatus(email, PASSWORT)).toBe(401);
+    const sitzung = await exports.default.fetch(
+      `${BASIS}/api/auth/get-session`,
+      { headers: { Cookie: cookie } },
+    );
+    expect(await sitzung.json()).toBeNull();
+  });
+
+  it("lässt jeden Link nur einmal zu", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+    const erste = await neuSetzen({ token, passwort: NEU });
+    await erste.text();
+
+    const zweite = await neuSetzen({ token, passwort: "noch-neuer-789" });
+
+    expect(zweite.status).toBe(403);
+    expect(await code(zweite)).toBe("link-ungueltig");
+    expect(await anmeldeStatus(email, NEU)).toBe(200);
+  });
+
+  it("lehnt einen abgelaufenen Link ab", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+
+    const antwort = await neuSetzen({
+      token: await linkAnlegen(email, -1000),
+      passwort: NEU,
+    });
+
+    expect(antwort.status).toBe(403);
+    expect(await code(antwort)).toBe("link-ungueltig");
+    expect(await anmeldeStatus(email, PASSWORT)).toBe(200);
+  });
+
+  it("lehnt einen unbekannten Link ab", async () => {
+    const antwort = await neuSetzen({ token: "gibt-es-nicht", passwort: NEU });
+
+    expect(antwort.status).toBe(403);
+    expect(await code(antwort)).toBe("link-ungueltig");
+  });
+
+  it("lässt den Link bei zu kurzem Passwort gültig", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+
+    const abgelehnt = await neuSetzen({ token, passwort: "1234567" });
+    expect(abgelehnt.status).toBe(422);
+    expect(await code(abgelehnt)).toBe("passwort-laenge");
+
+    const danach = await neuSetzen({ token, passwort: NEU });
+    await danach.text();
+    expect(danach.status).toBe(204);
+  });
+
+  it("lehnt einen Link für eine Adresse ohne Konto ab", async () => {
+    const antwort = await neuSetzen({
+      token: await linkAnlegen(neueAdresse()),
+      passwort: NEU,
+    });
+
+    expect(antwort.status).toBe(403);
+    expect(await code(antwort)).toBe("link-ungueltig");
+  });
+
+  it("lehnt eine fremde Herkunft ab und verbraucht den Link nicht", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const token = await linkAnlegen(email);
+
+    const fremd = await neuSetzen(
+      { token, passwort: NEU },
+      { Origin: "https://fremde-seite.test" },
+    );
+    expect(fremd.status).toBe(403);
+    expect(await code(fremd)).toBe("fremde-herkunft");
+
+    const danach = await neuSetzen({ token, passwort: NEU });
+    await danach.text();
+    expect(danach.status).toBe(204);
+  });
+
+  it("lehnt zu große Anfragen ab", async () => {
+    const antwort = await neuSetzen({
+      token: "x".repeat(5000),
+      passwort: NEU,
+    });
+
+    expect(antwort.status).toBe(413);
+    expect(await code(antwort)).toBe("anfrage-zu-gross");
+  });
+
+  it("antwortet bei fehlenden Feldern mit 422", async () => {
+    const antwort = await neuSetzen({ token: "abc" });
 
     expect(antwort.status).toBe(422);
     expect(await code(antwort)).toBe("ungueltige-nachricht");

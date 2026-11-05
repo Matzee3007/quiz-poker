@@ -102,3 +102,47 @@ export async function kontoRegistrieren(
     throw grund;
   }
 }
+
+export async function passwortNeuSetzen(
+  anfrage: Request,
+  env: Env,
+): Promise<Response> {
+  const daten = await eingabeLesen(anfrage, env);
+  if (daten instanceof Response) {
+    return daten;
+  }
+  const { token, passwort } = daten;
+  if (typeof token !== "string" || typeof passwort !== "string") {
+    return fehler(422, "ungueltige-nachricht");
+  }
+  if (!passwortPasst(passwort)) {
+    return fehler(422, "passwort-laenge");
+  }
+
+  // Ein einziges UPDATE: Von zwei gleichzeitigen Anfragen kann nur eine den Link verbrauchen.
+  const jetzt = Date.now();
+  const link = await env.DB.prepare(
+    "UPDATE passwort_link SET benutzt_am = ? WHERE token_hash = ? AND benutzt_am IS NULL AND gueltig_bis > ? RETURNING email",
+  )
+    .bind(jetzt, await geheimnisHash(token), jetzt)
+    .first<{ email: string }>();
+  if (!link) {
+    return fehler(403, "link-ungueltig");
+  }
+  const konto = await env.DB.prepare('SELECT id FROM "user" WHERE email = ?')
+    .bind(link.email)
+    .first<{ id: string }>();
+  if (!konto) {
+    return fehler(403, "link-ungueltig");
+  }
+
+  const hash = await env.PASSWORTRECHNER.getByName("global").hashen(passwort);
+  // Wer ein Passwort zurücksetzt, wirft damit auch jemanden hinaus, der es kannte.
+  await env.DB.batch([
+    env.DB.prepare(
+      "UPDATE account SET password = ?, updatedAt = ? WHERE userId = ? AND providerId = 'credential'",
+    ).bind(hash, new Date(jetzt).toISOString(), konto.id),
+    env.DB.prepare("DELETE FROM session WHERE userId = ?").bind(konto.id),
+  ]);
+  return new Response(null, { status: 204 });
+}
