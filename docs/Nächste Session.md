@@ -1,19 +1,19 @@
 ---
 titel: Nächste Session
 status: aktiv
-erstellt: 2026-11-04
+erstellt: 2026-11-05
 tags: [session, übergabe]
 ---
 
 # Nächste Session
 
-Stand vom 2026-11-04. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - Editor und Einmal-Quiz|Lernjournal Phase 3 - Editor und Einmal-Quiz]].
+Stand vom 2026-11-05. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - Konten|Lernjournal Phase 3 - Konten]].
 
 ## Stand bei Sessionende
 
-- **Branch:** `main` (nach dem Merge von PR #16)
+- **Branch:** `main` (nach dem Merge von PR #19)
 - **Offene PRs:** keine
-- **Nicht committet:** nichts
+- **Nicht committet:** `AGENTS.md`. Die Datei stammt nicht aus dieser Session und wurde weder gelesen noch committet.
 
 ## Vor dem Start
 
@@ -24,26 +24,35 @@ Stand vom 2026-11-04. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
    claude
    ```
 
+2. Klären, was `AGENTS.md` ist und ob die Datei ins Repo gehört.
+
 ## Womit es weitergeht
 
-**Phase 3 – Quiz-Sammlung läuft, Schritt 1 ist online:** Unter `https://quiz-poker.quiz-poker.workers.dev` lässt sich ohne Konto ein Einmal-Quiz erstellen und spielen ([[projects/quiz-poker/docs/plaene/2026-11-04-einmal-quiz|Plan]], PR #15). Die Regeln für Phase 3 stehen in der Projektvision und in [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]], sie müssen nicht neu geklärt werden.
+**Phase 3 – Quiz-Sammlung läuft, Schritt 2 ist online:** Konten mit Einladungscode sind seit 2026-11-05 unter `https://quiz-poker.quiz-poker.workers.dev` veröffentlicht ([[projects/quiz-poker/docs/plaene/2026-11-05-konten|Plan]], PR #17). Einladungen und Passwort-Links erzeugt der Betreiber per Befehl, siehe [[projects/quiz-poker/docs/Betrieb|Betrieb]].
 
-**Nächster Schritt: Plan für Schritt 2 (Konten mit Einladungscode) schreiben.** Die erste Aufgabe darin ist ein Test im echten Betrieb bei Cloudflare: Passwort-Hashing im Durable Object und die Größe des Workers mit Better Auth. Scheitert er, wird die Hashing-Zeile in ADR 0005 neu entschieden. Vor der Veröffentlichung der Konten: Impressum und Datenschutzhinweise online, Cloudflare Security Audit Skill einmal ausführen. Jeder PR ab den Konten bekommt zusätzlich `/security-review`.
+**Nächster Schritt: Plan für Schritt 3 schreiben, Quizze in D1 speichern.** Die Regeln stehen in der Projektvision, Abschnitt „Quiz-Sammlung“. Mit Schritt 3 kommen auch das Löschen der Quizze eines Kontos und der Betreiber-Befehl zum Löschen eines Quiz. Ab jetzt bekommt jeder PR zusätzlich `/security-review`.
+
+Bei Schritt 3 beachten:
+
+- Neu bewerten, ob eine laufende Anmeldung ein Zurücksetzen des Passworts überleben darf, sobald Quizze an der Sitzung hängen. Das ist ein verworfener Fund aus dem Audit (`~/security-audit-skill/quiz-poker/run-1/REPORT.md`).
+- Der Datenschutztext in `src/ansichten/Datenschutz.svelte` muss die gespeicherten Quizze nennen.
 
 Restpunkte als Vorschläge:
 
-- Echter Spieleabend mit eigenen Fragen, das geht seit Schritt 1.
-- Browser-Tests ins Repo holen: Die Prüfungen von Schritt 1 liefen mit Skripten außerhalb des Repos (Playwright mit dem installierten Chrome) und lassen sich nicht wiederholen. Für die Konten lohnen sich feste Tests. Das wäre eine neue Abhängigkeit, also vorher fragen.
-- Offene Review-Punkte aus PR #15 stehen im Plan unter „Ergebnis des Reviews“, zum Beispiel der Editor in mehreren Tabs.
-- Ein Quiz an allen Grenzen auf der echten Seite spielen: Online lief bisher nur ein kleines Quiz, die Grenze von 10 ms ist dafür nicht gemessen.
-- Doppelter Code in den Ansichten: Sortierung nach Chips, `platzVon`, Grenzen 2 und 8.
-- Grenzen für Beitritte und Aktionen innerhalb eines Raums. Bisher sind nur neue Räume begrenzt.
-- `npm audit` meldete beim Projektstart 15 Schwachstellen in den Entwicklungswerkzeugen.
-- `ubuntu-latest` wechselt laut Hinweis im CI-Lauf schrittweise auf Ubuntu 26.
-- Verweis auf den Launcher anpassen: `docs/Projektvision.md` nennt ihn „im Ecosystem vorgemerkt“, seit 2026-11-04 ist er das Projekt
-  `launcher` und bekommt in seiner Phase 1 eine Kachel für dieses Spiel. Die offene Frage „Wie startet das Spiel im Launcher genau?“ ist damit beantwortet: über die Web-Adresse im Standardbrowser.
+- Prüfen, ob der Cron-Trigger in der ersten Nacht gelaufen ist (`npx wrangler tail` oder Dashboard, Zeitplan `17 3 * * *`).
+- `worker/spielraum.ts:234` nimmt den WebSocket vor der Token-Prüfung an. Der Audit führt das als `needs_validation`.
+- Noch nicht geprüft aus dem Audit: Größe von Anfragen an Better Auth, Verlängerung der Raumlaufzeit durch wirkungslose Aktionen, Gesamtzahl gespeicherter Räume. Blockiert waren Clickjacking, bekannte Schwachstellen und `cf-connecting-ip`.
+- Browser-Tests ins Repo holen: Die Durchläufe dieser Session lagen im Scratchpad und lassen sich nicht wiederholen. Das wäre eine neue Abhängigkeit, also vorher fragen.
+- `anfrage-zu-gross` sagt „Das Quiz ist zu groß“, auch bei Konto-Anfragen.
+- Ältere Restpunkte aus der vorigen Übergabe stehen weiter offen:
+  - doppelter Code in den Ansichten
+  - Grenzen für Beitritte in einem Raum
+  - `npm audit`
+  - Ubuntu 26 in der CI
+  - Verweis auf den Launcher in der Projektvision
+  - Editor in mehreren Tabs
 
 ## Passende Skills
 
-- `plan-schreiben`: Plan für Schritt 2 schreiben
-- `tdd`: Konten und Einladungscodes testgetrieben bauen
+- `plan-schreiben`: Plan für Schritt 3 schreiben
+- `tdd`: Speichern in D1 testgetrieben bauen
