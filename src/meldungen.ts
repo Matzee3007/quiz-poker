@@ -40,6 +40,8 @@ const MELDUNGEN: Record<string, string> = {
   "sitzung-abgelaufen":
     "Deine Anmeldung gilt nicht mehr. Bitte melde dich neu an.",
   "link-ungueltig": "Dieser Link gilt nicht mehr.",
+  "fremde-herkunft":
+    "Das ging nicht über diese Seite. Bitte lade sie neu und versuche es noch einmal.",
 };
 
 export function meldungFuer(code: string): string {

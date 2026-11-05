@@ -19,14 +19,15 @@
     <h2>Mit Konto</h2>
     <p class="matt">
       Gespeichert werden deine E-Mail-Adresse als Login-Name und dein Passwort
-      als Hash, also nicht im Klartext. Ein Cookie hält dich 30 Tage angemeldet.
-      Wenn du dein Konto löschst, sind diese Daten sofort entfernt.
+      als Hash, also nicht im Klartext. Ein Cookie und ein Eintrag auf dem
+      Server halten dich 30 Tage angemeldet. Wenn du dein Konto löschst, sind
+      diese Daten sofort entfernt.
     </p>
   </section>
   <section class="karte stapel">
     <h2>IP-Adressen</h2>
     <p class="matt">
-      Beim Anmelden wird deine IP-Adresse gespeichert, um Fehlversuche zu
+      Beim Anmelden wird deine IP-Adresse gespeichert, um Anmeldeversuche zu
       begrenzen. Sie wird nach etwa einem Tag automatisch gelöscht.
     </p>
   </section>

@@ -198,6 +198,7 @@ describe("Meldungen", () => {
     "passwort-falsch",
     "sitzung-abgelaufen",
     "link-ungueltig",
+    "fremde-herkunft",
   ])("kennt eine eigene Meldung für %s", (code) => {
     expect(meldungFuer(code)).not.toBe(meldungFuer("gibt-es-nicht"));
   });
