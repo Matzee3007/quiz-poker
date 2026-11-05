@@ -3,6 +3,7 @@ import type { Quiz } from "../src/regeln/partie";
 import { quizPruefen, type QuizFehlerCode } from "../src/regeln/quizpruefung";
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
 
+export { Passwortrechner } from "./passwortrechner";
 export { Raumzaehler } from "./raumzaehler";
 export { Spielraum } from "./spielraum";
 
