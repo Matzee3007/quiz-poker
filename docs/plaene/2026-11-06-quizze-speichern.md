@@ -99,7 +99,7 @@ DELETE /api/quizze/:id    → 204 | 401 | 404
   - `worker/quizze.ts`: `QUIZ_HOECHSTANZAHL = 20`, `quizAnfrage(anfrage: Request, env: Env, id: string | null): Promise<Response>`. `worker/index.ts` leitet `/api/quizze` mit `id = null` und `/api/quizze/<id>` dorthin.
   - `worker/testhilfen.ts`: `anQuizze(cookie: string, methode: string, pfad?: string, daten?: unknown): Promise<Response>` mit eigenem `Origin`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - ohne Cookie: `GET` und `POST` → 401 `nicht-angemeldet`
   - `POST` mit unfertigem Quiz → 201 mit `id`, danach in der Liste mit `titel`, `spielbar: false`
   - `POST` mit dem Beispiel-Quiz → in der Liste `spielbar: true`
@@ -109,10 +109,10 @@ DELETE /api/quizze/:id    → 204 | 401 | 404
   - 301 Zeichen in einer Frage → 422 `text-zu-lang`, fremdes Feld `besitzer` → steht danach nicht in `inhalt`
   - fremder `Origin` → 403 `fremde-herkunft`, über 256 KiB → 413, kaputtes JSON → 422
   - `PATCH /api/quizze` → 405
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/quizze.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: Migration, `worker/anfrage.ts` und `quizAnfrage` schreiben:** Sitzung mit `auth.api.getSession({ headers: anfrage.headers })`. Anlegen in einem einzigen Befehl, damit zwei gleichzeitige Anfragen die Grenze nicht überschreiten: `INSERT INTO quiz (…) SELECT ?, ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < 20`, `meta.changes === 0` heißt 409. ID aus `crypto.randomUUID()`, `spielbar` aus `quizPruefen(quiz).ok`. Die Liste liest den Titel mit `json_extract(inhalt, '$.titel')`.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS, `worker/konto.test.ts` weiter grün.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add quiz table with create and list`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/quizze.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: Migration, `worker/anfrage.ts` und `quizAnfrage` schreiben:** Sitzung mit `auth.api.getSession({ headers: anfrage.headers })`. Anlegen in einem einzigen Befehl, damit zwei gleichzeitige Anfragen die Grenze nicht überschreiten: `INSERT INTO quiz (…) SELECT ?, ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < 20`, `meta.changes === 0` heißt 409. ID aus `crypto.randomUUID()`, `spielbar` aus `quizPruefen(quiz).ok`. Die Liste liest den Titel mit `json_extract(inhalt, '$.titel')`.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS, `worker/konto.test.ts` weiter grün.
+- [x] **Schritt 5: `npm run check`, Commit** `Add quiz table with create and list`.
 
 ### Aufgabe 3: Quiz lesen, ändern, löschen
 

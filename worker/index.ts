@@ -5,6 +5,7 @@ import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
 import { aufraeumen } from "./aufraeumen";
 import { auth } from "./auth";
 import { kontoRegistrieren, passwortNeuSetzen } from "./konto";
+import { quizAnfrage } from "./quizze";
 
 export { Passwortrechner } from "./passwortrechner";
 export { Raumzaehler } from "./raumzaehler";
@@ -133,6 +134,10 @@ export default {
 
     if (pathname === "/api/konto/passwort-neu" && anfrage.method === "POST") {
       return passwortNeuSetzen(anfrage, env);
+    }
+
+    if (pathname === "/api/quizze") {
+      return quizAnfrage(anfrage, env, null);
     }
 
     if (pathname === "/api/raeume" && anfrage.method === "POST") {
