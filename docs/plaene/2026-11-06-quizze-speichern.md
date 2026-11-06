@@ -160,17 +160,17 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 - Nutzt: `sqlText` in `worker/betrieb.ts`, `sqlAusfuehren`
 - Liefert: `quizLoeschenSql(id: string): string`, Befehl `npm run quiz-loeschen -- <id>`
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:** Das SQL läuft gegen die Test-D1 und löscht genau das Quiz mit dieser ID. Die ID `x' OR '1'='1` löscht nichts.
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/betrieb.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: Funktion und Skript schreiben:** Das Skript lehnt eine ID ab, die nicht zum Muster aus Aufgabe 3 passt. `scripts/datenbank.ts` bricht bei jedem unbekannten Argument mit `--` ab, bevor es etwas ausführt: Ein vertipptes `--local` löscht sonst ein echtes Quiz (Hinweis aus dem Audit).
-- [ ] **Schritt 4: Tests laufen lassen und lokal ausprobieren:** `npm run quiz-loeschen -- --lokal <id>` und `npm run einladung -- --local` (muss abbrechen).
-- [ ] **Schritt 5: `docs/Betrieb.md` ergänzen:** Abschnitt „Quiz löschen“ mit dem Befehl und der Abfrage, die die IDs eines Kontos zeigt:
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:** Das SQL läuft gegen die Test-D1 und löscht genau das Quiz mit dieser ID. Die ID `x' OR '1'='1` löscht nichts.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/betrieb.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: Funktion und Skript schreiben:** Das Skript lehnt eine ID ab, die nicht zum Muster aus Aufgabe 3 passt. `scripts/datenbank.ts` bricht bei jedem unbekannten Argument mit `--` ab, bevor es etwas ausführt: Ein vertipptes `--local` löscht sonst ein echtes Quiz (Hinweis aus dem Audit).
+- [x] **Schritt 4: Tests laufen lassen und lokal ausprobieren:** `npm run quiz-loeschen -- --lokal <id>` und `npm run einladung -- --local` (muss abbrechen).
+- [x] **Schritt 5: `docs/Betrieb.md` ergänzen:** Abschnitt „Quiz löschen“ mit dem Befehl und der Abfrage, die die IDs eines Kontos zeigt:
 
   ```bash
   npx wrangler d1 execute quiz-poker --remote --command "SELECT id, json_extract(inhalt, '$.titel') FROM quiz WHERE besitzer = (SELECT id FROM \"user\" WHERE email = 'freund@beispiel.de')"
   ```
 
-- [ ] **Schritt 6: `npm run check`, Commit** `Add operator command to delete a quiz`.
+- [x] **Schritt 6: `npm run check`, Commit** `Add operator command to delete a quiz`.
 
 ### Aufgabe 6: Mock (Entwickler)
 

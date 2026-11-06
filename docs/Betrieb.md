@@ -27,6 +27,24 @@ npm run passwort-link -- freund@beispiel.de    # gibt einen Link /passwort-neu?t
 
 Einen Tippfehler in der Adresse meldet der Befehl nicht. Der Link wird dann beim Benutzen abgelehnt.
 
+## Quiz löschen
+
+```bash
+npm run quiz-loeschen -- 3f2b…-…    # löscht das Quiz mit dieser ID, egal welchem Konto es gehört
+```
+
+Die IDs der Quizze eines Kontos zeigt diese Abfrage:
+
+```bash
+npx wrangler d1 execute quiz-poker --remote --command "SELECT id, json_extract(inhalt, '$.titel') AS titel FROM quiz WHERE besitzer = (SELECT id FROM \"user\" WHERE email = 'freund@beispiel.de')"
+```
+
+Gelöschte Quizze lassen sich nicht wiederherstellen. Laufende Spielräume spielen mit ihrer Kopie weiter.
+
+## Vertippte Optionen
+
+Alle Befehle brechen bei einer unbekannten Option ab, bevor sie etwas ausführen, zum Beispiel bei `--local` statt `--lokal`. Sonst liefen sie still gegen die echte Datenbank.
+
 ## Datenbank ändern
 
 ```bash

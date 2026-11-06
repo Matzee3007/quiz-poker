@@ -1,11 +1,11 @@
 import { entwurfPruefen, quizPruefen } from "../src/regeln/quizpruefung";
 import { eingabeLesen, fehler } from "./anfrage";
 import { auth } from "./auth";
+import { QUIZ_ID_MUSTER } from "./betrieb";
 
 export const QUIZ_HOECHSTANZAHL = 20;
 // Wie beim Eröffnen eines Spielraums: Ein Quiz an allen Grenzen bleibt deutlich darunter.
 const ANFRAGE_HOECHSTGROESSE = 256 * 1024;
-export const QUIZ_ID_MUSTER = /^[0-9a-f-]{36}$/;
 
 async function kontoDerSitzung(anfrage: Request): Promise<string | null> {
   const sitzung = await auth.api.getSession({ headers: anfrage.headers });

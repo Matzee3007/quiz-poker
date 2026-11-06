@@ -1,8 +1,13 @@
 import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { einladungSql, linkGueltigBis, passwortLinkSql } from "./betrieb";
+import {
+  einladungSql,
+  linkGueltigBis,
+  passwortLinkSql,
+  quizLoeschenSql,
+} from "./betrieb";
 import { geheimnisErzeugen, geheimnisHash } from "./geheimnis";
-import { BASIS, kontoAnlegen, neueAdresse } from "./testhilfen";
+import { anQuizze, BASIS, kontoAnlegen, neueAdresse } from "./testhilfen";
 
 function post(pfad: string, daten: unknown) {
   return exports.default.fetch(`${BASIS}${pfad}`, {
@@ -81,5 +86,42 @@ describe("Befehle für den Betreiber", () => {
     const jetzt = 1_000_000;
 
     expect(linkGueltigBis(jetzt)).toBe(jetzt + 86_400_000);
+  });
+});
+
+describe("Quiz löschen", () => {
+  const QUIZ = { titel: "T", kategorien: [] };
+
+  async function quizAnlegen(cookie: string) {
+    const antwort = await anQuizze(cookie, "POST", "", { quiz: QUIZ });
+    return ((await antwort.json()) as { id: string }).id;
+  }
+
+  async function gibtEs(id: string) {
+    return (
+      (await env.DB.prepare("SELECT id FROM quiz WHERE id = ?")
+        .bind(id)
+        .first()) !== null
+    );
+  }
+
+  it("löscht genau das Quiz mit dieser ID", async () => {
+    const cookie = await kontoAnlegen(neueAdresse(), "geheim-123");
+    const weg = await quizAnlegen(cookie);
+    const bleibt = await quizAnlegen(cookie);
+
+    await env.DB.prepare(quizLoeschenSql(weg)).run();
+
+    expect(await gibtEs(weg)).toBe(false);
+    expect(await gibtEs(bleibt)).toBe(true);
+  });
+
+  it("lässt sich nicht mit SQL in der ID überlisten", async () => {
+    const cookie = await kontoAnlegen(neueAdresse(), "geheim-123");
+    const bleibt = await quizAnlegen(cookie);
+
+    await env.DB.prepare(quizLoeschenSql("x' OR '1'='1")).run();
+
+    expect(await gibtEs(bleibt)).toBe(true);
   });
 });
