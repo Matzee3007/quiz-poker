@@ -1,6 +1,6 @@
 ---
 titel: "Plan: Quizze in D1 speichern"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-06
 tags: [plan, phase-3, quiz-sammlung, d1]
 ---
@@ -232,14 +232,14 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 - [x] **Schritt 1: Doku ergänzen und committen:** Commit `Document saved quizzes`.
 - [x] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
 - [x] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`. Ergebnis: eine Lücke (Test für `anfrage-zu-gross` fehlte), mit `532ce29` geschlossen, sonst alles belegt.
-- [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe des Entwicklers mergen.
+- [x] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe des Entwicklers mergen.
 
 ### Aufgabe 11: Veröffentlichen (nach Freigabe des Entwicklers)
 
-- [ ] **Schritt 1: Migration, immer vor dem Hochladen:** `npx wrangler d1 migrations apply quiz-poker --remote`
-- [ ] **Schritt 2: Hochladen:** `npm run deploy`, danach `/api/health` antwortet 200.
-- [ ] **Schritt 3: Echter Durchlauf mit `npx wrangler tail`:** Test-Konto per Einladung, Quiz anlegen, speichern, spielen, löschen, Konto löschen. Danach in D1 kein Quiz und kein Konto übrig. CPU-Zeit je Anfrage an `/api/quizze` notieren: Die Sitzungsabfrage lag bei den Konten schon bei bis zu 16 ms, über 10 ms ist der bekannte Grenzfall aus ADR 0005.
-- [ ] **Schritt 4: Abschluss:** Roadmap in der Projektvision ergänzen, Plan auf `status: abgeschlossen`, Journal und Übergabe.
+- [x] **Schritt 1: Migration, immer vor dem Hochladen:** `npx wrangler d1 migrations apply quiz-poker --remote`
+- [x] **Schritt 2: Hochladen:** `npm run deploy`, danach `/api/health` antwortet 200.
+- [x] **Schritt 3: Echter Durchlauf mit `npx wrangler tail`:** Test-Konto per Einladung, Quiz anlegen, speichern, spielen, löschen, Konto löschen. Danach in D1 kein Quiz und kein Konto übrig. CPU-Zeit je Anfrage an `/api/quizze` notieren: Die Sitzungsabfrage lag bei den Konten schon bei bis zu 16 ms, über 10 ms ist der bekannte Grenzfall aus ADR 0005.
+- [x] **Schritt 4: Abschluss:** Roadmap in der Projektvision ergänzen, Plan auf `status: abgeschlossen`, Journal und Übergabe.
 
 ## Ergebnis der Reviews
 
@@ -256,3 +256,12 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 Bewusst nicht behoben: doppeltes Hashing bei der Anmeldung (Preis von Aufgabe 4), Audit-Fix im selben Branch (so geplant), `spielbar` zweimal geprüft, Spielen schickt den Inhalt (Entscheidung oben, Schritt 4 kann sie neu bewerten), Konto-Seite lädt die Liste für die Anzahl.
 
 Browser-Durchlauf (Playwright im Scratchpad, nicht im Repo): 23 Prüfungen und 7 Prüfungen zu den Funden, alle bestanden.
+
+## Vor dem Merge geprüft
+
+- **Fremdschlüssel in der echten D1:** In einer Wegwerf-Datenbank `quiz-poker-fk-probe` löschte `DELETE FROM "user"` genau die Quizze dieses Kontos, danach wieder gelöscht. Der erste `wrangler d1 create` scheiterte mit `Authentication error [code: 10000]`, der zweite Versuch mit derselben Anmeldung klappte.
+- **CPU der Sitzungsabfrage:** siehe Nachmessung in ADR 0005.
+
+## Veröffentlichung
+
+Online seit 2026-11-06 (PR #21). Reihenfolge wie geplant: Migration `0002_quizze.sql`, dann `npm run deploy`. Der Browser-Durchlauf lief gegen die echte Adresse mit 24 Prüfungen, alle bestanden, und löschte das Test-Konto am Ende selbst. Danach waren in D1 kein Quiz, kein Test-Konto, keine verwaiste Sitzung und keine offene Einladung übrig. CPU: siehe ADR 0005.
