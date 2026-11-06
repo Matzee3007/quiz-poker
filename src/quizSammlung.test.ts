@@ -118,6 +118,7 @@ describe("Anfragen an die Quiz-Sammlung", () => {
     ]) {
       expect(meldungFuer(code)).not.toBe(allgemein);
     }
+    expect(meldungFuer("anfrage-zu-gross")).toBe("Das Quiz ist zu groß.");
   });
 });
 
