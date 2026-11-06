@@ -231,7 +231,7 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 
 - [x] **Schritt 1: Doku ergänzen und committen:** Commit `Document saved quizzes`.
 - [x] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
-- [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
+- [x] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`. Ergebnis: eine Lücke (Test für `anfrage-zu-gross` fehlte), mit `532ce29` geschlossen, sonst alles belegt.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe des Entwicklers mergen.
 
 ### Aufgabe 11: Veröffentlichen (nach Freigabe des Entwicklers)
