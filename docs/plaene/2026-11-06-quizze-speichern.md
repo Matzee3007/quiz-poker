@@ -142,14 +142,14 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 
 - Liefert: `anmeldungBestaetigen(env: Env, sitzungToken: string, userId: string, passwort: string): Promise<boolean>` in `worker/auth.ts`. Prüft das Passwort gegen den aktuellen Hash in `account`. Passt es nicht mehr, löscht es die Sitzung und gibt `false` zurück.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - Konto anmelden, dann das Passwort in `account` direkt auf einen neuen Hash setzen, dann `anmeldungBestaetigen` mit dem alten Passwort → `false`, die Sitzung ist aus `session` verschwunden
   - mit dem aktuellen Passwort → `true`, die Sitzung bleibt
   - normale Anmeldung über `/api/auth/sign-in/email` → weiter 200 mit Cookie (der Hook stört nicht)
-- [ ] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
-- [ ] **Schritt 3: Funktion schreiben und in `hooks.after` für `/sign-in/email` aufrufen:** Sitzung aus `ctx.context.newSession`, Passwort aus `ctx.body.password`. Bei `false` `APIError("UNAUTHORIZED")` mit Code `INVALID_EMAIL_OR_PASSWORD`, so sieht der Angreifer dieselbe Antwort wie bei einem falschen Passwort. Kostet je Anmeldung ein zweites Hashing im Durable Object (gemessen bis 93 ms).
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS, auch `worker/konto.test.ts` und die Grenze von 10 Anmeldungen pro Minute.
-- [ ] **Schritt 5: `npm run check`, Commit** `Revoke sign-ins that race a password reset`.
+- [x] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
+- [x] **Schritt 3: Funktion schreiben und in `hooks.after` für `/sign-in/email` aufrufen:** Sitzung aus `ctx.context.newSession`, Passwort aus `ctx.body.password`. Bei `false` `APIError("UNAUTHORIZED")` mit Code `INVALID_EMAIL_OR_PASSWORD`, so sieht der Angreifer dieselbe Antwort wie bei einem falschen Passwort. Kostet je Anmeldung ein zweites Hashing im Durable Object (gemessen bis 93 ms).
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS, auch `worker/konto.test.ts` und die Grenze von 10 Anmeldungen pro Minute.
+- [x] **Schritt 5: `npm run check`, Commit** `Revoke sign-ins that race a password reset`.
 
 ### Aufgabe 5: Betreiber löscht ein Quiz
 

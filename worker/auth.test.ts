@@ -1,7 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { getMigrations } from "better-auth/db/migration";
-import { describe, expect, it } from "vitest";
-import { auth } from "./auth";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { anmeldungBestaetigen, auth } from "./auth";
 import { BASIS, cookieAus, kontoAnlegen, neueAdresse } from "./testhilfen";
 
 const PASSWORT = "geheim-123";
@@ -295,5 +295,95 @@ describe("Offene Wege", () => {
     expect(await sitzung(cookie)).toMatchObject({
       user: { name: "Quiz-Master" },
     });
+  });
+});
+
+describe("Anmeldung während eines Zurücksetzens", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function kontoId(email: string) {
+    const zeile = await env.DB.prepare('SELECT id FROM "user" WHERE email = ?')
+      .bind(email)
+      .first<{ id: string }>();
+    return zeile!.id;
+  }
+
+  async function passwortSetzen(userId: string, passwort: string) {
+    const hash = await env.PASSWORTRECHNER.getByName("global").hashen(passwort);
+    await env.DB.prepare(
+      "UPDATE account SET password = ? WHERE userId = ? AND providerId = 'credential'",
+    )
+      .bind(hash, userId)
+      .run();
+  }
+
+  async function sitzungen(userId: string) {
+    const zeile = await env.DB.prepare(
+      "SELECT COUNT(*) AS anzahl FROM session WHERE userId = ?",
+    )
+      .bind(userId)
+      .first<{ anzahl: number }>();
+    return zeile!.anzahl;
+  }
+
+  it("löscht eine Sitzung, deren Passwort nicht mehr gilt", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const userId = await kontoId(email);
+    const token = (await env.DB.prepare(
+      "SELECT token FROM session WHERE userId = ?",
+    )
+      .bind(userId)
+      .first<{ token: string }>())!.token;
+    await passwortSetzen(userId, "neu-geheim-456");
+
+    expect(await anmeldungBestaetigen(env, token, userId, PASSWORT)).toBe(
+      false,
+    );
+    expect(await sitzungen(userId)).toBe(0);
+  });
+
+  it("lässt eine Sitzung mit gültigem Passwort stehen", async () => {
+    const email = neueAdresse();
+    await kontoAnlegen(email, PASSWORT);
+    const userId = await kontoId(email);
+    const token = (await env.DB.prepare(
+      "SELECT token FROM session WHERE userId = ?",
+    )
+      .bind(userId)
+      .first<{ token: string }>())!.token;
+
+    expect(await anmeldungBestaetigen(env, token, userId, PASSWORT)).toBe(true);
+    expect(await sitzungen(userId)).toBe(1);
+  });
+
+  it("lehnt die Anmeldung ab, wenn das Passwort während der Prüfung wechselt", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+    const userId = await kontoId(email);
+    await anAuth("/sign-out", {}, { Cookie: cookie }).then((a) => a.text());
+    // Die erste Prüfung ist die von Better Auth: Genau jetzt löst jemand den Passwort-Link ein.
+    vi.spyOn(env.PASSWORTRECHNER, "getByName").mockReturnValueOnce({
+      pruefen: async (hash: string, passwort: string) => {
+        // Der Nachbau gilt nur einmal, dieser Aufruf erreicht den echten Rechner.
+        const ergebnis = await env.PASSWORTRECHNER.getByName("global").pruefen(
+          hash,
+          passwort,
+        );
+        await passwortSetzen(userId, "neu-geheim-456");
+        await env.DB.prepare("DELETE FROM session WHERE userId = ?")
+          .bind(userId)
+          .run();
+        return ergebnis;
+      },
+    } as unknown as ReturnType<typeof env.PASSWORTRECHNER.getByName>);
+
+    const antwort = await anmelden(email, PASSWORT, neueIp());
+    await antwort.text();
+
+    expect(antwort.status).toBe(401);
+    expect(await sitzungen(userId)).toBe(0);
   });
 });
