@@ -222,8 +222,8 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 
 **Dateien:** Ändern `src/ansichten/Datenschutz.svelte`, `src/ansichten/Konto.svelte`
 
-- [ ] **Schritt 1: Texte ergänzen:** Datenschutz, Abschnitt „Mit Konto“: Gespeicherte Quizze liegen mit dem Konto in der Datenbank, nur der Besitzer sieht sie, sie verschwinden sofort beim Löschen des Quiz oder des Kontos, und der Betreiber kann einzelne Quizze löschen. Konto löschen: „Entfernt deine Adresse, dein Passwort und deine Quizze.“ Der Satz „Das Speichern von Quizzen kommt später.“ entfällt.
-- [ ] **Schritt 2: `npm run check`, Commit** `Mention saved quizzes in privacy notice`.
+- [x] **Schritt 1: Texte ergänzen:** Datenschutz, Abschnitt „Mit Konto“: Gespeicherte Quizze liegen mit dem Konto in der Datenbank, nur der Besitzer sieht sie, sie verschwinden sofort beim Löschen des Quiz oder des Kontos, und der Betreiber kann einzelne Quizze löschen. Konto löschen: „Entfernt deine Adresse, dein Passwort und deine Quizze.“ Der Satz „Das Speichern von Quizzen kommt später.“ entfällt.
+- [x] **Schritt 2: `npm run check`, Commit** `Mention saved quizzes in privacy notice`.
 
 ### Aufgabe 10: Doku und Prüfungen
 

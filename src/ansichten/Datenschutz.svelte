@@ -23,6 +23,12 @@
       Server halten dich 30 Tage angemeldet. Wenn du dein Konto löschst, sind
       diese Daten sofort entfernt.
     </p>
+    <p class="matt">
+      Quizze, die du speicherst, liegen mit deinem Konto in der Datenbank, und
+      nur du siehst sie. Sie sind sofort entfernt, wenn du das Quiz oder dein
+      Konto löschst. Der Betreiber kann einzelne Quizze löschen, zum Beispiel
+      wenn ein Inhalt nicht auf diese Seite gehört.
+    </p>
   </section>
   <section class="karte stapel">
     <h2>IP-Adressen</h2>
