@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { entwurfAusText, leererEntwurf, verschieben } from "./quizEntwurf";
+import {
+  bearbeitbar,
+  entwurfAusText,
+  leererEntwurf,
+  verschieben,
+} from "./quizEntwurf";
 
 describe("leererEntwurf", () => {
   it("hat einen leeren Titel und eine Kategorie mit einer leeren Frage", () => {
@@ -73,5 +78,34 @@ describe("verschieben", () => {
   it("lässt die Liste am Rand unverändert", () => {
     expect(verschieben(["a", "b"], 0, -1)).toEqual(["a", "b"]);
     expect(verschieben(["a", "b"], 1, 1)).toEqual(["a", "b"]);
+  });
+});
+
+describe("bearbeitbar", () => {
+  const frage = { text: "F", musterloesung: "L" };
+
+  it("ergänzt eine leere Kategorie, wenn keine da ist", () => {
+    expect(bearbeitbar({ titel: "T", kategorien: [] })).toEqual({
+      titel: "T",
+      kategorien: [{ name: "", fragen: [{ text: "", musterloesung: "" }] }],
+    });
+  });
+
+  it("ergänzt eine leere Frage in Kategorien ohne Fragen", () => {
+    expect(
+      bearbeitbar({
+        titel: "T",
+        kategorien: [
+          { name: "A", fragen: [] },
+          { name: "B", fragen: [frage] },
+        ],
+      }),
+    ).toEqual({
+      titel: "T",
+      kategorien: [
+        { name: "A", fragen: [{ text: "", musterloesung: "" }] },
+        { name: "B", fragen: [frage] },
+      ],
+    });
   });
 });

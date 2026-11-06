@@ -1,3 +1,5 @@
+import { QUIZ_GRENZEN } from "./regeln/quizpruefung";
+
 const MELDUNGEN: Record<string, string> = {
   "falsche-phase": "Das geht in diesem Schritt nicht.",
   "unbekannter-spieler": "Diesen Spieler gibt es in diesem Spielraum nicht.",
@@ -46,8 +48,7 @@ const MELDUNGEN: Record<string, string> = {
     "Das ging nicht über diese Seite. Bitte lade sie neu und versuche es noch einmal.",
   "nicht-angemeldet": "Dafür musst du angemeldet sein.",
   "quiz-unbekannt": "Dieses Quiz gibt es nicht mehr.",
-  "zu-viele-quizze":
-    "Du hast schon 20 Quizze gespeichert. Lösche eines, um ein neues anzulegen.",
+  "zu-viele-quizze": `Du hast schon ${QUIZ_GRENZEN.quizzeJeKonto} Quizze gespeichert. Lösche eines, um ein neues anzulegen.`,
 };
 
 export function meldungFuer(code: string): string {

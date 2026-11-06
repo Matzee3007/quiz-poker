@@ -10,6 +10,7 @@
   } from "../quizSammlung";
   import { raumEroeffnen } from "../raumEroeffnen";
   import { leererEntwurf } from "../regeln/quizEntwurf";
+  import { QUIZ_GRENZEN } from "../regeln/quizpruefung";
 
   interface Props {
     onBearbeiten: (id: string) => void;
@@ -19,7 +20,7 @@
 
   let { onBearbeiten, onEintritt, onSitzungAbgelaufen }: Props = $props();
 
-  const HOECHSTENS = 20;
+  const HOECHSTENS = QUIZ_GRENZEN.quizzeJeKonto;
 
   let quizze = $state<QuizEintrag[] | null>(null);
   let fehler = $state<string | null>(null);

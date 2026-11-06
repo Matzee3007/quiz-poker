@@ -1,9 +1,12 @@
-import { entwurfPruefen, quizPruefen } from "../src/regeln/quizpruefung";
+import {
+  entwurfPruefen,
+  QUIZ_GRENZEN,
+  quizPruefen,
+} from "../src/regeln/quizpruefung";
 import { eingabeLesen, fehler } from "./anfrage";
 import { auth } from "./auth";
 import { QUIZ_ID_MUSTER } from "./betrieb";
 
-export const QUIZ_HOECHSTANZAHL = 20;
 // Wie beim Eröffnen eines Spielraums: Ein Quiz an allen Grenzen bleibt deutlich darunter.
 const ANFRAGE_HOECHSTGROESSE = 256 * 1024;
 
@@ -62,7 +65,7 @@ async function quizAnlegen(
       quizPruefen(pruefung.quiz).ok ? 1 : 0,
       Date.now(),
       besitzer,
-      QUIZ_HOECHSTANZAHL,
+      QUIZ_GRENZEN.quizzeJeKonto,
     )
     .run();
   if (eingefuegt.meta.changes === 0) {

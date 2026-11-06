@@ -8,6 +8,22 @@ export function leererEntwurf(): Quiz {
   };
 }
 
+/**
+ * Der Editor braucht mindestens eine Kategorie und je Kategorie eine Frage. Ein gespeichertes Quiz darf beides
+ * fehlen lassen, dann kommen leere Felder dazu, statt dass Inhalt verloren geht.
+ */
+export function bearbeitbar(quiz: Quiz): Quiz {
+  const kategorien = quiz.kategorien.map((kategorie) =>
+    kategorie.fragen.length > 0
+      ? kategorie
+      : { ...kategorie, fragen: [{ text: "", musterloesung: "" }] },
+  );
+  return {
+    titel: quiz.titel,
+    kategorien: kategorien.length > 0 ? kategorien : leererEntwurf().kategorien,
+  };
+}
+
 /** Liest einen gespeicherten Entwurf. Unfertige Felder bleiben, alles Kaputte ergibt einen leeren Entwurf. */
 export function entwurfAusText(text: string | null): Quiz {
   if (text === null) {

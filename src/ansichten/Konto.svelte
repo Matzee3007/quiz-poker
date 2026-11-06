@@ -2,6 +2,7 @@
   import { abmelden, kontoLoeschen } from "../konto";
   import { meldungFuer } from "../meldungen";
   import { quizzeLaden } from "../quizSammlung";
+  import { QUIZ_GRENZEN } from "../regeln/quizpruefung";
 
   interface Props {
     adresse: string;
@@ -86,7 +87,9 @@
         <div class="reihe zwischen">
           <h2>Meine Quizze</h2>
           {#if anzahl !== null}
-            <span class="zaehler"><b>{anzahl}</b> von 20</span>
+            <span class="zaehler"
+              ><b>{anzahl}</b> von {QUIZ_GRENZEN.quizzeJeKonto}</span
+            >
           {/if}
         </div>
         <p class="matt klein">

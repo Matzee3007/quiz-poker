@@ -187,6 +187,20 @@
     adresseUebernehmen();
   }
 
+  // Der Zurück-Knopf des Browsers lässt sich nicht abbrechen. Bleibt man, kommt die Adresse des Editors zurück.
+  function zurueckImBrowser() {
+    if (
+      editorUngespeichert &&
+      quizId &&
+      !confirm("Deine Änderungen sind nicht gespeichert. Trotzdem verlassen?")
+    ) {
+      history.pushState(null, "", `/quiz/${quizId}`);
+      return;
+    }
+    editorUngespeichert = false;
+    adresseUebernehmen();
+  }
+
   function zumStart() {
     zu("/");
   }
@@ -237,7 +251,7 @@
   ] as const;
 </script>
 
-<svelte:window onpopstate={adresseUebernehmen} />
+<svelte:window onpopstate={zurueckImBrowser} />
 
 <header class="kopf">
   <span class="logo">Quiz-Poker</span>

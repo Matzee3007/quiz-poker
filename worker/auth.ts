@@ -22,13 +22,7 @@ export async function anmeldungBestaetigen(
   )
     .bind(userId)
     .first<{ password: string | null }>();
-  if (
-    konto?.password &&
-    (await umgebung.PASSWORTRECHNER.getByName("global").pruefen(
-      konto.password,
-      passwort,
-    ))
-  ) {
+  if (konto?.password && (await rechner().pruefen(konto.password, passwort))) {
     return true;
   }
   await umgebung.DB.prepare("DELETE FROM session WHERE token = ?")

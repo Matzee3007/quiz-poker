@@ -9,7 +9,7 @@
   import { quizSpeichern } from "../quizSammlung";
   import { raumEroeffnen } from "../raumEroeffnen";
   import type { Kategorie, Quiz } from "../regeln/partie";
-  import { verschieben } from "../regeln/quizEntwurf";
+  import { bearbeitbar, verschieben } from "../regeln/quizEntwurf";
   import { QUIZ_GRENZEN, quizPruefen } from "../regeln/quizpruefung";
   import EditorFeld from "./EditorFeld.svelte";
 
@@ -26,8 +26,10 @@
 
   // Nur der Anfangswert zählt: Der Editor arbeitet danach mit seiner eigenen Kopie.
   const anfang = untrack(() => gespeichert);
-  let entwurf = $state(anfang ? $state.snapshot(anfang.quiz) : entwurfLesen());
-  let gespeicherterStand = $state(anfang ? JSON.stringify(anfang.quiz) : "");
+  let entwurf = $state(
+    anfang ? bearbeitbar($state.snapshot(anfang.quiz)) : entwurfLesen(),
+  );
+  let gespeicherterStand = $state(anfang ? JSON.stringify(entwurf) : "");
   let speichertGerade = $state(false);
   let speichernFehlgeschlagen = $state(false);
   let abgelaufen = $state(false);
@@ -68,16 +70,6 @@
     if (ungespeichert) {
       ereignis.preventDefault();
     }
-  }
-
-  function zurueck() {
-    if (
-      ungespeichert &&
-      !confirm("Deine Änderungen sind nicht gespeichert. Trotzdem verlassen?")
-    ) {
-      return;
-    }
-    onZurueck();
   }
 
   /** Speichert das Quiz im Konto. true, wenn danach nichts Ungespeichertes übrig ist. */
@@ -333,7 +325,8 @@
   </div>
 
   <div class="editor-fuss">
-    <button class="text" onclick={zurueck}>
+    <!-- Die Rückfrage bei ungespeicherten Änderungen stellt App.svelte, für alle Wege aus dem Editor. -->
+    <button class="text" onclick={onZurueck}>
       {anfang ? "Zurück zu Meine Quizze" : "Zurück zum Start"}
     </button>
     {#if anfang}

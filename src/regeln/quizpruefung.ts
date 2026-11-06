@@ -7,6 +7,7 @@ export const QUIZ_GRENZEN = {
   kategorieName: 50,
   frage: 300,
   musterloesung: 100,
+  quizzeJeKonto: 20,
 } as const;
 
 export type QuizFehlerCode =
