@@ -42,6 +42,10 @@ _Nicht verwenden_: geheimes Quiz
 Ein Quiz, das alle in der Quiz-Sammlung sehen und spielen können und das sich mit einem Konto als eigene Kopie übernehmen lässt.
 _Nicht verwenden_: freies Quiz, geteiltes Quiz
 
+**Spielbares Quiz**:
+Ein Quiz mit mindestens einer Kategorie, je Kategorie mindestens einer Frage und ohne leere Felder. Gespeichert werden darf ein Quiz auch unfertig, spielen lässt sich nur ein spielbares.
+_Nicht verwenden_: gültiges Quiz, fertiges Quiz
+
 **Einmal-Quiz**:
 Ein Quiz ohne Konto, das nicht in der Quiz-Sammlung liegt und nur so lange besteht wie der Spielraum, in dem es gespielt wird.
 _Nicht verwenden_: Gast-Quiz, Sitzungs-Quiz, temporäres Quiz

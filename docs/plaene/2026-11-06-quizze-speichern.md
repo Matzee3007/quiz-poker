@@ -229,7 +229,7 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 
 **Dateien:** Ändern `CLAUDE.md` (Struktur: `worker/quizze.ts`, `worker/anfrage.ts`, `src/quizSammlung.ts`, Befehl `quiz-loeschen`), `docs/tools/Cloudflare D1.md` (Fremdschlüssel, `json_extract`, Grenze in einem `INSERT`), `docs/Glossar.md` bei neuen Begriffen
 
-- [ ] **Schritt 1: Doku ergänzen und committen:** Commit `Document saved quizzes`.
+- [x] **Schritt 1: Doku ergänzen und committen:** Commit `Document saved quizzes`.
 - [ ] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
 - [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe des Entwicklers mergen.
