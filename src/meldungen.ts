@@ -44,6 +44,10 @@ const MELDUNGEN: Record<string, string> = {
     "Dein Konto ist angelegt, nur die Anmeldung hat nicht geklappt. Bitte melde dich mit deiner Adresse und deinem Passwort an.",
   "fremde-herkunft":
     "Das ging nicht über diese Seite. Bitte lade sie neu und versuche es noch einmal.",
+  "nicht-angemeldet": "Dafür musst du angemeldet sein.",
+  "quiz-unbekannt": "Dieses Quiz gibt es nicht mehr.",
+  "zu-viele-quizze":
+    "Du hast schon 20 Quizze gespeichert. Lösche eines, um ein neues anzulegen.",
 };
 
 export function meldungFuer(code: string): string {

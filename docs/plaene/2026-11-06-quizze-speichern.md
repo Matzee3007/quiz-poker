@@ -197,11 +197,11 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 
   Plain `fetch` wie in `src/konto.ts`, Fehlercodes über `fehlercodeLesen`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben (mit nachgebautem `fetch` wie in `src/konto.test.ts`):** 401 → `sitzung-abgelaufen`, 404 → `quiz-unbekannt`, 409 → `zu-viele-quizze`, Netzfehler → `keine-verbindung`, Erfolg liefert den Wert. Jeder neue Code hat eine Meldung, `anfrage-zu-gross` heißt weiter „Das Quiz ist zu groß“.
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run src/quizSammlung.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: `src/quizSammlung.ts` und Meldungen schreiben.**
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add client requests for saved quizzes`.
+- [x] **Schritt 1: Fehlschlagende Tests schreiben (mit nachgebautem `fetch` wie in `src/konto.test.ts`):** 401 → `sitzung-abgelaufen`, 404 → `quiz-unbekannt`, 409 → `zu-viele-quizze`, Netzfehler → `keine-verbindung`, Erfolg liefert den Wert. Jeder neue Code hat eine Meldung, `anfrage-zu-gross` heißt weiter „Das Quiz ist zu groß“.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run src/quizSammlung.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: `src/quizSammlung.ts` und Meldungen schreiben.**
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add client requests for saved quizzes`.
 
 ### Aufgabe 8: Ansichten
 
