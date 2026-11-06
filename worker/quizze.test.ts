@@ -159,3 +159,149 @@ describe("Quizze anlegen und auflisten", () => {
     expect(antwort.status).toBe(405);
   });
 });
+
+describe("Ein Quiz lesen, ändern und löschen", () => {
+  async function lesen(cookie: string, id: string) {
+    const antwort = await anQuizze(cookie, "GET", `/${id}`);
+    return {
+      status: antwort.status,
+      daten: (await antwort.json()) as {
+        id?: string;
+        quiz?: unknown;
+        spielbar?: boolean;
+        geaendertAm?: number;
+        code?: string;
+      },
+    };
+  }
+
+  async function quizMitKonto() {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie);
+    return { cookie, id: daten.id! };
+  }
+
+  it("liefert das eigene Quiz", async () => {
+    const { cookie, id } = await quizMitKonto();
+
+    const { status, daten } = await lesen(cookie, id);
+
+    expect(status).toBe(200);
+    expect(daten).toMatchObject({ id, quiz: UNFERTIG, spielbar: false });
+  });
+
+  it("speichert Änderungen und erkennt, wenn das Quiz spielbar wird", async () => {
+    const { cookie, id } = await quizMitKonto();
+    const vorher = (await lesen(cookie, id)).daten.geaendertAm!;
+    await new Promise((fertig) => setTimeout(fertig, 5));
+
+    const antwort = await anQuizze(cookie, "PUT", `/${id}`, {
+      quiz: BEISPIEL_QUIZ,
+    });
+
+    expect(antwort.status).toBe(200);
+    const { geaendertAm } = (await antwort.json()) as { geaendertAm: number };
+    expect(geaendertAm).toBeGreaterThan(vorher);
+    expect((await lesen(cookie, id)).daten).toMatchObject({
+      quiz: BEISPIEL_QUIZ,
+      spielbar: true,
+      geaendertAm,
+    });
+  });
+
+  it("prüft auch beim Ändern die Grenzen", async () => {
+    const { cookie, id } = await quizMitKonto();
+
+    const antwort = await anQuizze(cookie, "PUT", `/${id}`, {
+      quiz: { titel: "t".repeat(101), kategorien: [] },
+    });
+
+    expect(antwort.status).toBe(422);
+    expect(await antwort.json()).toEqual({ code: "text-zu-lang" });
+    expect((await lesen(cookie, id)).daten.quiz).toEqual(UNFERTIG);
+  });
+
+  it("löscht das Quiz", async () => {
+    const { cookie, id } = await quizMitKonto();
+
+    const antwort = await anQuizze(cookie, "DELETE", `/${id}`);
+
+    expect(antwort.status).toBe(204);
+    expect(await lesen(cookie, id)).toEqual({
+      status: 404,
+      daten: { code: "quiz-unbekannt" },
+    });
+    expect(await liste(cookie)).toEqual([]);
+  });
+
+  it("verbirgt fremde Quizze und lässt sie unverändert", async () => {
+    const { cookie, id } = await quizMitKonto();
+    const fremd = await neuesKonto();
+
+    expect((await lesen(fremd, id)).status).toBe(404);
+    const aendern = await anQuizze(fremd, "PUT", `/${id}`, {
+      quiz: BEISPIEL_QUIZ,
+    });
+    expect(aendern.status).toBe(404);
+    const loeschen = await anQuizze(fremd, "DELETE", `/${id}`);
+    expect(loeschen.status).toBe(404);
+
+    expect((await lesen(cookie, id)).daten.quiz).toEqual(UNFERTIG);
+  });
+
+  it("löscht nur auf Anfrage der eigenen Seite", async () => {
+    const { cookie, id } = await quizMitKonto();
+
+    const antwort = await exports.default.fetch(`${BASIS}/api/quizze/${id}`, {
+      method: "DELETE",
+      headers: { Origin: "https://boese.test", Cookie: cookie },
+    });
+
+    expect(antwort.status).toBe(403);
+    expect((await lesen(cookie, id)).status).toBe(200);
+  });
+
+  it("kennt unbekannte und ungültige IDs nicht", async () => {
+    const cookie = await neuesKonto();
+
+    expect((await lesen(cookie, crypto.randomUUID())).status).toBe(404);
+    expect((await lesen(cookie, "abc")).status).toBe(404);
+  });
+
+  it("verlangt auch hier eine Anmeldung", async () => {
+    const { id } = await quizMitKonto();
+
+    expect((await lesen("", id)).status).toBe(401);
+  });
+
+  it("löscht mit dem Konto alle seine Quizze, fremde bleiben", async () => {
+    const email = neueAdresse();
+    const cookie = await kontoAnlegen(email, PASSWORT);
+    await anlegen(cookie);
+    await anlegen(cookie);
+    const anderes = await quizMitKonto();
+
+    const antwort = await exports.default.fetch(
+      `${BASIS}/api/auth/delete-user`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: BASIS,
+          Cookie: cookie,
+          "cf-connecting-ip": "198.51.100.7",
+        },
+        body: JSON.stringify({ password: PASSWORT }),
+      },
+    );
+    await antwort.text();
+
+    expect(antwort.status).toBe(200);
+    const uebrig = await env.DB.prepare(
+      `SELECT COUNT(*) AS anzahl FROM quiz
+       WHERE besitzer NOT IN (SELECT id FROM "user")`,
+    ).first<{ anzahl: number }>();
+    expect(uebrig!.anzahl).toBe(0);
+    expect((await lesen(anderes.cookie, anderes.id)).status).toBe(200);
+  });
+});

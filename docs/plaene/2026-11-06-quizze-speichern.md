@@ -120,17 +120,17 @@ DELETE /api/quizze/:id    → 204 | 401 | 404
 
 **Schnittstellen:** Nutzt alles aus Aufgabe 2. Eine ID passt zum Muster `^[0-9a-f-]{36}$`, sonst 404 ohne Abfrage.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - `GET` des eigenen Quiz → 200, `quiz` gleicht dem gespeicherten
   - `PUT` mit geändertem Titel → 200, `GET` zeigt den neuen Titel, `geaendertAm` ist gewachsen, aus einem unfertigen wird mit vollständigem Inhalt `spielbar: true`
   - `DELETE` → 204, danach `GET` → 404 `quiz-unbekannt`, die Liste ist um eins kürzer
   - fremdes Konto: `GET`, `PUT`, `DELETE` → 404, das Quiz ist danach unverändert
   - unbekannte ID und `abc` → 404
   - Konto über `/api/auth/delete-user` löschen → seine Quizze sind aus der Tabelle verschwunden, die eines anderen Kontos nicht
-- [ ] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
-- [ ] **Schritt 3: Lesen, Ändern und Löschen schreiben:** jede Abfrage mit `WHERE id = ? AND besitzer = ?`, `meta.changes === 0` heißt 404. Das Löschen mit dem Konto übernimmt `ON DELETE CASCADE`. Schlägt dieser Test fehl, weil D1 die Fremdschlüssel nicht durchsetzt, die Quizze in `beforeDelete` in `worker/auth.ts` löschen.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add reading, updating and deleting saved quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
+- [x] **Schritt 3: Lesen, Ändern und Löschen schreiben:** jede Abfrage mit `WHERE id = ? AND besitzer = ?`, `meta.changes === 0` heißt 404. Das Löschen mit dem Konto übernimmt `ON DELETE CASCADE`. Schlägt dieser Test fehl, weil D1 die Fremdschlüssel nicht durchsetzt, die Quizze in `beforeDelete` in `worker/auth.ts` löschen.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add reading, updating and deleting saved quizzes`.
 
 ### Aufgabe 4: Keine Anmeldung überlebt das Zurücksetzen
 

@@ -5,6 +5,7 @@ import { auth } from "./auth";
 export const QUIZ_HOECHSTANZAHL = 20;
 // Wie beim Eröffnen eines Spielraums: Ein Quiz an allen Grenzen bleibt deutlich darunter.
 const ANFRAGE_HOECHSTGROESSE = 256 * 1024;
+export const QUIZ_ID_MUSTER = /^[0-9a-f-]{36}$/;
 
 async function kontoDerSitzung(anfrage: Request): Promise<string | null> {
   const sitzung = await auth.api.getSession({ headers: anfrage.headers });
@@ -70,6 +71,79 @@ async function quizAnlegen(
   return Response.json({ id }, { status: 201 });
 }
 
+async function quizLesen(
+  env: Env,
+  besitzer: string,
+  id: string,
+): Promise<Response> {
+  const zeile = await env.DB.prepare(
+    "SELECT inhalt, spielbar, geaendert_am FROM quiz WHERE id = ? AND besitzer = ?",
+  )
+    .bind(id, besitzer)
+    .first<{ inhalt: string; spielbar: number; geaendert_am: number }>();
+  if (!zeile) {
+    return fehler(404, "quiz-unbekannt");
+  }
+  return Response.json({
+    id,
+    quiz: JSON.parse(zeile.inhalt) as unknown,
+    spielbar: zeile.spielbar === 1,
+    geaendertAm: zeile.geaendert_am,
+  });
+}
+
+async function quizAendern(
+  anfrage: Request,
+  env: Env,
+  besitzer: string,
+  id: string,
+): Promise<Response> {
+  const daten = await eingabeLesen(anfrage, env, ANFRAGE_HOECHSTGROESSE);
+  if (daten instanceof Response) {
+    return daten;
+  }
+  const pruefung = entwurfPruefen(daten.quiz);
+  if (!pruefung.ok) {
+    return fehler(422, pruefung.code);
+  }
+  const geaendertAm = Date.now();
+  const geaendert = await env.DB.prepare(
+    "UPDATE quiz SET inhalt = ?, spielbar = ?, geaendert_am = ? WHERE id = ? AND besitzer = ?",
+  )
+    .bind(
+      JSON.stringify(pruefung.quiz),
+      quizPruefen(pruefung.quiz).ok ? 1 : 0,
+      geaendertAm,
+      id,
+      besitzer,
+    )
+    .run();
+  if (geaendert.meta.changes === 0) {
+    return fehler(404, "quiz-unbekannt");
+  }
+  return Response.json({ geaendertAm });
+}
+
+async function quizLoeschen(
+  anfrage: Request,
+  env: Env,
+  besitzer: string,
+  id: string,
+): Promise<Response> {
+  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+    return fehler(403, "fremde-herkunft");
+  }
+  const geloescht = await env.DB.prepare(
+    "DELETE FROM quiz WHERE id = ? AND besitzer = ?",
+  )
+    .bind(id, besitzer)
+    .run();
+  if (geloescht.meta.changes === 0) {
+    return fehler(404, "quiz-unbekannt");
+  }
+  return new Response(null, { status: 204 });
+}
+
 /** Alle Wege unter /api/quizze. id ist null für die Liste selbst. */
 export async function quizAnfrage(
   anfrage: Request,
@@ -85,6 +159,21 @@ export async function quizAnfrage(
   }
   if (id === null && anfrage.method === "POST") {
     return quizAnlegen(anfrage, env, besitzer);
+  }
+  if (id === null) {
+    return fehler(405, "falsche-methode");
+  }
+  if (!QUIZ_ID_MUSTER.test(id)) {
+    return fehler(404, "quiz-unbekannt");
+  }
+  if (anfrage.method === "GET") {
+    return quizLesen(env, besitzer, id);
+  }
+  if (anfrage.method === "PUT") {
+    return quizAendern(anfrage, env, besitzer, id);
+  }
+  if (anfrage.method === "DELETE") {
+    return quizLoeschen(anfrage, env, besitzer, id);
   }
   return fehler(405, "falsche-methode");
 }
