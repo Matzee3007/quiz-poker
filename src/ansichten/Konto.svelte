@@ -1,16 +1,31 @@
 <script lang="ts">
   import { abmelden, kontoLoeschen } from "../konto";
   import { meldungFuer } from "../meldungen";
+  import { quizzeLaden } from "../quizSammlung";
 
   interface Props {
     adresse: string;
     onAbgemeldet: () => void;
     onGeloescht: () => void;
     onSitzungAbgelaufen: () => void;
+    onMeineQuizze: () => void;
   }
 
-  let { adresse, onAbgemeldet, onGeloescht, onSitzungAbgelaufen }: Props =
-    $props();
+  let {
+    adresse,
+    onAbgemeldet,
+    onGeloescht,
+    onSitzungAbgelaufen,
+    onMeineQuizze,
+  }: Props = $props();
+
+  // Nur zur Anzeige: Scheitert die Abfrage, fehlt die Zahl einfach.
+  let anzahl = $state<number | null>(null);
+  void quizzeLaden().then((ergebnis) => {
+    if (ergebnis.ok) {
+      anzahl = ergebnis.wert.length;
+    }
+  });
 
   let loeschenOffen = $state(false);
   let passwort = $state("");
@@ -55,7 +70,6 @@
 <main class="seite stapel">
   <section class="spielidee">
     <h1>Dein Konto</h1>
-    <p class="matt">Das Speichern von Quizzen kommt später.</p>
   </section>
   {#if fehler}
     <p class="hinweis fehler" role="alert">{fehler}</p>
@@ -68,6 +82,18 @@
         <button disabled={sendetGerade} onclick={abmeldenKlick}>Abmelden</button
         >
       </div>
+      <div class="stapel linie-oben">
+        <div class="reihe zwischen">
+          <h2>Meine Quizze</h2>
+          {#if anzahl !== null}
+            <span class="zaehler"><b>{anzahl}</b> von 20</span>
+          {/if}
+        </div>
+        <p class="matt klein">
+          Deine gespeicherten Quizze, nur für dich sichtbar.
+        </p>
+        <div><button onclick={onMeineQuizze}>Zu meinen Quizzen</button></div>
+      </div>
     </section>
     {#if loeschenOffen}
       <form class="karte stapel" onsubmit={loeschen}>
@@ -76,9 +102,9 @@
           <p class="hinweis fehler" role="alert">{loeschFehler}</p>
         {/if}
         <p class="notiz warnung klein">
-          Das Löschen ist endgültig. Deine Adresse und dein Passwort werden
-          sofort entfernt, und niemand kann das Konto wiederherstellen. Spielen
-          kannst du weiter ohne Konto.
+          Das Löschen ist endgültig. Deine Adresse, dein Passwort und deine
+          Quizze werden sofort entfernt, und niemand kann das Konto
+          wiederherstellen. Spielen kannst du weiter ohne Konto.
         </p>
         <div class:feld-fehler={loeschFehler !== null}>
           <label for="passwort">Passwort zur Bestätigung</label>
@@ -99,7 +125,9 @@
     {:else}
       <section class="karte stapel">
         <h2>Konto löschen</h2>
-        <p class="matt klein">Entfernt deine Adresse und dein Passwort.</p>
+        <p class="matt klein">
+          Entfernt deine Adresse, dein Passwort und deine Quizze.
+        </p>
         <div>
           <button onclick={() => (loeschenOffen = true)}>Konto löschen</button>
         </div>

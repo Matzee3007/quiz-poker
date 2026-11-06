@@ -214,9 +214,9 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 - Nutzt: `src/quizSammlung.ts`
 - Liefert: Pfade `/quizze` (Liste, nur angemeldet, sonst weiter zu `/anmelden` wie bei `/konto`) und `/quiz/<id>` (Editor). `QuizEditor` bekommt die Prop `gespeichert: { id: string; quiz: Quiz } | null`. Bei `null` bleibt alles wie heute (Entwurf im `localStorage`, Löschen beim Eröffnen). Sonst kein `localStorage`, ein Knopf „Speichern“, und „Spielraum eröffnen“ speichert zuerst.
 
-- [ ] **Schritt 1: Ansichten nach dem Mock bauen.** „Neues Quiz“ legt sofort ein leeres Quiz (`leererEntwurf()`) an und öffnet es. Löschen fragt per `confirm` nach. Ungespeicherte Änderungen: Rückfrage beim Verlassen über die eigenen Knöpfe und `beforeunload`. Bei `sitzung-abgelaufen` bleibt der Inhalt im Editor, die Meldung nennt das Anmelden in einem neuen Tab.
-- [ ] **Schritt 2: Im Browser durchspielen:** `npm run dev`, mit einem lokalen Konto (`npm run einladung -- --lokal`): Quiz anlegen, unfertig speichern, neu laden, fertig schreiben, spielen bis zum Ende, Quiz während der Partie ändern (die Partie bleibt gleich), löschen, 20er-Grenze, Abmelden in einem zweiten Tab und dann Speichern (Prüf-Schwerpunkt 5). Danach Einmal-Quiz und Beispiel-Quiz ohne Konto.
-- [ ] **Schritt 3: `npm run check`, Commit** `Add views for saved quizzes`.
+- [x] **Schritt 1: Ansichten nach dem Mock bauen.** „Neues Quiz“ legt sofort ein leeres Quiz (`leererEntwurf()`) an und öffnet es. Löschen fragt per `confirm` nach. Ungespeicherte Änderungen: Rückfrage beim Verlassen über die eigenen Knöpfe und `beforeunload`. Bei `sitzung-abgelaufen` bleibt der Inhalt im Editor, die Meldung nennt das Anmelden in einem neuen Tab.
+- [x] **Schritt 2: Im Browser durchspielen:** `npm run dev`, mit einem lokalen Konto (`npm run einladung -- --lokal`): Quiz anlegen, unfertig speichern, neu laden, fertig schreiben, spielen bis zum Ende, Quiz während der Partie ändern (die Partie bleibt gleich), löschen, 20er-Grenze, Abmelden in einem zweiten Tab und dann Speichern (Prüf-Schwerpunkt 5). Danach Einmal-Quiz und Beispiel-Quiz ohne Konto.
+- [x] **Schritt 3: `npm run check`, Commit** `Add views for saved quizzes`.
 
 ### Aufgabe 9: Datenschutz und Konto-Texte
 

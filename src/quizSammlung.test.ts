@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { meldungFuer } from "./meldungen";
 import {
+  geaendertText,
   quizAnlegen,
   quizLaden,
   quizLoeschen,
@@ -117,5 +118,24 @@ describe("Anfragen an die Quiz-Sammlung", () => {
     ]) {
       expect(meldungFuer(code)).not.toBe(allgemein);
     }
+  });
+});
+
+describe("geaendertText", () => {
+  const jetzt = new Date(2026, 10, 6, 22, 30);
+
+  it("nennt heute und gestern mit Uhrzeit", () => {
+    expect(geaendertText(new Date(2026, 10, 6, 21, 14).getTime(), jetzt)).toBe(
+      "heute, 21:14",
+    );
+    expect(geaendertText(new Date(2026, 10, 5, 9, 5).getTime(), jetzt)).toBe(
+      "gestern, 09:05",
+    );
+  });
+
+  it("nennt Älteres mit Datum", () => {
+    expect(geaendertText(new Date(2026, 10, 2, 12, 0).getTime(), jetzt)).toBe(
+      "2. Nov. 2026",
+    );
   });
 });

@@ -8,6 +8,7 @@
   import PasswortNeu from "./ansichten/PasswortNeu.svelte";
   import QuizEditor from "./ansichten/QuizEditor.svelte";
   import QuizMasterRunde from "./ansichten/QuizMasterRunde.svelte";
+  import Quizze from "./ansichten/Quizze.svelte";
   import Registrieren from "./ansichten/Registrieren.svelte";
   import RueckkehrHinweise from "./ansichten/RueckkehrHinweise.svelte";
   import SpielerRunde from "./ansichten/SpielerRunde.svelte";
@@ -15,6 +16,8 @@
   import Warten from "./ansichten/Warten.svelte";
   import { angemeldeteAdresse } from "./konto";
   import { meldungFuer } from "./meldungen";
+  import { quizLaden } from "./quizSammlung";
+  import type { Quiz } from "./regeln/partie";
   import { istGueltigerRaumcode } from "./regeln/raumcode";
   import {
     tokenLesen,
@@ -36,8 +39,13 @@
     "/registrieren",
     "/passwort-neu",
     "/konto",
+    "/quizze",
     "/datenschutz",
   ];
+
+  function quizIdAusPfad(): string | null {
+    return /^\/quiz\/([0-9a-f-]{36})$/.exec(location.pathname)?.[1] ?? null;
+  }
 
   function kontoPfadAusAdresse(): string | null {
     return KONTO_PFADE.includes(location.pathname) ? location.pathname : null;
@@ -45,6 +53,11 @@
 
   let imEditor = $state(location.pathname === EDITOR_PFAD);
   let kontoPfad = $state(kontoPfadAusAdresse());
+  let quizId = $state(quizIdAusPfad());
+  // Das gerade geladene Quiz aus dem Konto, null solange es lädt oder fehlt.
+  let gespeichertesQuiz = $state<{ id: string; quiz: Quiz } | null>(null);
+  let quizFehler = $state<string | null>(null);
+  let editorUngespeichert = $state(false);
   // undefined: Der Server hat noch nicht oder mit einem Fehler geantwortet.
   let adresse = $state<string | null | undefined>(undefined);
   let kontoLaedt = $state(false);
@@ -75,7 +88,33 @@
   }
 
   $effect(() => {
-    if (kontoPfad === "/konto" && adresse === null) {
+    const id = quizId;
+    untrack(() => {
+      gespeichertesQuiz = null;
+      quizFehler = null;
+      editorUngespeichert = false;
+    });
+    if (!id) {
+      return;
+    }
+    void quizLaden(id).then((ergebnis) => {
+      if (quizId !== id) {
+        return;
+      }
+      if (ergebnis.ok) {
+        gespeichertesQuiz = { id, quiz: ergebnis.wert };
+      } else if (ergebnis.code === "sitzung-abgelaufen") {
+        sitzungAbgelaufen();
+      } else {
+        quizFehler = meldungFuer(ergebnis.code);
+      }
+    });
+  });
+
+  $effect(() => {
+    const brauchtKonto =
+      kontoPfad === "/konto" || kontoPfad === "/quizze" || quizId !== null;
+    if (brauchtKonto && adresse === null) {
       // Ersetzen statt anhängen: Sonst führt der Zurück-Knopf immer wieder hierher.
       untrack(() => {
         history.replaceState(null, "", "/anmelden");
@@ -122,6 +161,7 @@
     startMeldung = null;
     imEditor = location.pathname === EDITOR_PFAD;
     kontoPfad = kontoPfadAusAdresse();
+    quizId = quizIdAusPfad();
     // Wer direkt in einem Spielraum startete, hat das Konto noch nicht geladen.
     if (adresse === undefined && !code) {
       void kontoLaden();
@@ -135,19 +175,24 @@
     token = neuesToken;
   }
 
-  function zumStart() {
-    history.pushState(null, "", "/");
+  function zu(pfad: string) {
+    if (
+      editorUngespeichert &&
+      !confirm("Deine Änderungen sind nicht gespeichert. Trotzdem verlassen?")
+    ) {
+      return;
+    }
+    editorUngespeichert = false;
+    history.pushState(null, "", pfad);
     adresseUebernehmen();
+  }
+
+  function zumStart() {
+    zu("/");
   }
 
   function zumEditor() {
-    history.pushState(null, "", EDITOR_PFAD);
-    adresseUebernehmen();
-  }
-
-  function zu(pfad: string) {
-    history.pushState(null, "", pfad);
-    adresseUebernehmen();
+    zu(EDITOR_PFAD);
   }
 
   async function zumKonto() {
@@ -175,6 +220,8 @@
     tokenSpeichern(neuerCode, neuesToken, rueckkehr);
     startMeldung = null;
     imEditor = false;
+    kontoPfad = null;
+    quizId = null;
     raumcode = neuerCode;
     token = neuesToken;
     if (raumcodeAusPfad() !== neuerCode) {
@@ -200,6 +247,11 @@
   {#if kontoPfad}
     <div class="rest">
       <button class="text" onclick={zumStart}>Zum Start</button>
+      {#if adresse && kontoPfad === "/quizze"}
+        <strong>Meine Quizze</strong>
+      {:else if adresse}
+        <button class="text" onclick={() => zu("/quizze")}>Meine Quizze</button>
+      {/if}
       {#if kontoPfad === "/konto"}
         <strong>Konto</strong>
       {:else if adresse}
@@ -208,9 +260,16 @@
         <button class="text" onclick={() => zu("/anmelden")}>Anmelden</button>
       {/if}
     </div>
+  {:else if quizId}
+    <div class="rest">
+      <button class="text" onclick={zumStart}>Zum Start</button>
+      <button class="text" onclick={() => zu("/quizze")}>Meine Quizze</button>
+      <button class="text" onclick={() => zu("/konto")}>Konto</button>
+    </div>
   {:else if !imEditor && !raumcode}
     <div class="rest">
       {#if adresse}
+        <button class="text" onclick={() => zu("/quizze")}>Meine Quizze</button>
         <button class="text" onclick={() => zu("/konto")}>Konto</button>
       {:else if !kontoLaedt}
         <span>Spielen geht ohne Konto</span>
@@ -258,10 +317,39 @@
   />
 {:else if kontoPfad === "/datenschutz"}
   <Datenschutz />
-{:else if kontoPfad === "/konto"}
-  {#if adresse}
+{:else if kontoPfad === "/quizze" && adresse}
+  <Quizze
+    onBearbeiten={(id) => zu(`/quiz/${id}`)}
+    onEintritt={eintreten}
+    onSitzungAbgelaufen={sitzungAbgelaufen}
+  />
+{:else if quizId}
+  {#if gespeichertesQuiz}
+    {#key gespeichertesQuiz.id}
+      <QuizEditor
+        gespeichert={gespeichertesQuiz}
+        onEintritt={eintreten}
+        onZurueck={() => zu("/quizze")}
+        onUngespeichert={(wert) => (editorUngespeichert = wert)}
+      />
+    {/key}
+  {:else}
+    <main class="seite stapel">
+      {#if quizFehler}
+        <p class="hinweis fehler" role="alert">{quizFehler}</p>
+        <div>
+          <button onclick={() => zu("/quizze")}>Zu meinen Quizzen</button>
+        </div>
+      {:else}
+        <p class="matt">Einen Moment …</p>
+      {/if}
+    </main>
+  {/if}
+{:else if kontoPfad === "/konto" || kontoPfad === "/quizze"}
+  {#if adresse && kontoPfad === "/konto"}
     <Konto
       {adresse}
+      onMeineQuizze={() => zu("/quizze")}
       onAbgemeldet={() => kontoVerlassen("Du bist abgemeldet.")}
       onGeloescht={() => kontoVerlassen("Dein Konto ist gelöscht.")}
       onSitzungAbgelaufen={sitzungAbgelaufen}
@@ -279,10 +367,12 @@
     </main>
   {/if}
 {:else if imEditor}
-  <QuizEditor onEintritt={eintreten} onZurueck={zumStart} />
+  <QuizEditor gespeichert={null} onEintritt={eintreten} onZurueck={zumStart} />
 {:else if !raumcode || !token}
   <Start
     {raumcode}
+    angemeldet={Boolean(adresse)}
+    onMeineQuizze={() => zu("/quizze")}
     meldung={startMeldung}
     onEintritt={eintreten}
     onEditor={zumEditor}
@@ -369,7 +459,7 @@
   <main class="seite"><p class="matt">Verbinden …</p></main>
 {/if}
 
-{#if !imEditor && !raumcode && kontoPfad !== "/datenschutz"}
+{#if !imEditor && !quizId && !raumcode && kontoPfad !== "/datenschutz"}
   <footer class="seiten-fuss">
     <button class="text" onclick={() => zu("/datenschutz")}>Datenschutz</button>
   </footer>

@@ -76,3 +76,26 @@ export function quizSpeichern(
 export function quizLoeschen(id: string): Promise<Ergebnis<null>> {
   return anfrage(`/${id}`, "DELETE", () => Promise.resolve(null));
 }
+
+/** „heute, 21:14“, „gestern, 22:05“, Älteres als „2. Nov. 2026“. */
+export function geaendertText(zeit: number, jetzt: Date): string {
+  const datum = new Date(zeit);
+  const tagesanfang = (tag: Date) =>
+    new Date(tag.getFullYear(), tag.getMonth(), tag.getDate()).getTime();
+  const tage = Math.round((tagesanfang(jetzt) - tagesanfang(datum)) / 86400000);
+  const uhrzeit = datum.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  if (tage === 0) {
+    return `heute, ${uhrzeit}`;
+  }
+  if (tage === 1) {
+    return `gestern, ${uhrzeit}`;
+  }
+  return datum.toLocaleDateString("de-DE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
