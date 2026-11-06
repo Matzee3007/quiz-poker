@@ -373,6 +373,10 @@ th.zahl {
   gap: 16px;
 }
 
+.wege.drei {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .weg {
   display: flex;
   flex-direction: column;
@@ -678,4 +682,203 @@ button.voll {
   margin: 0 auto;
   padding: 0 32px 18px;
   font-size: 13px;
+}
+
+/* Meine Quizze (Mock 2026-11-06, Liste B und Editor A) */
+.zustand {
+  display: inline-block;
+  border-radius: 99px;
+  padding: 1px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.zustand.spielbar {
+  background: #0f2a1f;
+  color: var(--gruen);
+}
+
+.zustand.unfertig {
+  background: #2c2410;
+  color: var(--gold);
+}
+
+.ohne-titel {
+  color: var(--matt);
+  font-style: italic;
+  font-weight: 400;
+}
+
+button.klein-knopf {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+button.spielen {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.linie-oben {
+  border-top: 1px solid var(--linie);
+  padding-top: 18px;
+}
+
+.listenkopf {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.listenkopf .zaehler {
+  font-size: 15px;
+}
+
+.listenkopf button {
+  margin-left: auto;
+}
+
+.voll-hinweis {
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kachel-raster {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.kachel {
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 178px;
+}
+
+.kachel h2 {
+  font-size: 18px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kachel .unten {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kachel .unten .text {
+  margin-left: auto;
+}
+
+.kachel.neu {
+  border: 1px dashed var(--linie-stark);
+  background: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.kachel.neu .plus-zeichen {
+  font-size: 34px;
+  color: var(--gold);
+  line-height: 1;
+  font-weight: 300;
+}
+
+.kachel.neu.gesperrt .plus-zeichen {
+  color: var(--matt);
+}
+
+.kachel-raster.dicht .kachel {
+  min-height: 0;
+  padding: 14px;
+  gap: 6px;
+}
+
+.kachel-raster.dicht .kachel h2 {
+  font-size: 16px;
+}
+
+.leer-karte {
+  text-align: center;
+  padding: 48px 24px;
+  align-items: center;
+}
+
+.leer-karte .chip {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 6px dashed var(--gold);
+  opacity: 0.8;
+}
+
+.stand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.stand::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gruen);
+}
+
+.stand.ok {
+  color: var(--matt);
+}
+
+.stand.offen {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.stand.offen::before {
+  background: var(--gold);
+}
+
+.stand.fehlt {
+  color: var(--rot);
+  font-weight: 600;
+}
+
+.stand.fehlt::before {
+  background: var(--rot);
+}
+
+.editor-fuss .speichern {
+  margin-left: auto;
+}
+
+.editor-fuss .speichern + .haupt,
+.editor-fuss .hinweis + .speichern {
+  margin-left: 0;
+}
+
+.abgelaufen p + p {
+  margin-top: 6px;
+}
+
+.abgelaufen a {
+  color: #1a0508;
+  text-decoration: underline;
+  font-weight: 700;
 }

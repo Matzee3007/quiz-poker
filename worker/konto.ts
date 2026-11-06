@@ -1,4 +1,5 @@
 import { isAPIError } from "better-auth/api";
+import { eingabeLesen, fehler } from "./anfrage";
 import { auth } from "./auth";
 import { geheimnisHash } from "./geheimnis";
 
@@ -8,10 +9,6 @@ const PASSWORT_HOECHSTENS = 128;
 // Better Auth verlangt einen Namen. Es sollen aber keine persönlichen Daten gespeichert werden (ADR 0003).
 const KONTONAME = "Quiz-Master";
 
-function fehler(status: number, code: string): Response {
-  return Response.json({ code }, { status });
-}
-
 function passwortPasst(passwort: string): boolean {
   return (
     passwort.length >= PASSWORT_MINDESTENS &&
@@ -19,38 +16,11 @@ function passwortPasst(passwort: string): boolean {
   );
 }
 
-/** Liest eine Anfrage von der eigenen Seite. Die Antwort ist der Fehler, wenn sie abgelehnt wird. */
-async function eingabeLesen(
-  anfrage: Request,
-  env: Env,
-): Promise<Record<string, unknown> | Response> {
-  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
-    return fehler(403, "fremde-herkunft");
-  }
-  // Die Angabe spart das Lesen großer Anfragen. Sie kann fehlen, deshalb zählt danach die echte Größe.
-  if (Number(anfrage.headers.get("Content-Length")) > ANFRAGE_HOECHSTGROESSE) {
-    return fehler(413, "anfrage-zu-gross");
-  }
-  const inhalt = await anfrage.arrayBuffer();
-  if (inhalt.byteLength > ANFRAGE_HOECHSTGROESSE) {
-    return fehler(413, "anfrage-zu-gross");
-  }
-  try {
-    const daten: unknown = JSON.parse(new TextDecoder().decode(inhalt));
-    if (typeof daten === "object" && daten !== null) {
-      return daten as Record<string, unknown>;
-    }
-  } catch {
-    // Kaputtes JSON behandelt die Zeile darunter.
-  }
-  return fehler(422, "ungueltige-nachricht");
-}
-
 export async function kontoRegistrieren(
   anfrage: Request,
   env: Env,
 ): Promise<Response> {
-  const daten = await eingabeLesen(anfrage, env);
+  const daten = await eingabeLesen(anfrage, env, ANFRAGE_HOECHSTGROESSE);
   if (daten instanceof Response) {
     return daten;
   }
@@ -148,7 +118,7 @@ export async function passwortNeuSetzen(
   anfrage: Request,
   env: Env,
 ): Promise<Response> {
-  const daten = await eingabeLesen(anfrage, env);
+  const daten = await eingabeLesen(anfrage, env, ANFRAGE_HOECHSTGROESSE);
   if (daten instanceof Response) {
     return daten;
   }

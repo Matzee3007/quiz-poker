@@ -42,7 +42,7 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
 quiz-poker/
 ├── src/                Oberfläche (Svelte)
 │   ├── App.svelte      Wählt je nach Adresse, Token und Ansicht, was zu sehen ist
-│   ├── ansichten/      Eine Komponente je Ansicht (Start, Editor, Warten, Runde, Auflösung, Ende)
+│   ├── ansichten/      Eine Komponente je Ansicht (Start, Editor, Meine Quizze, Warten, Runde, Auflösung, Ende)
 │   ├── entwurfSpeicher.ts  Entwurf des Einmal-Quiz im localStorage
 │   ├── konto.ts        Anfragen für Anmelden, Registrieren, Passwort und Konto
 │   ├── main.ts         Einstieg im Browser
@@ -50,6 +50,7 @@ quiz-poker/
 │   ├── stil.css        Stil C aus dem Mock
 │   ├── verbindung.svelte.ts  WebSocket mit Neuverbinden, Token im localStorage
 │   ├── protokoll.ts    Nachrichten zwischen Gerät und Server
+│   ├── quizSammlung.ts Anfragen für gespeicherte Quizze
 │   ├── raumEroeffnen.ts  Anfrage zum Eröffnen eines Spielraums
 │   └── regeln/         Spielregeln als reines TypeScript, ohne Svelte und Cloudflare
 │       ├── ansicht.ts  Was jede Rolle sehen darf
@@ -58,7 +59,7 @@ quiz-poker/
 │       ├── fehler.ts   Regelfehler mit Code
 │       ├── partie.ts   Spielstand und alle Spielaktionen einer Partie
 │       ├── quizEntwurf.ts  Unfertiger Entwurf im Editor: leer anlegen, lesen, sortieren
-│       ├── quizpruefung.ts  Prüft ein Quiz: Form, Grenzen, leere Felder
+│       ├── quizpruefung.ts  Prüft ein Quiz zum Spielen und einen Entwurf zum Speichern
 │       ├── raumcode.ts Raumcode erzeugen und prüfen
 │       └── raumgrenze.ts  Höchstens 30 neue Spielräume pro Stunde
 ├── worker/             Server (Cloudflare Worker)
@@ -68,6 +69,8 @@ quiz-poker/
 │   ├── passwortrechner.ts  Durable Object: Passwort-Hashing
 │   ├── auth.ts         Einrichtung von Better Auth
 │   ├── konto.ts        Registrieren mit Einladungscode, Passwort über Link
+│   ├── quizze.ts       Gespeicherte Quizze: anlegen, auflisten, lesen, ändern, löschen
+│   ├── anfrage.ts      Anfragen von der eigenen Seite lesen: Herkunft, Größe, JSON
 │   ├── betrieb.ts      SQL für die Befehle des Betreibers
 │   ├── geheimnis.ts    Codes und Links erzeugen und hashen
 │   ├── aufraeumen.ts   Löscht täglich alte IP-Adressen und abgelaufene Links
@@ -98,6 +101,7 @@ npm run check          # Alle Prüfungen auf einmal: Linter, Format, Typen, Test
 npm run deploy         # Zu Cloudflare hochladen (braucht Konto und wrangler login)
 npm run einladung      # Einladungslink erzeugen, siehe docs/Betrieb.md
 npm run passwort-link -- <email>   # Link zum Zurücksetzen erzeugen, siehe docs/Betrieb.md
+npm run quiz-loeschen -- <id>      # Ein gespeichertes Quiz löschen, siehe docs/Betrieb.md
 ```
 
 Vor jedem Commit: `npm run check` (Linter, Format, Typen, Tests und Build)

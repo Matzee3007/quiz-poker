@@ -7,12 +7,14 @@ tags: [tools, cloudflare, d1, datenbank]
 
 # Cloudflare D1
 
-SQL-Datenbank von Cloudflare auf Basis von SQLite. Sie speichert Konten, später auch die Quiz-Sammlung, siehe [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]. Gehört zu [[projects/quiz-poker/docs/tools/Tools Übersicht|Tools Übersicht]].
+SQL-Datenbank von Cloudflare auf Basis von SQLite. Sie speichert Konten und die gespeicherten Quizze (Tabelle `quiz`), siehe [[projects/quiz-poker/docs/adr/0002-quiz-sammlung-mit-d1|ADR 0002]]. Gehört zu [[projects/quiz-poker/docs/tools/Tools Übersicht|Tools Übersicht]].
 
 ## Wichtige Begriffe
 
 - **Binding:** Der Name, unter dem der Worker die Datenbank anspricht, hier `env.DB`.
 - **Migration:** SQL-Datei, die Tabellen anlegt oder ändert. Jede läuft genau einmal, sie liegen in `migrations/`.
+- **Fremdschlüssel (`REFERENCES … ON DELETE CASCADE`):** Verweis einer Zeile auf eine andere Tabelle. D1 setzt ihn durch: Wird ein Konto gelöscht, löscht die Datenbank seine Quizze mit, ohne eigenen Code.
+- **`json_extract(inhalt, '$.titel')`:** Liest ein Feld aus JSON, das als Text in einer Spalte liegt. So zeigt die Liste den Titel, ohne jedes Quiz im Worker zu lesen.
 - **Cron-Trigger:** Zeitplan, nach dem Cloudflare den Worker von selbst aufruft. Hier räumt er täglich alte Zeilen auf (`worker/aufraeumen.ts`).
 
 ## Wie wir es eingerichtet haben
@@ -29,6 +31,11 @@ npx wrangler d1 execute quiz-poker --local --command 'SELECT count(*) FROM "user
 ```
 
 Die Befehle für den Betrieb stehen in [[projects/quiz-poker/docs/Betrieb|Betrieb]].
+
+## Muster
+
+- **Grenze in einem Befehl:** `INSERT INTO quiz (…) SELECT … WHERE (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < 20`. Zählen und Einfügen laufen zusammen, zwei gleichzeitige Anfragen kommen nicht über 20. `meta.changes` ist 0, wenn die Grenze greift.
+- **Nur eigene Zeilen:** Jede Abfrage auf `quiz` enthält `besitzer = ?`. Ändert ein `UPDATE` oder `DELETE` nichts, war das Quiz fremd oder unbekannt, beides antwortet mit 404.
 
 ## Fehler
 

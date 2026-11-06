@@ -23,3 +23,10 @@ export function passwortLinkSql(
 ): string {
   return `INSERT INTO passwort_link (token_hash, email, gueltig_bis) VALUES (${sqlText(tokenHash)}, ${sqlText(email.toLowerCase())}, ${gueltigBis})`;
 }
+
+/** Form einer Quiz-ID (crypto.randomUUID), gilt im Worker und im Befehl des Betreibers. */
+export const QUIZ_ID_MUSTER = /^[0-9a-f-]{36}$/;
+
+export function quizLoeschenSql(id: string): string {
+  return `DELETE FROM quiz WHERE id = ${sqlText(id)}`;
+}

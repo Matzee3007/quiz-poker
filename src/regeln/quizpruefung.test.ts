@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BEISPIEL_QUIZ } from "./beispielQuiz";
-import { quizPruefen } from "./quizpruefung";
+import { entwurfPruefen, quizPruefen } from "./quizpruefung";
 
 const frage = { text: "F", musterloesung: "L" };
 const kategorie = { name: "K", fragen: [frage] };
@@ -131,5 +131,50 @@ describe("quizPruefen", () => {
       ok: true,
       quiz: BEISPIEL_QUIZ,
     });
+  });
+});
+
+describe("entwurfPruefen", () => {
+  it("nimmt ein unfertiges Quiz an", () => {
+    const unfertig = {
+      titel: "",
+      kategorien: [
+        { name: "", fragen: [{ text: "", musterloesung: "" }] },
+        { name: "K", fragen: [] },
+      ],
+    };
+
+    expect(entwurfPruefen(unfertig)).toEqual({ ok: true, quiz: unfertig });
+    expect(entwurfPruefen({ titel: "T", kategorien: [] }).ok).toBe(true);
+  });
+
+  it("hält auch im Entwurf die Grenzen ein", () => {
+    expect(entwurfPruefen(quiz(Array(11).fill(kategorie)))).toEqual({
+      ok: false,
+      code: "zu-viele-kategorien",
+    });
+    expect(
+      entwurfPruefen(quiz([{ name: "K", fragen: Array(11).fill(frage) }])),
+    ).toEqual({ ok: false, code: "zu-viele-fragen" });
+    expect(
+      entwurfPruefen(
+        quiz([
+          { name: "", fragen: [{ text: "f".repeat(301), musterloesung: "" }] },
+        ]),
+      ),
+    ).toEqual({ ok: false, code: "text-zu-lang" });
+  });
+
+  it("lässt fremde Felder weg", () => {
+    const ergebnis = entwurfPruefen({ ...quiz([kategorie]), besitzer: "x" });
+
+    expect(ergebnis).toEqual({ ok: true, quiz: quiz([kategorie]) });
+  });
+
+  it("lehnt falsche Typen ab", () => {
+    const ungueltig = { ok: false, code: "ungueltige-nachricht" };
+
+    expect(entwurfPruefen(null)).toEqual(ungueltig);
+    expect(entwurfPruefen({ titel: 5, kategorien: [] })).toEqual(ungueltig);
   });
 });

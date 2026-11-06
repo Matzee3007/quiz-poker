@@ -19,7 +19,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "einladung": "node scripts/einladung.ts",
-    "passwort-link": "node scripts/passwort-link.ts"
+    "passwort-link": "node scripts/passwort-link.ts",
+    "quiz-loeschen": "node scripts/quiz-loeschen.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.67.0",

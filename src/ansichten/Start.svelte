@@ -6,12 +6,21 @@
 
   interface Props {
     raumcode: string | null;
+    angemeldet: boolean;
     meldung: string | null;
     onEintritt: (raumcode: string, token: string, rueckkehr: boolean) => void;
     onEditor: () => void;
+    onMeineQuizze: () => void;
   }
 
-  let { raumcode, meldung, onEintritt, onEditor }: Props = $props();
+  let {
+    raumcode,
+    angemeldet,
+    meldung,
+    onEintritt,
+    onEditor,
+    onMeineQuizze,
+  }: Props = $props();
 
   let eingabeCode = $state("");
   let name = $state("");
@@ -91,16 +100,28 @@
         <p class="matt">
           Du leitest die Partie als Quiz-Master und spielst nicht mit.
         </p>
-        <div class="wege">
+        <div class="wege" class:drei={angemeldet}>
           <div class="weg">
             <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
               >Beispiel-Quiz spielen</button
             >
             <p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p>
           </div>
+          {#if angemeldet}
+            <div class="weg">
+              <button disabled={eroeffnetGerade} onclick={onMeineQuizze}
+                >Meine Quizze</button
+              >
+              <p class="matt klein">
+                Gespeicherte Quizze spielen oder weiterschreiben.
+              </p>
+            </div>
+          {/if}
           <div class="weg">
             <button disabled={eroeffnetGerade} onclick={onEditor}
-              >Eigenes Quiz erstellen</button
+              >{angemeldet
+                ? "Einmal-Quiz erstellen"
+                : "Eigenes Quiz erstellen"}</button
             >
             <p class="matt klein">
               Kategorien und Fragen selbst schreiben, ohne Konto. Das

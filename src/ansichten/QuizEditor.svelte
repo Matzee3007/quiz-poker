@@ -1,24 +1,41 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import {
     entwurfLesen,
     entwurfLoeschen,
     entwurfSpeichern,
   } from "../entwurfSpeicher";
   import { meldungFuer } from "../meldungen";
+  import { quizSpeichern } from "../quizSammlung";
   import { raumEroeffnen } from "../raumEroeffnen";
-  import type { Kategorie } from "../regeln/partie";
-  import { verschieben } from "../regeln/quizEntwurf";
+  import type { Kategorie, Quiz } from "../regeln/partie";
+  import { bearbeitbar, verschieben } from "../regeln/quizEntwurf";
   import { QUIZ_GRENZEN, quizPruefen } from "../regeln/quizpruefung";
   import EditorFeld from "./EditorFeld.svelte";
 
   interface Props {
+    /** null: Einmal-Quiz, der Entwurf liegt nur im Browser. Sonst ein Quiz aus dem Konto. */
+    gespeichert: { id: string; quiz: Quiz } | null;
     onEintritt: (raumcode: string, token: string, rueckkehr: boolean) => void;
     onZurueck: () => void;
+    /** Meldet, ob es ungespeicherte Änderungen gibt, damit die Kopfzeile vor dem Verlassen fragen kann. */
+    onUngespeichert?: (ungespeichert: boolean) => void;
   }
 
-  let { onEintritt, onZurueck }: Props = $props();
+  let { gespeichert, onEintritt, onZurueck, onUngespeichert }: Props = $props();
 
-  let entwurf = $state(entwurfLesen());
+  // Nur der Anfangswert zählt: Der Editor arbeitet danach mit seiner eigenen Kopie.
+  const anfang = untrack(() => gespeichert);
+  let entwurf = $state(
+    anfang ? bearbeitbar($state.snapshot(anfang.quiz)) : entwurfLesen(),
+  );
+  let gespeicherterStand = $state(anfang ? JSON.stringify(entwurf) : "");
+  let speichertGerade = $state(false);
+  let speichernFehlgeschlagen = $state(false);
+  let abgelaufen = $state(false);
+  const ungespeichert = $derived(
+    anfang !== null && JSON.stringify(entwurf) !== gespeicherterStand,
+  );
   let gewaehlt = $state(0);
   let leereZeigen = $state(false);
   let fehler = $state<string | null>(null);
@@ -40,8 +57,44 @@
   );
 
   $effect(() => {
-    entwurfSpeichern($state.snapshot(entwurf));
+    if (!anfang) {
+      entwurfSpeichern($state.snapshot(entwurf));
+    }
   });
+
+  $effect(() => {
+    onUngespeichert?.(ungespeichert);
+  });
+
+  function vorDemSchliessen(ereignis: BeforeUnloadEvent) {
+    if (ungespeichert) {
+      ereignis.preventDefault();
+    }
+  }
+
+  /** Speichert das Quiz im Konto. true, wenn danach nichts Ungespeichertes übrig ist. */
+  async function speichern(): Promise<boolean> {
+    if (!anfang || !ungespeichert) {
+      return true;
+    }
+    fehler = null;
+    abgelaufen = false;
+    speichertGerade = true;
+    const stand = $state.snapshot(entwurf);
+    const ergebnis = await quizSpeichern(anfang.id, stand);
+    speichertGerade = false;
+    speichernFehlgeschlagen = !ergebnis.ok;
+    if (ergebnis.ok) {
+      gespeicherterStand = JSON.stringify(stand);
+      return true;
+    }
+    if (ergebnis.code === "sitzung-abgelaufen") {
+      abgelaufen = true;
+    } else {
+      fehler = meldungFuer(ergebnis.code);
+    }
+    return false;
+  }
 
   /** Neue leere Felder sollen nicht sofort rot sein. */
   function neuBeginnen() {
@@ -80,6 +133,10 @@
 
   async function eroeffnen() {
     fehler = null;
+    // Gespielt wird, was gespeichert ist. Auch ein unfertiges Quiz wird vorher gespeichert.
+    if (!(await speichern())) {
+      return;
+    }
     const pruefung = quizPruefen($state.snapshot(entwurf));
     if (!pruefung.ok) {
       if (pruefung.code === "leeres-feld") {
@@ -98,7 +155,9 @@
     const ergebnis = await raumEroeffnen(pruefung.quiz);
     eroeffnetGerade = false;
     if (ergebnis.ok) {
-      entwurfLoeschen();
+      if (!anfang) {
+        entwurfLoeschen();
+      }
       onEintritt(ergebnis.raumcode, ergebnis.token, false);
     } else {
       fehler = meldungFuer(ergebnis.code);
@@ -106,11 +165,15 @@
   }
 </script>
 
-<!-- Gesperrt, solange die Anfrage läuft: Ihr Ergebnis führt in den Raum und löscht den Entwurf. -->
-<fieldset class="editor-sperre" disabled={eroeffnetGerade}>
+<svelte:window onbeforeunload={vorDemSchliessen} />
+
+<!-- Gesperrt, solange eine Anfrage läuft: Ihr Ergebnis führt in den Raum oder ändert den gespeicherten Stand. -->
+<fieldset class="editor-sperre" disabled={eroeffnetGerade || speichertGerade}>
   <div class="editor-raster">
     <aside class="editor-leiste">
-      <h1 class="editor-titel">Einmal-Quiz erstellen</h1>
+      <h1 class="editor-titel">
+        {anfang ? "Quiz bearbeiten" : "Einmal-Quiz erstellen"}
+      </h1>
       <EditorFeld
         id="quiz-titel"
         label="Titel des Quiz"
@@ -170,9 +233,15 @@
         >
       </div>
       <p class="notiz">
-        Dein Entwurf liegt nur in diesem Browser und wird gelöscht, sobald du
-        den Spielraum eröffnest. Das Einmal-Quiz besteht nur so lange wie sein
-        Spielraum.
+        {#if anfang}
+          Dieses Quiz liegt in deinem Konto, nur du siehst es. Ein Spielraum
+          spielt eine Kopie: Was du danach änderst, gilt erst im nächsten
+          Spielraum.
+        {:else}
+          Dein Entwurf liegt nur in diesem Browser und wird gelöscht, sobald du
+          den Spielraum eröffnest. Das Einmal-Quiz besteht nur so lange wie sein
+          Spielraum.
+        {/if}
       </p>
     </aside>
 
@@ -256,11 +325,46 @@
   </div>
 
   <div class="editor-fuss">
-    <button class="text" onclick={onZurueck}>Zurück zum Start</button>
-    {#if fehler}
+    <!-- Die Rückfrage bei ungespeicherten Änderungen stellt App.svelte, für alle Wege aus dem Editor. -->
+    <button class="text" onclick={onZurueck}>
+      {anfang ? "Zurück zu Meine Quizze" : "Zurück zum Start"}
+    </button>
+    {#if anfang}
+      {#if ungespeichert && speichernFehlgeschlagen}
+        <span class="stand fehlt">Nicht gespeichert</span>
+      {:else if ungespeichert}
+        <span class="stand offen">Ungespeicherte Änderungen</span>
+      {:else}
+        <span class="stand ok">Gespeichert</span>
+      {/if}
+    {/if}
+    {#if abgelaufen}
+      <div class="hinweis fehler abgelaufen" role="alert">
+        <p>
+          Deine Anmeldung gilt nicht mehr, das Quiz ist nicht gespeichert. Dein
+          Text bleibt hier stehen.
+        </p>
+        <p>
+          Melde dich in einem <a href="/anmelden" target="_blank" rel="noopener"
+            >neuen Tab</a
+          > an und klicke dann hier noch einmal auf „Speichern“.
+        </p>
+      </div>
+    {:else if fehler}
       <p class="hinweis fehler" role="alert">{fehler}</p>
     {:else if leereZeigen && hatLeereFelder}
-      <p class="hinweis fehler" role="alert">{meldungFuer("leeres-feld")}</p>
+      <p class="hinweis fehler" role="alert">
+        {anfang && !ungespeichert
+          ? "Gespeichert. Zum Spielen fülle bitte alle markierten Felder aus."
+          : meldungFuer("leeres-feld")}
+      </p>
+    {/if}
+    {#if anfang}
+      <button
+        class="speichern"
+        disabled={!ungespeichert}
+        onclick={() => void speichern()}>Speichern</button
+      >
     {/if}
     <button class="haupt" onclick={eroeffnen}>Spielraum eröffnen</button>
   </div>

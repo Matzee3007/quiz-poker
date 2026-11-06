@@ -7,6 +7,7 @@ export const QUIZ_GRENZEN = {
   kategorieName: 50,
   frage: 300,
   musterloesung: 100,
+  quizzeJeKonto: 20,
 } as const;
 
 export type QuizFehlerCode =
@@ -73,11 +74,9 @@ function gekuerzt(quiz: Quiz): Quiz {
   };
 }
 
-/** Grund, aus dem das Quiz nicht spielbar ist, oder null. */
-function verstoss(quiz: Quiz): QuizFehlerCode | null {
+/** Zu viele Kategorien oder Fragen, gilt auch für Entwürfe. */
+function anzahlVerstoss(quiz: Quiz): QuizFehlerCode | null {
   const { kategorien } = quiz;
-  const fragen = kategorien.flatMap((kategorie) => kategorie.fragen);
-
   if (kategorien.length > QUIZ_GRENZEN.kategorien) {
     return "zu-viele-kategorien";
   }
@@ -88,6 +87,13 @@ function verstoss(quiz: Quiz): QuizFehlerCode | null {
   ) {
     return "zu-viele-fragen";
   }
+  return null;
+}
+
+/** Was zum Spielen noch fehlt. Ein Entwurf darf unfertig sein. */
+function luecke(quiz: Quiz): QuizFehlerCode | null {
+  const { kategorien } = quiz;
+  const fragen = kategorien.flatMap((kategorie) => kategorie.fragen);
   if (
     kategorien.length === 0 ||
     kategorien.some((kategorie) => kategorie.fragen.length === 0)
@@ -101,6 +107,13 @@ function verstoss(quiz: Quiz): QuizFehlerCode | null {
   ) {
     return "leeres-feld";
   }
+  return null;
+}
+
+/** Zu lange Texte, gilt auch für Entwürfe. */
+function laengeVerstoss(quiz: Quiz): QuizFehlerCode | null {
+  const { kategorien } = quiz;
+  const fragen = kategorien.flatMap((kategorie) => kategorie.fragen);
   if (
     quiz.titel.length > QUIZ_GRENZEN.titel ||
     kategorien.some(
@@ -117,13 +130,30 @@ function verstoss(quiz: Quiz): QuizFehlerCode | null {
   return null;
 }
 
-/** Prüft ein fremdes Quiz, auf dem Server und im Editor nach denselben Regeln. */
-export function quizPruefen(daten: unknown): QuizPruefung {
+function pruefenMit(
+  daten: unknown,
+  regeln: ((quiz: Quiz) => QuizFehlerCode | null)[],
+): QuizPruefung {
   const gelesen = quizFormLesen(daten);
   if (!gelesen) {
     return { ok: false, code: "ungueltige-nachricht" };
   }
   const quiz = gekuerzt(gelesen);
-  const code = verstoss(quiz);
-  return code ? { ok: false, code } : { ok: true, quiz };
+  for (const regel of regeln) {
+    const code = regel(quiz);
+    if (code) {
+      return { ok: false, code };
+    }
+  }
+  return { ok: true, quiz };
+}
+
+/** Prüft ein fremdes Quiz, auf dem Server und im Editor nach denselben Regeln. */
+export function quizPruefen(daten: unknown): QuizPruefung {
+  return pruefenMit(daten, [anzahlVerstoss, luecke, laengeVerstoss]);
+}
+
+/** Prüft einen Entwurf zum Speichern: Leere Felder sind erlaubt, die Grenzen gelten. */
+export function entwurfPruefen(daten: unknown): QuizPruefung {
+  return pruefenMit(daten, [anzahlVerstoss, laengeVerstoss]);
 }

@@ -6,6 +6,31 @@ const DREISSIG_TAGE = 30 * 24 * 60 * 60;
 
 const rechner = () => env.PASSWORTRECHNER.getByName("global");
 
+/**
+ * Prüft das Passwort einer frischen Anmeldung noch einmal gegen den aktuellen Hash. Better Auth prüft das alte
+ * Passwort und legt die Sitzung erst danach an. Löst dazwischen jemand einen Passwort-Link ein, überlebte die
+ * Sitzung sonst das Zurücksetzen. Passt das Passwort nicht mehr, wird die Sitzung gelöscht.
+ */
+export async function anmeldungBestaetigen(
+  umgebung: Env,
+  sitzungToken: string,
+  userId: string,
+  passwort: string,
+): Promise<boolean> {
+  const konto = await umgebung.DB.prepare(
+    "SELECT password FROM account WHERE userId = ? AND providerId = 'credential'",
+  )
+    .bind(userId)
+    .first<{ password: string | null }>();
+  if (konto?.password && (await rechner().pruefen(konto.password, passwort))) {
+    return true;
+  }
+  await umgebung.DB.prepare("DELETE FROM session WHERE token = ?")
+    .bind(sitzungToken)
+    .run();
+  return false;
+}
+
 export const auth = betterAuth({
   database: env.DB,
   baseURL: env.BETTER_AUTH_URL,
@@ -49,6 +74,27 @@ export const auth = betterAuth({
         throw new APIError("BAD_REQUEST", {
           code: "PASSWORD_REQUIRED",
           message: "Password required",
+        });
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      const neu = ctx.context.newSession;
+      if (ctx.path !== "/sign-in/email" || !neu) {
+        return;
+      }
+      const passwort = (ctx.body as { password: string }).password;
+      if (
+        !(await anmeldungBestaetigen(
+          env,
+          neu.session.token,
+          neu.user.id,
+          passwort,
+        ))
+      ) {
+        // Dieselbe Antwort wie bei einem falschen Passwort.
+        throw new APIError("UNAUTHORIZED", {
+          code: "INVALID_EMAIL_OR_PASSWORD",
+          message: "Invalid email or password",
         });
       }
     }),

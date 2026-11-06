@@ -175,3 +175,21 @@ export async function raumMitAnnaUndBen(quiz?: unknown) {
     benId: idVon("Ben"),
   };
 }
+
+/** Anfrage an /api/quizze mit dem Cookie einer Sitzung, von der eigenen Seite. */
+export function anQuizze(
+  cookie: string,
+  methode: string,
+  pfad = "",
+  daten?: unknown,
+) {
+  return exports.default.fetch(`${BASIS}/api/quizze${pfad}`, {
+    method: methode,
+    headers: {
+      "Content-Type": "application/json",
+      Origin: BASIS,
+      Cookie: cookie,
+    },
+    body: daten === undefined ? undefined : JSON.stringify(daten),
+  });
+}
