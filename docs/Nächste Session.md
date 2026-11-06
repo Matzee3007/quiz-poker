@@ -1,19 +1,19 @@
 ---
 titel: Nächste Session
 status: aktiv
-erstellt: 2026-11-05
+erstellt: 2026-11-06
 tags: [session, übergabe]
 ---
 
 # Nächste Session
 
-Stand vom 2026-11-05. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - Konten|Lernjournal Phase 3 - Konten]].
+Stand vom 2026-11-06. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - Quizze speichern|Lernjournal Phase 3 - Quizze speichern]].
 
 ## Stand bei Sessionende
 
-- **Branch:** `main` (nach dem Merge von PR #19)
+- **Branch:** `main` (nach dem Merge von PR #22)
 - **Offene PRs:** keine
-- **Nicht committet:** `AGENTS.md`. Die Datei stammt nicht aus dieser Session und wurde weder gelesen noch committet.
+- **Nicht committet:** `AGENTS.md` (Kopie der `CLAUDE.md` für Codex, siehe unten)
 
 ## Vor dem Start
 
@@ -24,35 +24,32 @@ Stand vom 2026-11-05. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
    claude
    ```
 
-2. Klären, was `AGENTS.md` ist und ob die Datei ins Repo gehört.
-
 ## Womit es weitergeht
 
-**Phase 3 – Quiz-Sammlung läuft, Schritt 2 ist online:** Konten mit Einladungscode sind seit 2026-11-05 unter `https://quiz-poker.quiz-poker.workers.dev` veröffentlicht ([[projects/quiz-poker/docs/plaene/2026-11-05-konten|Plan]], PR #17). Einladungen und Passwort-Links erzeugt der Betreiber per Befehl, siehe [[projects/quiz-poker/docs/Betrieb|Betrieb]].
+**Phase 3 – Quiz-Sammlung läuft, Schritt 3 ist online:** Gespeicherte Quizze sind seit 2026-11-06 veröffentlicht ([[projects/quiz-poker/docs/plaene/2026-11-06-quizze-speichern|Plan]], PR #21).
 
-**Nächster Schritt: Plan für Schritt 3 schreiben, Quizze in D1 speichern.** Die Regeln stehen in der Projektvision, Abschnitt „Quiz-Sammlung“. Mit Schritt 3 kommen auch das Löschen der Quizze eines Kontos und der Betreiber-Befehl zum Löschen eines Quiz. Ab jetzt bekommt jeder PR zusätzlich `/security-review`.
+**Nächster Schritt: Plan für Schritt 4 schreiben**, öffentliche Quizze, Kopien und Schutzregeln (Projektvision, Abschnitt „Quiz-Sammlung“). Dazu gehören:
 
-Bei Schritt 3 beachten:
+- das Beispiel-Quiz als Vorlage kopieren (bewusst aus Schritt 3 verschoben)
+- neu bewerten, ob „Spielen“ das Quiz über seine ID statt über den Inhalt eröffnet (Review-Fund 9 im Plan von Schritt 3). Bei öffentlichen Quizzen muss der Server den Inhalt ohnehin selbst lesen.
+- jeder PR bekommt weiter `/code-review` und `/security-review`
 
-- Neu bewerten, ob eine laufende Anmeldung ein Zurücksetzen des Passworts überleben darf, sobald Quizze an der Sitzung hängen. Das ist ein verworfener Fund aus dem Audit (`~/security-audit-skill/quiz-poker/run-1/REPORT.md`).
-- Der Datenschutztext in `src/ansichten/Datenschutz.svelte` muss die gespeicherten Quizze nennen.
+Vorher entscheiden:
+
+- `AGENTS.md`: ins Repo, löschen oder liegen lassen? Sie ist gegenüber der `CLAUDE.md` schon veraltet.
+- Browser-Durchlauf mit Playwright ins Repo holen? Er lag diese Session wieder nur im Scratchpad. Das wäre eine neue Abhängigkeit.
+
+Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 ms CPU, bisher ohne Abbruch (Nachmessung in [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]). Treten Fehler 1102 auf, zuerst `session.cookieCache` von Better Auth prüfen.
 
 Restpunkte als Vorschläge:
 
-- Prüfen, ob der Cron-Trigger in der ersten Nacht gelaufen ist (`npx wrangler tail` oder Dashboard, Zeitplan `17 3 * * *`).
-- `worker/spielraum.ts:234` nimmt den WebSocket vor der Token-Prüfung an. Der Audit führt das als `needs_validation`.
-- Noch nicht geprüft aus dem Audit: Größe von Anfragen an Better Auth, Verlängerung der Raumlaufzeit durch wirkungslose Aktionen, Gesamtzahl gespeicherter Räume. Blockiert waren Clickjacking, bekannte Schwachstellen und `cf-connecting-ip`.
-- Browser-Tests ins Repo holen: Die Durchläufe dieser Session lagen im Scratchpad und lassen sich nicht wiederholen. Das wäre eine neue Abhängigkeit, also vorher fragen.
+- Prüfen, ob der Cron-Trigger gelaufen ist (`npx wrangler tail` oder Dashboard, Zeitplan `17 3 * * *`).
+- `worker/spielraum.ts:234` nimmt den WebSocket vor der Token-Prüfung an (Audit, `needs_validation`).
+- Noch nicht geprüft aus dem Audit: Größe von Anfragen an Better Auth, Verlängerung der Raumlaufzeit durch wirkungslose Aktionen, Gesamtzahl gespeicherter Räume.
 - `anfrage-zu-gross` sagt „Das Quiz ist zu groß“, auch bei Konto-Anfragen.
-- Ältere Restpunkte aus der vorigen Übergabe stehen weiter offen:
-  - doppelter Code in den Ansichten
-  - Grenzen für Beitritte in einem Raum
-  - `npm audit`
-  - Ubuntu 26 in der CI
-  - Verweis auf den Launcher in der Projektvision
-  - Editor in mehreren Tabs
+- Ältere Restpunkte: doppelter Code in den Ansichten, Grenzen für Beitritte in einem Raum, `npm audit`, Ubuntu 26 in der CI, Verweis auf den Launcher in der Projektvision, Editor in mehreren Tabs.
 
 ## Passende Skills
 
-- `plan-schreiben`: Plan für Schritt 3 schreiben
-- `tdd`: Speichern in D1 testgetrieben bauen
+- `plan-schreiben`: Plan für Schritt 4
+- `tdd`: Server-Teil von Schritt 4 testgetrieben bauen

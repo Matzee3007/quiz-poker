@@ -51,6 +51,21 @@ Größe 1,77 MiB (Grenze 64 MiB), Start 41 bis 60 ms (Grenze 1 Sekunde).
 ohne dass Cloudflare abgebrochen hat. Der Entwickler hat diesen Grenzfall am 2026-11-05 angenommen, weil Anmeldungen selten sind
 und Spielräume den Weg nicht nutzen. Es bleibt das Risiko, dass eine Anmeldung selten mit einer Fehlerseite abbricht.
 
+**Nachmessung 2026-11-06** im echten Betrieb, vor und nach dem Veröffentlichen der gespeicherten Quizze (Schritt 3), CPU aus
+`wrangler tail` (Stichprobe):
+
+| Weg | Log-Zeilen | CPU Median | CPU max | über 10 ms | Abgebrochen |
+|---|---:|---:|---:|---:|---:|
+| `/api/auth/get-session` mit Sitzung, eigener Lauf | 21 | 16 ms | 60 ms | 12 | 0 |
+| `/api/auth/get-session` im Browser-Durchlauf | 8 | 6 ms | 10 ms | 0 | 0 |
+| `/api/quizze` (alle Methoden) | 10 | 5 ms | 14 ms | 1 | 0 |
+| Registrieren, Teil im Worker | 2 | – | 35 ms | 2 | 0 |
+
+Seit Schritt 3 prüft jede Anfrage an `/api/quizze` die Sitzung, der Grenzfall betrifft also mehr Anfragen als vorher.
+Cloudflare hat in keinem Fall abgebrochen (kein Fehler 1102). Der Entwickler hat am 2026-11-06 entschieden, trotzdem zu
+veröffentlichen. Treten Abbrüche auf, ist der Cookie-Cache von Better Auth (`session.cookieCache`) der erste Ansatz: Er spart
+die Abfrage der Sitzung in D1.
+
 ## Alternativen
 
 - **Eigene Domain mit Mail-Dienst:** Der saubere Weg mit Bestätigung, Zurücksetzen und Magic Link, aber der Entwickler möchte
