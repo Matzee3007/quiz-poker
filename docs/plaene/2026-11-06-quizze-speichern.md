@@ -174,8 +174,10 @@ Der Audit-Fund `in-flight-sign-in-survives-session-revocation`: Better Auth prü
 
 ### Aufgabe 6: Mock (Entwickler)
 
-- [ ] **Schritt 1: Mock mit dem Agent `mock-bauer` bauen:** Liste „Meine Quizze“ (Titel, spielbar oder unfertig, geändert am, Bearbeiten, Spielen, Löschen, Zähler „x von 20“, „Neues Quiz“), der Editor für ein gespeichertes Quiz (Speichern, Stand „gespeichert“ oder „ungespeicherte Änderungen“, Spielraum eröffnen) und der Weg dorthin von Start und Konto. Stil C, Ablage `docs/mocks/2026-11-06-quizze.html`.
-- [ ] **Schritt 2: Freigabe des Entwicklers abwarten.** Ohne Freigabe keine Aufgabe 8.
+- [x] **Schritt 1: Mock mit dem Agent `mock-bauer` bauen:** Liste „Meine Quizze“ (Titel, spielbar oder unfertig, geändert am, Bearbeiten, Spielen, Löschen, Zähler „x von 20“, „Neues Quiz“), der Editor für ein gespeichertes Quiz (Speichern, Stand „gespeichert“ oder „ungespeicherte Änderungen“, Spielraum eröffnen) und der Weg dorthin von Start und Konto. Stil C, Ablage `docs/mocks/2026-11-06-quizze.html`.
+- [x] **Schritt 2: Freigabe des Entwicklers abwarten.** Ohne Freigabe keine Aufgabe 8.
+
+**Freigabe (2026-11-06):** Startseite A (dritter Weg in „Spielraum eröffnen“), Liste B (Karten), Editor A (Leiste unten). Dazu: „Eigenes Quiz erstellen“ heißt für Angemeldete „Einmal-Quiz erstellen“, die Meldung bei abgelaufener Anmeldung verlinkt `/anmelden` in einem neuen Tab, Datum relativ („heute, 21:14“, „gestern, 22:05“, sonst „2. Nov. 2026“), die Konto-Seite zeigt „x von 20“.
 
 ### Aufgabe 7: Anfragen der Oberfläche
 

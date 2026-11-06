@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mock Meine Quizze – Quiz-Poker</title>
+<style>
+/* ---------- Rahmen des Mocks, gehört nicht zur App ---------- */
+body{margin:0;background:#e9e9ec;color:#1c1f26;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;min-width:1100px}
+.m-kopf{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #cfd0d6;padding:12px 24px}
+.m-kopf h1{font-size:19px;margin:0 14px 0 0;display:inline;color:#1c1f26}
+.m-kopf .m-notiz{color:#555a66;font-size:13.5px}
+.m-sprung{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:13.5px}
+.m-sprung b{color:#555a66;font-weight:600;margin-left:12px}
+.m-sprung b:first-child{margin-left:0}
+.m-sprung a{border:1px solid #bfc1c9;background:#fff;color:#1c1f26;border-radius:7px;padding:3px 10px;text-decoration:none}
+.m-sprung a:hover{background:#1c1f26;color:#fff}
+.m-teil{padding:40px 24px 6px;scroll-margin-top:90px}
+.m-teil h2{font-size:25px;margin:0;color:#1c1f26}
+.m-teil p{margin:3px 0 0;color:#3f4450;max-width:980px}
+.m-ab{display:inline-block;background:#1c1f26;color:#fff;border-radius:6px;padding:0 8px;margin-right:8px}
+.m-zustand{padding:22px 24px 8px;scroll-margin-top:90px}
+.m-zustand h3{font-size:17px;margin:0;color:#1c1f26}
+.m-zustand p{margin:1px 0 0;color:#3f4450;max-width:980px}
+.m-browser{background:#d5d6db;padding:7px 12px;font-size:12.5px;color:#444955;display:flex;gap:10px;align-items:center}
+.m-browser i{width:10px;height:10px;border-radius:50%;background:#a9abb3;display:inline-block}
+.m-browser span{background:#fff;border-radius:6px;padding:2px 12px;margin-left:8px;flex:1}
+.m-ende{padding:26px 24px 44px;color:#555a66;font-size:13.5px}
+.m-streifen-titel{padding:12px 24px 5px;font-size:13.5px;color:#3f4450}
+
+/* ---------- aus src/stil.css übernommen (Stil C), body-Regeln liegen auf .schirm ---------- */
+:root{--grund:#0c0e13;--flaeche:#12151c;--knopf:#1c212b;--schrift:#eef0f4;--matt:#a3a9b6;--linie:#262b36;--linie-stark:#3b4252;--gold:#e8bb4f;--gold-schrift:#17120a;--gruen:#2fd98c;--rot:#ff5c6c;--radius:6px}
+*{box-sizing:border-box}
+.schirm{color-scheme:dark;background:var(--grund);color:var(--schrift);font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.45;position:relative}
+.schirm h1,.schirm h2,.schirm p{margin:0}
+.schirm button,.schirm input,.schirm textarea{font:inherit;color:inherit}
+.schirm button{background:var(--knopf);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:9px 16px;cursor:pointer;font-weight:600}
+.schirm button:hover:not(:disabled){border-color:var(--gold)}
+.schirm button:disabled{opacity:.45;cursor:not-allowed}
+.schirm button.haupt{background:var(--gold);border-color:var(--gold);color:var(--gold-schrift)}
+.schirm button.falsch-an{background:var(--rot);border-color:var(--rot);color:#1a0508}
+.schirm button.text{background:none;border:none;color:var(--matt);padding:4px;font-weight:400;text-decoration:underline}
+.schirm input,.schirm textarea{background:var(--grund);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:10px 12px;width:100%}
+.schirm label{display:block;color:var(--matt);font-size:14px;margin-bottom:6px}
+.schirm table{width:100%;border-collapse:collapse}
+.schirm th{color:var(--matt);font-size:12px;letter-spacing:.08em;text-align:left;text-transform:uppercase}
+.schirm th,.schirm td{border-bottom:1px solid var(--linie);padding:12px 10px;vertical-align:middle}
+.schirm p,.schirm td{overflow-wrap:anywhere}
+.kopf{display:flex;align-items:center;gap:24px;background:var(--flaeche);border-bottom:1px solid var(--linie);padding:14px 32px}
+.logo{flex:none;color:var(--gold);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.kopf .rest{flex:none;margin-left:auto;display:flex;gap:20px;align-items:center;color:var(--matt);font-size:14px}
+.kopf .rest strong{color:var(--schrift);padding:4px}
+.seite{max-width:1280px;margin:0 auto;padding:32px;width:100%}
+.zwei-spalten{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+.karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:24px}
+.stapel{display:flex;flex-direction:column;gap:18px}
+.reihe{display:flex;gap:12px;align-items:center}
+.reihe.zwischen{justify-content:space-between}
+.ueberschrift{color:var(--matt);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.matt{color:var(--matt)}
+.klein{font-size:14px}
+.gold{color:var(--gold);font-weight:700}
+.hinweis{background:var(--gold);color:var(--gold-schrift);border-radius:var(--radius);padding:10px 14px;font-weight:600}
+.hinweis.fehler{background:var(--rot);color:#1a0508}
+.notiz{border-left:3px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;padding:10px 14px;font-size:15px}
+.spielidee{display:flex;flex-direction:column;gap:10px}
+.spielidee h1{color:var(--gold);font-size:40px;line-height:1.1}
+.wege{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.weg{display:flex;flex-direction:column;gap:8px}
+.weg button{width:100%}
+.adresse{font-size:30px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.seiten-fuss{max-width:1280px;margin:0 auto;padding:0 32px 18px;font-size:13px}
+.zaehler{color:var(--matt);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zaehler b{color:var(--schrift)}
+.editor-raster{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:640px}
+.editor-leiste{background:var(--flaeche);border-right:1px solid var(--linie);padding:22px 20px;display:flex;flex-direction:column;gap:16px}
+.editor-titel{font-size:24px;line-height:1.15}
+.editor-haupt{padding:22px 32px 28px;display:flex;flex-direction:column;gap:14px}
+.editor-liste{display:flex;flex-direction:column;gap:6px}
+.editor-zeile{display:flex;gap:6px;border:1px solid var(--linie);border-radius:var(--radius);padding:6px;background:var(--grund)}
+.editor-zeile.an{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.schirm button.editor-wahl{flex:1;min-width:0;text-align:left;background:none;border:0;padding:4px 4px 4px 8px;font-weight:400}
+.editor-wahl b{display:block;font-size:15px;overflow-wrap:anywhere;line-height:1.25}
+.editor-wahl b.leer{color:var(--matt);font-style:italic}
+.editor-wahl small{display:block;color:var(--matt);font-size:13px;margin-top:2px}
+.editor-pfeile{display:flex;flex-direction:column;gap:4px;justify-content:center}
+.schirm .editor-pfeile .sym{width:30px;padding:1px 0;font-size:13px}
+.editor-katkopf{display:flex;gap:16px;align-items:flex-start}
+.editor-katkopf .feld{flex:1}
+.editor-katkopf .text{margin-top:30px}
+.editor-fuss{display:flex;align-items:center;gap:18px;background:var(--flaeche);border-top:1px solid var(--linie);padding:14px 32px}
+.editor-fuss .hinweis{flex:1}
+.schirm .editor-fuss .haupt{margin-left:auto;font-size:17px;padding:12px 26px;white-space:nowrap}
+.feld textarea{resize:none;display:block;height:auto}
+.feld-unten{display:flex;justify-content:flex-end;gap:12px;margin-top:4px;font-size:13px;min-height:19px}
+.zeichen{color:var(--matt);font-variant-numeric:tabular-nums;white-space:nowrap}
+.feld-meldung{color:var(--rot);font-weight:600;margin-right:auto}
+.feld-fehler label{color:var(--rot);font-weight:600}
+.schirm .feld-fehler input,.schirm .feld-fehler textarea{border-color:var(--rot);box-shadow:0 0 0 1px var(--rot);background:#23101a}
+.schirm .sym{padding:5px 0;width:34px;font-size:15px;line-height:1.3;text-align:center}
+.knoepfe{display:flex;gap:6px;align-items:center;flex:none}
+.knoepfe .text{margin-left:6px}
+.leer-tag{display:inline-block;margin-top:4px;background:#3c171c;color:var(--rot);border-radius:99px;padding:1px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.frage-kopf{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.frage-kopf b{font-size:15px}
+.frage-block{border:1px solid var(--linie);border-radius:var(--radius);padding:14px 16px;background:#0f1218}
+.frage-block .feld + .feld{margin-top:6px}
+
+/* ---------- neu für gespeicherte Quizze ---------- */
+.linie-oben{border-top:1px solid var(--linie);padding-top:18px}
+.zustand{display:inline-block;border-radius:99px;padding:1px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.zustand.spielbar{background:#0f2a1f;color:var(--gruen)}
+.zustand.unfertig{background:#2c2410;color:var(--gold)}
+.ohne-titel{color:var(--matt);font-style:italic;font-weight:400}
+.schirm button.klein-knopf{padding:6px 12px;font-size:14px}
+.schirm button.spielen{border-color:var(--gold);color:var(--gold)}
+.platzhalter{display:inline-block;width:76px}
+.listenkopf{display:flex;align-items:center;gap:16px}
+.listenkopf .zaehler{font-size:15px}
+.listenkopf button{margin-left:auto}
+.voll-hinweis{color:var(--gold);font-size:14px;font-weight:600}
+/* Variante A: Tabelle */
+.tabelle-karte{padding:6px 16px 4px}
+.tabelle-karte tr:last-child td{border-bottom:0}
+.tabelle-karte td.titel{font-weight:700;font-size:16px}
+.tabelle-karte td.datum{color:var(--matt);font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tabelle-karte td.aktionen{text-align:right;white-space:nowrap}
+.tabelle-karte td.aktionen>*{margin-left:6px}
+.tabelle-karte.dicht td{padding:7px 10px}
+/* Variante B: Karten */
+.kachel-raster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kachel{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:10px;min-height:178px}
+.kachel h2{font-size:18px;line-height:1.25;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kachel .unten{margin-top:auto;display:flex;gap:8px;align-items:center}
+.kachel .unten .text{margin-left:auto}
+.kachel.neu{border:1px dashed var(--linie-stark);background:none;align-items:center;justify-content:center;text-align:center}
+.kachel.neu .plus-zeichen{font-size:34px;color:var(--gold);line-height:1;font-weight:300}
+.kachel.neu.gesperrt .plus-zeichen{color:var(--matt)}
+.kachel-raster.dicht .kachel{min-height:0;padding:14px;gap:6px}
+.kachel-raster.dicht .kachel h2{font-size:16px}
+/* Leere Liste */
+.leer-karte{text-align:center;padding:48px 24px;align-items:center}
+.leer-karte .chip{width:64px;height:64px;border-radius:50%;border:6px dashed var(--gold);opacity:.8}
+/* Stand im Editor */
+.stand{display:inline-flex;align-items:center;gap:8px;font-size:14px;white-space:nowrap}
+.stand::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--gruen)}
+.stand.ok{color:var(--matt)}
+.stand.offen{color:var(--gold);font-weight:600}
+.stand.offen::before{background:var(--gold)}
+.stand.fehlt{color:var(--rot);font-weight:600}
+.stand.fehlt::before{background:var(--rot)}
+.fuss-a .speichern{margin-left:auto}
+.schirm .fuss-a .speichern + .haupt{margin-left:0}
+.fuss-a .hinweis + .speichern{margin-left:0}
+.stand-box{display:flex;flex-direction:column;gap:10px;border:1px solid var(--linie);border-radius:var(--radius);padding:12px;background:var(--grund)}
+.stand-box button{width:100%}
+.stand-box .hinweis{font-size:14px}
+.abgelaufen p + p{margin-top:6px}
+.abgelaufen .neu-tab{color:#1a0508;text-decoration:underline;font-weight:700}
+/* Startseite B */
+.zuletzt td{padding:9px 10px}
+.zuletzt tr:last-child td{border-bottom:0}
+/* nachgebaute Rückfrage des Browsers (confirm) */
+.m-dimmer{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;justify-content:center;align-items:flex-start;padding-top:70px}
+.m-dialog{background:#2b2d31;color:#e8e8ea;border-radius:10px;width:440px;padding:20px 22px;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.m-dialog .von{font-weight:600;margin-bottom:8px}
+.m-dialog .knoepfe-d{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.m-dialog span.k{border-radius:16px;padding:6px 16px;background:#3c4043;color:#8ab4f8}
+.m-dialog span.k.ok{background:#8ab4f8;color:#202124}
+</style>
+</head>
+<body>
+
+<div class="m-kopf">
+  <h1>Mock Meine Quizze</h1>
+  <span class="m-notiz">Wegwerf-Entwurf bei PC-Breite. Alle Quiz-Titel, Fragen, Adressen und Zeiten sind Beispieldaten („heute“ = 6. November 2026). Die Knöpfe tun nichts. Die Varianten A und B stehen jeweils untereinander.</span>
+  <div class="m-sprung" id="sprung"></div>
+</div>
+
+<div id="inhalt"></div>
+<div class="m-ende">Ende des Mocks.</div>
+
+<script>
+const HOST='quiz-poker.quiz-poker.workers.dev', ADRESSE='mara@beispiel.de', ID='3f9c2a71-5d0e-4b8a-9e61-0c7d2f4a8b13';
+
+/* ----- Beispieldaten: Liste, neueste zuerst ----- */
+const QUIZZE=[
+  ['Spieleabend bei Mara',true,'heute, 21:14'],
+  ['Musik der 80er und 90er',false,'heute, 18:40'],
+  ['Weihnachtsquiz 2026',false,'gestern, 22:05'],
+  ['Fußball-WM: Alles, was man wissen muss, wenn man eigentlich gar keine Ahnung von Fußball hat',true,'2. Nov. 2026'],
+  ['Geburtstag Opa Heinz',true,'28. Okt. 2026'],
+  ['',false,'27. Okt. 2026'],
+  ['Filmabend-Klassiker',true,'15. Okt. 2026'],
+];
+const MEHR=['Tiere der Arktis','Hauptstädte Europas','Kochen ohne Rezept','Chemie für Laien','Brettspiele-Wissen','Serienjunkies','Weinprobe','Comics und Manga','Olympia','Kinderlieder','Erfindungen','Fernsehen der 90er','Sprichwörter'];
+const VOLL=QUIZZE.concat(MEHR.map((t,i)=>[t,i%4!==1,`${10-Math.floor(i/2)}. Okt. 2026`]));
+
+/* ----- Kopf, Fuß, Rahmen ----- */
+const kopf=rest=>`<header class="kopf"><span class="logo">Quiz-Poker</span><div class="rest">${rest}</div></header>`;
+const K={
+  start:kopf('<button class="text">Meine Quizze</button><button class="text">Konto</button>'),
+  liste:kopf('<button class="text">Zum Start</button><strong>Meine Quizze</strong><button class="text">Konto</button>'),
+  konto:kopf('<button class="text">Zum Start</button><button class="text">Meine Quizze</button><strong>Konto</strong>'),
+  editor:kopf('<button class="text">Zum Start</button><button class="text">Meine Quizze</button><button class="text">Konto</button>'),
+  heute:kopf('<button class="text">Konto</button>'),
+};
+const FUSS='<footer class="seiten-fuss"><button class="text">Datenschutz</button></footer>';
+function rahmen(id,titel,satz,pfad,kopfHtml,inhalt,fuss=FUSS,ueber=''){
+  return `<section class="m-zustand" id="${id}"><h3>${titel}</h3><p>${satz}</p></section>
+  <div class="m-browser"><i></i><i></i><i></i><span>${HOST}${pfad}</span></div>
+  <div class="schirm">${kopfHtml}${inhalt}${fuss}${ueber}</div>`;
+}
+const streifen=(titel,html)=>`<div class="m-streifen-titel">${titel}</div><div class="schirm">${html}</div>`;
+const titelHtml=t=>t?t:'<span class="ohne-titel">Ohne Titel</span>';
+const zustand=s=>s?'<span class="zustand spielbar">spielbar</span>':'<span class="zustand unfertig">unfertig</span>';
+
+/* ----- Startseite: Texte aus src/ansichten/Start.svelte ----- */
+const IDEE=`<section class="spielidee"><h1>Setze deine Chips auf dein Wissen.</h1>
+  <p class="matt">Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht. Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch kostet ihn. Am Ende gewinnt, wer die meisten Chips hat.</p></section>`;
+const BEITRETEN=`<section class="karte stapel"><h2>Spielraum beitreten</h2>
+  <div><label>Raumcode</label><input maxlength="4"></div><div><label>Dein Name</label><input maxlength="20"></div>
+  <div class="reihe"><button class="haupt">Beitreten</button></div></section>`;
+const W_BEISPIEL='<div class="weg"><button class="haupt">Beispiel-Quiz spielen</button><p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p></div>';
+const W_EINMAL='<div class="weg"><button>Eigenes Quiz erstellen</button><p class="matt klein">Kategorien und Fragen selbst schreiben, ohne Konto. Das Einmal-Quiz gilt nur für diesen Spielraum.</p></div>';
+const eroeffnen=(wege,spalten=2)=>`<section class="karte stapel"><h2>Spielraum eröffnen</h2>
+  <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+  <div class="wege" style="grid-template-columns:repeat(${spalten},1fr)">${wege}</div></section>`;
+
+const startA=(anzahl)=>`<main class="seite stapel">${IDEE}<div class="zwei-spalten">
+  ${eroeffnen(W_BEISPIEL+`<div class="weg"><button>Meine Quizze</button><p class="matt klein">${anzahl?`${anzahl} gespeicherte Quizze spielen oder weiterschreiben.`:'Quizze in deinem Konto speichern und immer wieder spielen.'}</p></div>`+W_EINMAL,3)}
+  ${BEITRETEN}</div></main>`;
+
+const startB=(liste)=>`<main class="seite stapel">${IDEE}<div class="zwei-spalten">${eroeffnen(W_BEISPIEL+W_EINMAL)}${BEITRETEN}</div>${meineKarte(liste)}</main>`;
+const meineKarte=(liste)=>`<section class="karte stapel">
+    <div class="reihe zwischen"><h2>Meine Quizze</h2><span class="zaehler"><b>${liste.length}</b> von 20</span></div>
+    ${liste.length?`<table class="zuletzt"><tbody>${liste.slice(0,3).map(([t,s,d])=>`<tr><td style="font-weight:700">${titelHtml(t)}</td><td>${zustand(s)}</td><td class="matt klein" style="white-space:nowrap">geändert ${d}</td>
+      <td style="text-align:right;white-space:nowrap">${s?'<button class="klein-knopf spielen">Spielen</button> ':''}<button class="klein-knopf">Bearbeiten</button></td></tr>`).join('')}</tbody></table>
+      <div class="reihe"><button>Alle ${liste.length} Quizze</button><button class="text">Neues Quiz</button></div>`
+    :'<p class="matt">Noch keine Quizze gespeichert. Mit einem Konto bleibt dein Quiz erhalten und du kannst es immer wieder spielen.</p><div class="reihe"><button>Neues Quiz</button></div>'}
+  </section>`;
+
+/* ----- Liste „Meine Quizze“ ----- */
+const ICH_SEHE='Nur du siehst deine Quizze. Unfertige darfst du speichern, spielen lässt sich ein Quiz, sobald es mindestens eine Kategorie mit einer Frage hat und kein Feld leer ist.';
+function listenKopf(n){
+  const voll=n>=20;
+  return `<div class="listenkopf"><span class="zaehler"><b>${n}</b> von 20 Quizzen</span>
+    ${voll?'<span class="voll-hinweis">Dein Platz ist voll. Lösche ein Quiz, um ein neues anzulegen.</span>':''}
+    <button class="haupt" ${voll?'disabled':''}>Neues Quiz</button></div>`;
+}
+const seiteListe=(innen)=>`<main class="seite stapel"><section class="spielidee"><h1>Meine Quizze</h1><p class="matt">${ICH_SEHE}</p></section>${innen}</main>`;
+const LEER=`<section class="karte stapel leer-karte"><div class="chip"></div><h2>Noch kein Quiz gespeichert</h2>
+  <p class="matt" style="max-width:520px">Leg dein erstes Quiz an. Es darf unfertig bleiben, bis du es spielen willst. Höchstens 20 Quizze passen in dein Konto.</p>
+  <button class="haupt">Erstes Quiz anlegen</button></section>`;
+
+function tabelle(liste,dicht){
+  return `<section class="karte tabelle-karte ${dicht?'dicht':''}"><table>
+    <thead><tr><th>Titel</th><th>Zustand</th><th>Geändert</th><th></th></tr></thead><tbody>
+    ${liste.map(([t,s,d])=>`<tr><td class="titel">${titelHtml(t)}</td><td>${zustand(s)}</td><td class="datum">${d}</td>
+      <td class="aktionen">${s?'<button class="klein-knopf spielen">Spielen</button>':'<span class="platzhalter"></span>'}<button class="klein-knopf">Bearbeiten</button><button class="text">Löschen</button></td></tr>`).join('')}
+    </tbody></table></section>`;
+}
+function kacheln(liste,dicht){
+  const voll=liste.length>=20;
+  const neu=voll?`<div class="kachel neu gesperrt"><div class="plus-zeichen">+</div><b class="matt">Neues Quiz</b><p class="matt klein">20 von 20 belegt. Lösche ein Quiz, um Platz zu schaffen.</p></div>`
+    :`<button class="kachel neu"><div class="plus-zeichen">+</div><b>Neues Quiz</b><span class="matt klein">noch ${20-liste.length} frei</span></button>`;
+  return `<div class="kachel-raster ${dicht?'dicht':''}">${neu}${liste.map(([t,s,d])=>`<article class="kachel">
+    <div class="reihe zwischen">${zustand(s)}<span class="matt klein">geändert ${d}</span></div>
+    <h2>${titelHtml(t)}</h2>
+    ${s||dicht?'':'<p class="matt klein">Zum Spielen fehlen noch Inhalte.</p>'}
+    <div class="unten">${s?'<button class="klein-knopf spielen">Spielen</button>':''}<button class="klein-knopf">Bearbeiten</button><button class="text">Löschen</button></div></article>`).join('')}</div>`;
+}
+const listeA=(l)=>seiteListe(l.length?listenKopf(l.length)+tabelle(l,l.length>10):listenKopf(0)+LEER);
+const listeB=(l)=>seiteListe(l.length?`<div class="listenkopf"><span class="zaehler"><b>${l.length}</b> von 20 Quizzen</span></div>`+kacheln(l,l.length>10):listenKopf(0)+LEER);
+const RUECKFRAGE=`<div class="m-dimmer"><div class="m-dialog"><div class="von">${HOST} meldet:</div>
+  „Musik der 80er und 90er“ wirklich löschen? Das lässt sich nicht rückgängig machen.
+  <div class="knoepfe-d"><span class="k">Abbrechen</span><span class="k ok">OK</span></div></div></div>`;
+
+/* ----- Editor für ein gespeichertes Quiz ----- */
+let nr=0;
+function feld(lab,wert,max,o={}){
+  const id='f'+(++nr), leer=o.fehler&&!wert;
+  const el=o.lang?`<textarea id="${id}" rows="3">${wert}</textarea>`:`<input id="${id}" value="${wert}">`;
+  return `<div class="feld ${leer?'feld-fehler':''}"><label for="${id}">${lab}</label>${el}
+    <div class="feld-unten">${leer?'<span class="feld-meldung">Bitte ausfüllen</span>':''}<span class="zeichen">${wert.length} von ${max}</span></div></div>`;
+}
+const KATS=[
+  ['Geographie',[['Welcher Fluss fließt durch Wien, Budapest und Belgrad?','Donau'],['Wie heißt die Hauptstadt von Australien?','Canberra'],['Welcher ist der höchste Berg Afrikas?','Kilimandscharo']]],
+  ['Musik der 80er',[['Wie hieß die Band von Freddie Mercury?','Queen'],['Aus welchem Land kommt die Band a-ha?','Norwegen']]],
+  ['Filmzitate',[['Aus welchem Film stammt „Ich schau dir in die Augen, Kleines“?','Casablanca']]],
+  ['',[['','']]],
+];
+function editor(V,z){
+  const unfertig=z==='unfertig', gew=unfertig?3:0, [kname,fragen]=KATS[gew];
+  const leer=(k)=>(k[0]?0:1)+k[1].reduce((n,f)=>n+(f[0]?0:1)+(f[1]?0:1),0);
+  const STAND={ok:'<span class="stand ok">Gespeichert, heute 21:14</span>',offen:'<span class="stand offen">Ungespeicherte Änderungen</span>',
+    fehlt:'<span class="stand fehlt">Nicht gespeichert</span>',unfertig:'<span class="stand ok">Gespeichert, gerade eben</span>'};
+  const stand=STAND[z==='gespeichert'?'ok':z==='geaendert'?'offen':z==='abgelaufen'?'fehlt':'unfertig'];
+  const speichernAus=z==='gespeichert'||unfertig;
+  const ABGELAUFEN=`<div class="hinweis fehler abgelaufen" role="alert"><p>Deine Anmeldung gilt nicht mehr, das Quiz ist nicht gespeichert. Dein Text bleibt hier stehen.</p>
+    <p>Melde dich in einem <a class="neu-tab" href="#">neuen Tab</a> an und klicke dann hier noch einmal auf „Speichern“.</p></div>`;
+  const UNFERTIG='<p class="hinweis fehler" role="alert">Gespeichert. Zum Spielen fülle bitte alle markierten Felder aus.</p>';
+  const box=V==='B'?`<div class="stand-box">${stand}<button ${speichernAus?'disabled':''}>Speichern</button>${z==='abgelaufen'?ABGELAUFEN:''}</div>`:'';
+  const titelZeile=V==='B'?`<h1 class="editor-titel">Quiz bearbeiten</h1>${box}`:`<h1 class="editor-titel">Quiz bearbeiten</h1>`;
+  const leiste=`<aside class="editor-leiste">${titelZeile}
+    ${feld('Titel des Quiz','Spieleabend bei Mara',100)}
+    <div class="reihe zwischen"><span class="ueberschrift">Kategorien</span><span class="zaehler"><b>4</b> von 10</span></div>
+    <div class="editor-liste">${KATS.map((k,i)=>`<div class="editor-zeile ${i===gew?'an':''}"><button class="editor-wahl"><b class="${k[0]?'':'leer'}">${k[0]||'Kategorie '+(i+1)}</b>
+      <small>${k[1].length} von 10 Fragen</small>${unfertig&&leer(k)?`<span class="leer-tag">${leer(k)} ${leer(k)===1?'leeres Feld':'leere Felder'}</span>`:''}</button>
+      <div class="editor-pfeile"><button class="sym" ${i===0?'disabled':''}>↑</button><button class="sym" ${i===3?'disabled':''}>↓</button></div></div>`).join('')}</div>
+    <div><button>Kategorie hinzufügen</button></div>
+    <p class="notiz">Dieses Quiz liegt in deinem Konto, nur du siehst es. Ein Spielraum spielt eine Kopie: Was du danach änderst, gilt erst im nächsten Spielraum.</p></aside>`;
+  const haupt=`<main class="editor-haupt"><div class="editor-katkopf">${feld('Name der Kategorie '+(gew+1),kname,50,{fehler:unfertig})}<button class="text">Kategorie löschen</button></div>
+    <div class="reihe zwischen"><span class="ueberschrift">Fragen</span><span class="zaehler"><b>${fragen.length}</b> von 10 Fragen</span></div>
+    ${fragen.map((f,i)=>`<section class="frage-block"><div class="frage-kopf"><b>Frage ${i+1}</b><div class="knoepfe"><button class="sym" ${i===0?'disabled':''}>↑</button><button class="sym" ${i===fragen.length-1?'disabled':''}>↓</button><button class="text" ${fragen.length===1?'disabled':''}>Frage löschen</button></div></div>
+      ${feld('Fragetext',f[0],300,{lang:true,fehler:unfertig})}${feld('Musterlösung',f[1],100,{fehler:unfertig})}</section>`).join('')}
+    <div><button>Frage hinzufügen</button></div></main>`;
+  const meldung=z==='abgelaufen'?ABGELAUFEN:unfertig?UNFERTIG:'';
+  const fuss=V==='A'
+    ?`<div class="editor-fuss fuss-a"><button class="text">Zurück zu Meine Quizze</button>${stand}${meldung}<button class="speichern" ${speichernAus?'disabled':''}>Speichern</button><button class="haupt">Spielraum eröffnen</button></div>`
+    :`<div class="editor-fuss"><button class="text">Zurück zu Meine Quizze</button>${unfertig?UNFERTIG:''}<span class="matt klein" style="margin-left:auto">speichert vorher deine Änderungen</span><button class="haupt" style="margin-left:0">Spielraum eröffnen</button></div>`;
+  return `<div class="editor-raster">${leiste}${haupt}</div>${fuss}`;
+}
+const editorZustaende=(V,x)=>[
+  rahmen(x+'1',V+'1 Gespeichert','Nach dem Öffnen oder Speichern. „Speichern“ ist gesperrt, solange sich nichts geändert hat.','/quiz/'+ID,K.editor,editor(V,'gespeichert'),''),
+  rahmen(x+'2',V+'2 Ungespeicherte Änderungen','Sobald ein Feld sich ändert. Wer jetzt über den Kopf oder „Zurück“ geht oder den Tab schließt, bekommt eine Rückfrage.','/quiz/'+ID,K.editor,editor(V,'geaendert'),''),
+  rahmen(x+'3',V+'3 Anmeldung abgelaufen beim Speichern','Der Inhalt bleibt stehen, „Speichern“ bleibt aktiv. Der Link öffnet /anmelden in einem neuen Tab, danach genügt ein zweiter Klick auf „Speichern“.','/quiz/'+ID,K.editor,editor(V,'abgelaufen'),''),
+  rahmen(x+'4',V+'4 Spielraum eröffnen bei unfertigem Quiz','„Spielraum eröffnen“ hat erst gespeichert, dann wie beim Einmal-Quiz die leeren Felder markiert und zur ersten unfertigen Kategorie gesprungen.','/quiz/'+ID,K.editor,editor(V,'unfertig'),''),
+].join('');
+
+/* ----- Konto-Seite ----- */
+const KONTO=`<main class="seite stapel"><section class="spielidee"><h1>Dein Konto</h1></section>
+  <div class="zwei-spalten"><section class="karte stapel">
+    <div class="ueberschrift">Angemeldet als</div><p class="adresse gold">${ADRESSE}</p>
+    <div class="reihe"><button>Abmelden</button></div>
+    <div class="stapel linie-oben"><div class="reihe zwischen"><h2>Meine Quizze</h2><span class="zaehler"><b>7</b> von 20</span></div>
+      <p class="matt klein">Deine gespeicherten Quizze, nur für dich sichtbar.</p><div><button>Zu meinen Quizzen</button></div></div>
+  </section>
+  <section class="karte stapel"><h2>Konto löschen</h2><p class="matt klein">Entfernt deine Adresse, dein Passwort und deine Quizze.</p><div><button>Konto löschen</button></div></section>
+  </div></main>`;
+const KONTO_HEUTE=`<main class="seite stapel"><section class="spielidee"><h1>Dein Konto</h1><p class="matt">Das Speichern von Quizzen kommt später.</p></section></main>`;
+
+/* ----- Teile ----- */
+const teile={
+ gemeinsam:`<section class="m-teil" id="gemeinsam"><h2>Für alle Varianten gleich: Kopfzeile und Konto</h2><p>Angemeldet steht „Meine Quizze“ als zweiter Textlink vor „Konto“ im Kopf, auf jeder Seite außer in der Partie. Die aktuelle Seite ist weiß und kein Link. Auf der Konto-Seite ersetzt ein Abschnitt „Meine Quizze“ den Satz „Das Speichern von Quizzen kommt später.“, das Löschen nennt die Quizze mit.</p></section>`
+   +streifen('Heute: Kopf angemeldet',K.heute)
+   +streifen('Neu: Kopf angemeldet auf der Startseite',K.start)
+   +streifen('Neu: Kopf auf /quizze',K.liste)
+   +rahmen('konto','Konto-Seite','Links unter dem Abmelden ein Abschnitt mit Zähler und Weg zur Liste. Der Untertitel unter „Dein Konto“ entfällt.','/konto',K.konto,KONTO),
+ start:`<section class="m-teil" id="start"><h2>Startseite angemeldet</h2><p>Offene Frage: Wo sitzt „Meine Quizze“? A macht daraus einen dritten Weg in der Karte „Spielraum eröffnen“, B lässt die Karte wie heute und zeigt darunter die drei zuletzt geänderten Quizze.</p></section>`
+   +rahmen('startA','<span class="m-ab">A</span>Dritter Weg in „Spielraum eröffnen“','Die Karte bekommt drei Spalten. Klein und ruhig, „Meine Quizze“ führt zur Liste.','/',K.start,startA(7))
+   +streifen('A ohne gespeicherte Quizze: nur der Text unter dem Knopf ändert sich',`<main class="seite" style="padding-bottom:20px">${eroeffnen(W_BEISPIEL+'<div class="weg"><button>Meine Quizze</button><p class="matt klein">Quizze in deinem Konto speichern und immer wieder spielen.</p></div>'+W_EINMAL,3)}</main>`)
+   +rahmen('startB','<span class="m-ab">B</span>Eigene Karte mit den letzten Quizzen','Die oberen Karten bleiben wie heute. Darunter kann man ein gespeichertes Quiz direkt spielen, ohne erst zur Liste zu gehen.','/',K.start,startB(QUIZZE))
+   +streifen('B ohne gespeicherte Quizze',`<main class="seite" style="padding-top:20px;padding-bottom:20px">${meineKarte([])}</main>`),
+ liste:`<section class="m-teil" id="liste"><h2>Liste „Meine Quizze“ (/quizze)</h2><p>Offene Frage: Tabelle oder Karten? A ist eine dichte Tabelle mit festen Spalten, B ein Raster aus Karten mit „Neues Quiz“ als erster Karte. Der leere Zustand ist in beiden gleich und steht nur bei A.</p></section>`
+   +rahmen('lA0','<span class="m-ab">A</span>Leere Liste: erstes Quiz','Gilt für A und B. Ein goldener Knopf, der Zähler zeigt 0 von 20.','/quizze',K.liste,listeA([]))
+   +rahmen('lA1','<span class="m-ab">A</span>Tabelle mit 7 Quizzen','Spielen steht vorn und fehlt bei unfertigen Quizzen, Bearbeiten und Löschen stehen immer an derselben Stelle. Ein leerer Titel erscheint als „Ohne Titel“.','/quizze',K.liste,listeA(QUIZZE))
+   +rahmen('lA2','<span class="m-ab">A</span>Tabelle voll: 20 von 20','„Neues Quiz“ ist gesperrt, daneben steht warum. Ab 11 Einträgen werden die Zeilen enger.','/quizze',K.liste,listeA(VOLL))
+   +rahmen('lB1','<span class="m-ab">B</span>Karten mit 7 Quizzen','Drei Karten pro Reihe, lange Titel nach zwei Zeilen gekürzt. „Neues Quiz“ ist die erste Karte und zeigt, wie viel Platz frei ist.','/quizze',K.liste,listeB(QUIZZE))
+   +rahmen('lB2','<span class="m-ab">B</span>Karten voll: 20 von 20','Die erste Karte wird zum Hinweis, die übrigen Karten werden flacher.','/quizze',K.liste,listeB(VOLL))
+   +rahmen('lX','Löschen mit Rückfrage','Wie beim Einmal-Quiz die Rückfrage des Browsers (confirm), hier nachgebaut. Gilt für A und B.','/quizze',K.liste,listeA(QUIZZE),FUSS,RUECKFRAGE),
+ editor:`<section class="m-teil" id="editor"><h2>Editor für ein gespeichertes Quiz (/quiz/&lt;id&gt;)</h2><p>Aufbau wie der Editor des Einmal-Quiz, Überschrift „Quiz bearbeiten“, der Hinweis zum Browser-Entwurf ist ersetzt. Offene Frage: Wo stehen Stand und „Speichern“? A legt beides in die Leiste unten neben „Spielraum eröffnen“, B oben in die linke Spalte unter die Überschrift.</p></section>`
+   +`<section class="m-teil" style="padding-top:18px"><h2 style="font-size:21px"><span class="m-ab">A</span>Stand und Speichern in der Leiste unten</h2><p>Alles, was das Quiz verlässt (Speichern, Spielraum eröffnen), steht an einem Ort. Die Meldungen erscheinen in derselben Leiste wie beim Einmal-Quiz.</p></section>`+editorZustaende('A','eA')
+   +`<section class="m-teil" style="padding-top:30px"><h2 style="font-size:21px"><span class="m-ab">B</span>Stand und Speichern oben links</h2><p>Der Stand steht direkt unter der Überschrift und fällt beim Öffnen sofort auf. Die Leiste unten bleibt so ruhig wie beim Einmal-Quiz, nur mit „Spielraum eröffnen“.</p></section>`+editorZustaende('B','eB'),
+};
+
+/* nur zum Prüfen: ?nur=gemeinsam|start|liste|editor zeigt einen Teil für kürzere Screenshots */
+const nur=new URLSearchParams(location.search).get('nur');
+document.getElementById('inhalt').innerHTML=Object.keys(teile).filter(k=>!nur||k===nur).map(k=>teile[k]).join('');
+document.getElementById('sprung').innerHTML=`<b>Gemeinsam</b><a href="#gemeinsam">Kopf und Konto</a>
+  <b>Startseite</b><a href="#startA">A dritter Weg</a><a href="#startB">B eigene Karte</a>
+  <b>Liste</b><a href="#lA0">leer</a><a href="#lA1">A Tabelle</a><a href="#lB1">B Karten</a><a href="#lX">Löschen</a>
+  <b>Editor</b><a href="#eA1">A Leiste unten</a><a href="#eB1">B oben links</a>`;
+</script>
+</body>
+</html>
