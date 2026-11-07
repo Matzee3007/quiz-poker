@@ -19,7 +19,7 @@ Gleichwertiges Ziel ist das **Lernen**: Echtzeit-Multiplayer mit WebSockets, Rol
 - **Oberfläche:** Svelte 5 mit Vite 8 (eine einzelne Seite, kein SvelteKit)
 - **Server und Echtzeit:** Cloudflare Workers und Durable Objects, WebSockets (Durable Objects ab Phase 2)
 - **Hosting:** Cloudflare (kostenloser Tarif), Werkzeug `wrangler`
-- **Tests:** Vitest 4 (bewusst nicht 5, siehe ADR 0001)
+- **Tests:** Vitest 4 (bewusst nicht 5, siehe ADR 0001), Playwright für den Browser-Durchlauf (ADR 0007)
 - **Qualität:** ESLint, Prettier, `svelte-check`
 
 Begründung und Alternativen: `docs/adr/0001-stack.md`.
@@ -78,9 +78,11 @@ quiz-poker/
 │   └── *.test.ts       Tests des Workers
 ├── migrations/         Tabellen in D1 als SQL-Dateien
 ├── scripts/            Befehle für den Betreiber, siehe docs/Betrieb.md
+├── browser/            Browser-Durchlauf mit Playwright
 ├── docs/               Doku, zugleich Teil des Obsidian-Vaults
 ├── index.html          Seite, in die Svelte die Oberfläche einhängt
 ├── wrangler.jsonc      Cloudflare-Einstellungen
+├── playwright.config.ts  Browser-Durchlauf
 ├── vite.config.ts      Bauen und lokaler Server
 └── vitest.config.ts    Tests
 ```
@@ -96,6 +98,7 @@ npm run format         # Prettier: Code einheitlich formatieren
 npm run typecheck      # Typen prüfen (wrangler types, svelte-check, tsc)
 npm test               # Vitest einmal ausführen
 npm run test:watch     # Vitest bei jeder Änderung neu ausführen
+npm run test:browser   # Browser-Durchlauf mit Playwright, von Hand, siehe docs/tools/Playwright.md
 npm run build          # Oberfläche und Worker für den Betrieb bauen
 npm run check          # Alle Prüfungen auf einmal: Linter, Format, Typen, Tests, Build
 npm run deploy         # Zu Cloudflare hochladen (braucht Konto und wrangler login)
