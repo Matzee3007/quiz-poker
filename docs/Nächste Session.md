@@ -1,19 +1,19 @@
 ---
 titel: Nächste Session
 status: aktiv
-erstellt: 2026-11-06
+erstellt: 2026-11-07
 tags: [session, übergabe]
 ---
 
 # Nächste Session
 
-Stand vom 2026-11-06. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - Quizze speichern|Lernjournal Phase 3 - Quizze speichern]].
+Stand vom 2026-11-07. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - Quizze speichern|Lernjournal Phase 3 - Quizze speichern]].
 
 ## Stand bei Sessionende
 
-- **Branch:** `main` (nach dem Merge von PR #22)
+- **Branch:** `main` (nach dem Merge von PR #23)
 - **Offene PRs:** keine
-- **Nicht committet:** `AGENTS.md` (Kopie der `CLAUDE.md` für Codex, siehe unten)
+- **Nicht committet:** nichts
 
 ## Vor dem Start
 
@@ -33,11 +33,9 @@ Stand vom 2026-11-06. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
 - das Beispiel-Quiz als Vorlage kopieren (bewusst aus Schritt 3 verschoben)
 - neu bewerten, ob „Spielen“ das Quiz über seine ID statt über den Inhalt eröffnet (Review-Fund 9 im Plan von Schritt 3). Bei öffentlichen Quizzen muss der Server den Inhalt ohnehin selbst lesen.
 - jeder PR bekommt weiter `/code-review` und `/security-review`
+- **Erste Aufgabe des Plans: Browser-Durchlauf mit Playwright ins Repo** (entschieden am 2026-11-07). `@playwright/test` als Entwicklungs-Abhängigkeit, eigener Befehl `npm run test:browser`, von Hand gestartet, vorerst nicht in `npm run check` und nicht in der CI (braucht laufenden lokalen Server und eine lokale Einladung). Inhalt: der Durchlauf aus Schritt 3 (Konto, Meine Quizze, Editor, Einmal-Quiz und Beispiel-Quiz ohne Konto). Dazu `docs/tools/Playwright.md`. Die Browser liegen schon unter `~/Library/Caches/ms-playwright`. Vorlage: das Skript aus Schritt 3 lag nur im Scratchpad, die Prüfungen stehen im Plan von Schritt 3 unter „Ergebnis der Reviews“ und „Veröffentlichung“.
 
-Vorher entscheiden:
-
-- `AGENTS.md`: ins Repo, löschen oder liegen lassen? Sie ist gegenüber der `CLAUDE.md` schon veraltet.
-- Browser-Durchlauf mit Playwright ins Repo holen? Er lag diese Session wieder nur im Scratchpad. Das wäre eine neue Abhängigkeit.
+`AGENTS.md` ist seit 2026-11-07 nur noch ein Verweis auf die `CLAUDE.md`, damit Codex denselben Kontext findet und nichts doppelt gepflegt wird.
 
 Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 ms CPU, bisher ohne Abbruch (Nachmessung in [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]). Treten Fehler 1102 auf, zuerst `session.cookieCache` von Better Auth prüfen.
 
