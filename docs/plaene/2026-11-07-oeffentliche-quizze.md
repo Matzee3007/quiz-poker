@@ -107,17 +107,17 @@ Ab hier Branch `feature/oeffentliche-quizze`.
   - `quizAnfrage(anfrage, env, id, weg: "sichtbarkeit" | "kopie" | null)`. `worker/index.ts` erkennt `/api/quizze/<id>/(sichtbarkeit|kopie)`.
   - Liste und Lesen liefern `oeffentlich: boolean`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - neues Quiz → in Liste und `GET` `oeffentlich: false`, auch mit `oeffentlich: true` im Inhalt
   - Sichtbarkeit `true` bei spielbarem Quiz → 200, `oeffentlichSeit` ist eine Zahl, Liste zeigt `oeffentlich: true`. Nochmal `true` → `oeffentlichSeit` bleibt gleich
   - Sichtbarkeit `true` bei unfertigem Quiz → 422 `quiz-unfertig`
   - Sichtbarkeit `false` → 200 `{ oeffentlichSeit: null }`
   - `{ oeffentlich: "ja" }` → 422 `ungueltige-nachricht`, fremdes Konto → 404, fremder `Origin` → 403, ohne Cookie → 401
   - `PUT /api/quizze/:id` mit unfertigem Inhalt bei öffentlichem Quiz → 422 `oeffentlich-unfertig`, der alte Inhalt bleibt. Mit fertigem Inhalt → 200
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/quizze.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: Migration und Wege schreiben:** Veröffentlichen in einem Befehl: `UPDATE quiz SET oeffentlich_seit = COALESCE(oeffentlich_seit, ?) WHERE id = ? AND besitzer = ? AND spielbar = 1`. Bei `changes === 0` mit einem `SELECT spielbar` 404 und 422 unterscheiden. Ändern: `WHERE … AND (oeffentlich_seit IS NULL OR ? = 1)` mit `spielbar` als Wert, bei `changes === 0` ebenso unterscheiden. Die Migration lokal anwenden: `npx wrangler d1 migrations apply quiz-poker --local`.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS, auch alle bisherigen.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add public visibility for saved quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/quizze.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: Migration und Wege schreiben:** Veröffentlichen in einem Befehl: `UPDATE quiz SET oeffentlich_seit = COALESCE(oeffentlich_seit, ?) WHERE id = ? AND besitzer = ? AND spielbar = 1`. Bei `changes === 0` mit einem `SELECT spielbar` 404 und 422 unterscheiden. Ändern: `WHERE … AND (oeffentlich_seit IS NULL OR ? = 1)` mit `spielbar` als Wert, bei `changes === 0` ebenso unterscheiden. Die Migration lokal anwenden: `npx wrangler d1 migrations apply quiz-poker --local`.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS, auch alle bisherigen.
+- [x] **Schritt 5: `npm run check`, Commit** `Add public visibility for saved quizzes`.
 
 ### Aufgabe 3: Sammlung mit Blättern
 

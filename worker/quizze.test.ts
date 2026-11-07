@@ -305,3 +305,144 @@ describe("Ein Quiz lesen, ändern und löschen", () => {
     expect((await lesen(anderes.cookie, anderes.id)).status).toBe(200);
   });
 });
+
+describe("Öffentlich und privat", () => {
+  async function sichtbarkeit(cookie: string, id: string, daten: unknown) {
+    const antwort = await anQuizze(cookie, "PUT", `/${id}/sichtbarkeit`, daten);
+    return {
+      status: antwort.status,
+      daten: (await antwort.json()) as {
+        oeffentlichSeit?: number | null;
+        code?: string;
+      },
+    };
+  }
+
+  async function lesen(cookie: string, id: string) {
+    const antwort = await anQuizze(cookie, "GET", `/${id}`);
+    return (await antwort.json()) as { oeffentlich: boolean; quiz: unknown };
+  }
+
+  it("legt neue Quizze privat an, auch mit oeffentlich im Inhalt", async () => {
+    const cookie = await neuesKonto();
+
+    const { daten } = await anlegen(cookie, {
+      ...BEISPIEL_QUIZ,
+      oeffentlich: true,
+    });
+
+    expect((await liste(cookie))[0]).toMatchObject({ oeffentlich: false });
+    expect((await lesen(cookie, daten.id!)).oeffentlich).toBe(false);
+  });
+
+  it("veröffentlicht ein spielbares Quiz und behält beim zweiten Mal den Zeitpunkt", async () => {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie, BEISPIEL_QUIZ);
+
+    const erstes = await sichtbarkeit(cookie, daten.id!, { oeffentlich: true });
+    await new Promise((fertig) => setTimeout(fertig, 5));
+    const zweites = await sichtbarkeit(cookie, daten.id!, {
+      oeffentlich: true,
+    });
+
+    expect(erstes.status).toBe(200);
+    expect(erstes.daten.oeffentlichSeit).toEqual(expect.any(Number));
+    expect(zweites.daten.oeffentlichSeit).toBe(erstes.daten.oeffentlichSeit);
+    expect((await liste(cookie))[0]).toMatchObject({ oeffentlich: true });
+  });
+
+  it("lehnt ein unfertiges Quiz ab", async () => {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie);
+
+    const antwort = await sichtbarkeit(cookie, daten.id!, {
+      oeffentlich: true,
+    });
+
+    expect(antwort).toEqual({ status: 422, daten: { code: "quiz-unfertig" } });
+    expect((await liste(cookie))[0]).toMatchObject({ oeffentlich: false });
+  });
+
+  it("kennt fremde und unbekannte Quizze nicht", async () => {
+    const fremd = await neuesKonto();
+    const { daten } = await anlegen(fremd, BEISPIEL_QUIZ);
+    const cookie = await neuesKonto();
+
+    for (const id of [daten.id!, crypto.randomUUID()]) {
+      expect(await sichtbarkeit(cookie, id, { oeffentlich: true })).toEqual({
+        status: 404,
+        daten: { code: "quiz-unbekannt" },
+      });
+    }
+    expect((await liste(fremd))[0]).toMatchObject({ oeffentlich: false });
+  });
+
+  it("stellt ein öffentliches Quiz wieder auf privat", async () => {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie, BEISPIEL_QUIZ);
+    await sichtbarkeit(cookie, daten.id!, { oeffentlich: true });
+
+    const antwort = await sichtbarkeit(cookie, daten.id!, {
+      oeffentlich: false,
+    });
+
+    expect(antwort).toEqual({ status: 200, daten: { oeffentlichSeit: null } });
+    expect((await liste(cookie))[0]).toMatchObject({ oeffentlich: false });
+  });
+
+  it("versteht nur oeffentlich als true oder false", async () => {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie, BEISPIEL_QUIZ);
+
+    for (const eingabe of [{ oeffentlich: "ja" }, {}]) {
+      expect(await sichtbarkeit(cookie, daten.id!, eingabe)).toEqual({
+        status: 422,
+        daten: { code: "ungueltige-nachricht" },
+      });
+    }
+    expect((await liste(cookie))[0]).toMatchObject({ oeffentlich: false });
+  });
+
+  it("verlangt Anmeldung und die eigene Seite", async () => {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie, BEISPIEL_QUIZ);
+
+    const ohneAnmeldung = await sichtbarkeit("", daten.id!, {
+      oeffentlich: true,
+    });
+    const fremdeSeite = await exports.default.fetch(
+      `${BASIS}/api/quizze/${daten.id}/sichtbarkeit`,
+      {
+        method: "PUT",
+        headers: { Origin: "https://fremd.test", Cookie: cookie },
+        body: JSON.stringify({ oeffentlich: true }),
+      },
+    );
+
+    expect(ohneAnmeldung.status).toBe(401);
+    expect(fremdeSeite.status).toBe(403);
+    expect(await fremdeSeite.json()).toEqual({ code: "fremde-herkunft" });
+    expect((await liste(cookie))[0]).toMatchObject({ oeffentlich: false });
+  });
+
+  it("lässt ein öffentliches Quiz nur spielbar speichern", async () => {
+    const cookie = await neuesKonto();
+    const { daten } = await anlegen(cookie, BEISPIEL_QUIZ);
+    await sichtbarkeit(cookie, daten.id!, { oeffentlich: true });
+
+    const unfertig = await anQuizze(cookie, "PUT", `/${daten.id}`, {
+      quiz: UNFERTIG,
+    });
+    const fertig = await anQuizze(cookie, "PUT", `/${daten.id}`, {
+      quiz: { ...BEISPIEL_QUIZ, titel: "Neuer Titel" },
+    });
+
+    expect(unfertig.status).toBe(422);
+    expect(await unfertig.json()).toEqual({ code: "oeffentlich-unfertig" });
+    expect(fertig.status).toBe(200);
+    expect(await lesen(cookie, daten.id!)).toMatchObject({
+      oeffentlich: true,
+      quiz: { titel: "Neuer Titel" },
+    });
+  });
+});

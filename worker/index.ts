@@ -136,9 +136,16 @@ export default {
       return passwortNeuSetzen(anfrage, env);
     }
 
-    const quizTreffer = /^\/api\/quizze(?:\/([^/]+))?$/.exec(pathname);
+    const quizTreffer =
+      /^\/api\/quizze(?:\/([^/]+)(?:\/(sichtbarkeit|kopie))?)?$/.exec(pathname);
     if (quizTreffer) {
-      return quizAnfrage(anfrage, env, quizTreffer[1] ?? null);
+      const [, id, weg] = quizTreffer;
+      return quizAnfrage(
+        anfrage,
+        env,
+        id ?? null,
+        (weg as "sichtbarkeit" | "kopie" | undefined) ?? null,
+      );
     }
 
     if (pathname === "/api/raeume" && anfrage.method === "POST") {
