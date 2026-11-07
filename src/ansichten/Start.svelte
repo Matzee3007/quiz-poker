@@ -11,6 +11,7 @@
     onEintritt: (raumcode: string, token: string, rueckkehr: boolean) => void;
     onEditor: () => void;
     onMeineQuizze: () => void;
+    onSammlung: () => void;
   }
 
   let {
@@ -20,6 +21,7 @@
     onEintritt,
     onEditor,
     onMeineQuizze,
+    onSammlung,
   }: Props = $props();
 
   let eingabeCode = $state("");
@@ -100,12 +102,21 @@
         <p class="matt">
           Du leitest die Partie als Quiz-Master und spielst nicht mit.
         </p>
-        <div class="wege" class:drei={angemeldet}>
+        <!-- Ohne Konto drei Wege nebeneinander, mit Konto vier im Raster 2×2: oben fertige Quizze, unten eigene. -->
+        <div class="wege" class:drei={!angemeldet}>
           <div class="weg">
             <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
               >Beispiel-Quiz spielen</button
             >
             <p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p>
+          </div>
+          <div class="weg">
+            <button disabled={eroeffnetGerade} onclick={onSammlung}
+              >Öffentliche Quizze</button
+            >
+            <p class="matt klein">
+              Fertige Quizze anderer Quiz-Master spielen, ohne Konto.
+            </p>
           </div>
           {#if angemeldet}
             <div class="weg">

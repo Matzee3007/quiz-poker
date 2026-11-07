@@ -3,12 +3,14 @@
   import {
     geaendertText,
     quizAnlegen,
-    quizLaden,
     quizLoeschen,
     quizzeLaden,
+    sichtbarkeitSetzen,
     type QuizEintrag,
   } from "../quizSammlung";
-  import { raumEroeffnen } from "../raumEroeffnen";
+  import { raumMitQuizEroeffnen } from "../raumEroeffnen";
+  import { BEISPIEL_QUIZ } from "../regeln/beispielQuiz";
+  import type { Quiz } from "../regeln/partie";
   import { leererEntwurf } from "../regeln/quizEntwurf";
   import { QUIZ_GRENZEN } from "../regeln/quizpruefung";
 
@@ -48,10 +50,11 @@
   }
   void laden();
 
-  async function neu() {
+  /** Legt ein Quiz an und öffnet es im Editor: leer oder als Kopie des Beispiel-Quiz. */
+  async function anlegen(quiz: Quiz) {
     fehler = null;
     arbeitet = true;
-    const ergebnis = await quizAnlegen(leererEntwurf());
+    const ergebnis = await quizAnlegen(quiz);
     arbeitet = false;
     if (ergebnis.ok) {
       onBearbeiten(ergebnis.wert);
@@ -63,18 +66,24 @@
   async function spielen(id: string) {
     fehler = null;
     arbeitet = true;
-    const geladen = await quizLaden(id);
-    if (!geladen.ok) {
-      arbeitet = false;
-      fehlschlag(geladen.code);
-      return;
-    }
-    const raum = await raumEroeffnen(geladen.wert);
+    const raum = await raumMitQuizEroeffnen(id);
     arbeitet = false;
     if (raum.ok) {
       onEintritt(raum.raumcode, raum.token, false);
     } else {
       fehler = meldungFuer(raum.code);
+    }
+  }
+
+  async function umschalten(eintrag: QuizEintrag) {
+    fehler = null;
+    arbeitet = true;
+    const ergebnis = await sichtbarkeitSetzen(eintrag.id, !eintrag.oeffentlich);
+    arbeitet = false;
+    if (ergebnis.ok) {
+      eintrag.oeffentlich = ergebnis.wert !== null;
+    } else {
+      fehlschlag(ergebnis.code);
     }
   }
 
@@ -103,9 +112,10 @@
   <section class="spielidee">
     <h1>Meine Quizze</h1>
     <p class="matt">
-      Nur du siehst deine Quizze. Unfertige darfst du speichern, spielen lässt
-      sich ein Quiz, sobald es mindestens eine Kategorie mit einer Frage hat und
-      kein Feld leer ist.
+      Deine Quizze sind privat, bis du sie veröffentlichst. Ein öffentliches
+      Quiz sieht jeder unter „Öffentliche Quizze“, ohne deinen Namen. Spielen
+      und veröffentlichen lässt sich ein Quiz, sobald es mindestens eine
+      Kategorie mit einer Frage hat und kein Feld leer ist.
     </p>
   </section>
   {#if fehler}
@@ -121,22 +131,36 @@
   {:else if quizze.length === 0}
     <div class="listenkopf">
       <span class="zaehler"><b>0</b> von {HOECHSTENS} Quizzen</span>
+      <button disabled={arbeitet} onclick={() => anlegen(BEISPIEL_QUIZ)}
+        >Beispiel-Quiz als Vorlage</button
+      >
     </div>
     <section class="karte stapel leer-karte">
       <div class="chip"></div>
       <h2>Noch kein Quiz gespeichert</h2>
-      <p class="matt" style="max-width: 520px">
-        Leg dein erstes Quiz an. Es darf unfertig bleiben, bis du es spielen
-        willst. Höchstens {HOECHSTENS} Quizze passen in dein Konto.
+      <p class="matt" style="max-width: 560px">
+        Leg dein erstes Quiz an oder beginne mit einer Kopie des Beispiel-Quiz
+        und ändere es nach deinen Wünschen. Höchstens {HOECHSTENS} Quizze passen in
+        dein Konto.
       </p>
-      <button class="haupt" disabled={arbeitet} onclick={neu}
-        >Erstes Quiz anlegen</button
-      >
+      <div class="reihe" style="flex-wrap: wrap; justify-content: center">
+        <button
+          class="haupt"
+          disabled={arbeitet}
+          onclick={() => anlegen(leererEntwurf())}>Erstes Quiz anlegen</button
+        >
+        <button disabled={arbeitet} onclick={() => anlegen(BEISPIEL_QUIZ)}
+          >Beispiel-Quiz als Vorlage</button
+        >
+      </div>
     </section>
   {:else}
     <div class="listenkopf">
       <span class="zaehler"
         ><b>{quizze.length}</b> von {HOECHSTENS} Quizzen</span
+      >
+      <button disabled={arbeitet || voll} onclick={() => anlegen(BEISPIEL_QUIZ)}
+        >Beispiel-Quiz als Vorlage</button
       >
     </div>
     <div class="kachel-raster" class:dicht={quizze.length > 10}>
@@ -149,7 +173,11 @@
           </p>
         </div>
       {:else}
-        <button class="kachel neu" disabled={arbeitet} onclick={neu}>
+        <button
+          class="kachel neu"
+          disabled={arbeitet}
+          onclick={() => anlegen(leererEntwurf())}
+        >
           <div class="plus-zeichen">+</div>
           <b>Neues Quiz</b>
           <span class="matt klein">noch {HOECHSTENS - quizze.length} frei</span>
@@ -163,9 +191,22 @@
             {:else}
               <span class="zustand unfertig">unfertig</span>
             {/if}
-            <span class="matt klein"
-              >geändert {geaendertText(eintrag.geaendertAm, jetzt)}</span
+            <!-- Ein unfertiges Quiz kann nicht öffentlich werden, ein öffentliches ist immer spielbar. -->
+            <button
+              class="schalter"
+              class:an={eintrag.oeffentlich}
+              role="switch"
+              aria-checked={eintrag.oeffentlich}
+              aria-label="Öffentlich"
+              title={eintrag.spielbar
+                ? undefined
+                : "Nur ein fertiges Quiz kann öffentlich werden."}
+              disabled={arbeitet || (!eintrag.spielbar && !eintrag.oeffentlich)}
+              onclick={() => umschalten(eintrag)}
             >
+              <span>{eintrag.oeffentlich ? "öffentlich" : "privat"}</span>
+              <span class="bahn"></span>
+            </button>
           </div>
           <h2>
             {#if eintrag.titel.trim()}
@@ -174,8 +215,16 @@
               <span class="ohne-titel">Ohne Titel</span>
             {/if}
           </h2>
+          <span class="matt klein"
+            >geändert {geaendertText(
+              eintrag.geaendertAm,
+              jetzt,
+            )}{eintrag.oeffentlich ? " · steht in der Sammlung" : ""}</span
+          >
           {#if !eintrag.spielbar && quizze.length <= 10}
-            <p class="matt klein">Zum Spielen fehlen noch Inhalte.</p>
+            <p class="matt klein">
+              Zum Spielen und Veröffentlichen fehlen noch Inhalte.
+            </p>
           {/if}
           <div class="unten">
             {#if eintrag.spielbar}

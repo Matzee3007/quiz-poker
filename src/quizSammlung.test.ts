@@ -40,15 +40,19 @@ describe("Anfragen an die Quiz-Sammlung", () => {
     expect(abruf).toHaveBeenCalledWith("/api/quizze", { method: "GET" });
   });
 
-  it("lädt ein Quiz", async () => {
+  it("lädt ein Quiz mit seiner Sichtbarkeit", async () => {
     antwortet(200, {
       id: ID,
       quiz: BEISPIEL_QUIZ,
       spielbar: true,
+      oeffentlich: true,
       geaendertAm: 5,
     });
 
-    expect(await quizLaden(ID)).toEqual({ ok: true, wert: BEISPIEL_QUIZ });
+    expect(await quizLaden(ID)).toEqual({
+      ok: true,
+      wert: { quiz: BEISPIEL_QUIZ, oeffentlich: true },
+    });
   });
 
   it("legt ein Quiz an und liefert seine ID", async () => {

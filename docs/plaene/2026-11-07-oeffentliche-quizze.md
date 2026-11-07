@@ -215,9 +215,9 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 **Schnittstellen:** Nutzt Aufgabe 7. Liefert den Pfad `/sammlung` (ohne Konto erreichbar, in `KONTO_PFADE`).
 
-- [ ] **Schritt 1: Ansichten nach dem Mock bauen:** „Spielen“ überall über `raumMitQuizEroeffnen`, auch „Spielraum eröffnen“ im Editor eines gespeicherten Quiz (erst speichern, dann über die ID). Kopieren und Vorlage öffnen danach die Kopie im Editor. Bei `quiz-unbekannt` in der Sammlung: Meldung zeigen und die erste Seite neu laden (Prüf-Schwerpunkt 2).
-- [ ] **Schritt 2: Im Browser durchspielen** (`npm run dev`), vor allem Prüf-Schwerpunkt 2 mit zwei Browserfenstern.
-- [ ] **Schritt 3: `npm run check`, Commit** `Add views for the public collection`.
+- [x] **Schritt 1: Ansichten nach dem Mock bauen:** „Spielen“ überall über `raumMitQuizEroeffnen`, auch „Spielraum eröffnen“ im Editor eines gespeicherten Quiz (erst speichern, dann über die ID). Kopieren und Vorlage öffnen danach die Kopie im Editor. Bei `quiz-unbekannt` in der Sammlung: Meldung zeigen und die erste Seite neu laden (Prüf-Schwerpunkt 2).
+- [x] **Schritt 2: Im Browser durchspielen** (`npm run dev`), vor allem Prüf-Schwerpunkt 2 mit zwei Browserfenstern.
+- [x] **Schritt 3: `npm run check`, Commit** `Add views for the public collection`.
 
 ### Aufgabe 9: Datenschutz, Betrieb und Browser-Durchlauf
 

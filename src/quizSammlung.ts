@@ -55,10 +55,12 @@ export function quizzeLaden(): Promise<Ergebnis<QuizEintrag[]>> {
   return anfrage("/api/quizze", "GET", (antwort) => antwort.json());
 }
 
-export function quizLaden(id: string): Promise<Ergebnis<Quiz>> {
+export type GeladenesQuiz = { quiz: Quiz; oeffentlich: boolean };
+
+export function quizLaden(id: string): Promise<Ergebnis<GeladenesQuiz>> {
   return anfrage(`/api/quizze/${id}`, "GET", async (antwort) => {
-    const daten = (await antwort.json()) as { quiz: Quiz };
-    return daten.quiz;
+    const daten = (await antwort.json()) as GeladenesQuiz;
+    return { quiz: daten.quiz, oeffentlich: daten.oeffentlich };
   });
 }
 
