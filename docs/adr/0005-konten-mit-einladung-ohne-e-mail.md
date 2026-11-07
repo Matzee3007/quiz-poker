@@ -66,6 +66,11 @@ Cloudflare hat in keinem Fall abgebrochen (kein Fehler 1102). Der Entwickler hat
 veröffentlichen. Treten Abbrüche auf, ist der Cookie-Cache von Better Auth (`session.cookieCache`) der erste Ansatz: Er spart
 die Abfrage der Sitzung in D1.
 
+**Nachmessung 2026-11-07** nach dem Veröffentlichen der öffentlichen Quizze (Phase 3, Schritt 4), CPU aus `wrangler tail`
+(Stichprobe): `GET /api/sammlung` ohne Sitzung Median 0 ms, max 2 ms. `POST /api/raeume { quizId }` max 8 ms, die Sitzung
+wird dort nur bei privaten Quizzen abgefragt. Die Sitzungsabfrage selbst (`get-session`) lag bei Median 9 ms und max 38 ms,
+`POST /api/quizze/:id/kopie` bei 15 ms. Kein Abbruch, das Urteil vom 2026-11-06 bleibt.
+
 ## Alternativen
 
 - **Eigene Domain mit Mail-Dienst:** Der saubere Weg mit Bestätigung, Zurücksetzen und Magic Link, aber der Entwickler möchte
