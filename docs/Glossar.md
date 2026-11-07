@@ -42,6 +42,10 @@ _Nicht verwenden_: geheimes Quiz
 Ein Quiz, das alle in der Quiz-Sammlung sehen und spielen können und das sich mit einem Konto als eigene Kopie übernehmen lässt.
 _Nicht verwenden_: freies Quiz, geteiltes Quiz
 
+**Kopie**:
+Ein privates Quiz, das ein Konto aus einem öffentlichen Quiz oder dem Beispiel-Quiz übernommen hat. Es ist vom Original unabhängig und gehört dem Konto, das kopiert hat.
+_Nicht verwenden_: Klon, Duplikat
+
 **Spielbares Quiz**:
 Ein Quiz mit mindestens einer Kategorie, je Kategorie mindestens einer Frage und ohne leere Felder. Gespeichert werden darf ein Quiz auch unfertig, spielen lässt sich nur ein spielbares.
 _Nicht verwenden_: gültiges Quiz, fertiges Quiz

@@ -231,7 +231,7 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 **Dateien:** Neu `docs/adr/0008-spielraum-ueber-quiz-id.md`. Ändern `CLAUDE.md` (Struktur: `worker/sammlung.ts`, `src/ansichten/Sammlung.svelte`), `docs/tools/Cloudflare D1.md` (`ALTER TABLE`, Teilindex, Blättern mit Zeiger), `docs/Glossar.md` bei neuen Begriffen
 
-- [ ] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
+- [x] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
 - [ ] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
 - [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe mergen.
