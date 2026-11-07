@@ -47,6 +47,12 @@
   }
   void laden(null);
 
+  /** Erneuter Versuch oder nächste Seite: Eine alte Fehlermeldung gilt dann nicht mehr. */
+  function weiterLaden(zeiger: string | null) {
+    fehler = null;
+    void laden(zeiger);
+  }
+
   /** Ein Quiz wurde inzwischen privat gestellt oder gelöscht: Meldung und erste Seite neu. */
   async function verschwunden() {
     fehler = meldungFuer("quiz-unbekannt");
@@ -61,7 +67,11 @@
     arbeitet = false;
     if (raum.ok) {
       onEintritt(raum.raumcode, raum.token, false);
-    } else if (raum.code === "quiz-unbekannt") {
+    } else if (
+      raum.code === "quiz-unbekannt" ||
+      raum.code === "sitzung-abgelaufen"
+    ) {
+      // Ohne gültige Anmeldung antwortet ein inzwischen privates Quiz mit 401.
       await verschwunden();
     } else {
       fehler = meldungFuer(raum.code);
@@ -128,7 +138,7 @@
       <p class="matt">Einen Moment …</p>
     {:else}
       <div>
-        <button onclick={() => laden(null)}>Noch einmal versuchen</button>
+        <button onclick={() => weiterLaden(null)}>Noch einmal versuchen</button>
       </div>
     {/if}
   {:else if quizze.length === 0}
@@ -185,7 +195,7 @@
     </div>
     <div class="sammlung-fuss">
       {#if weiter}
-        <button disabled={arbeitet} onclick={() => laden(weiter)}
+        <button disabled={arbeitet} onclick={() => weiterLaden(weiter)}
           >Mehr laden</button
         >
         <span class="matt klein">{quizze.length} angezeigt</span>

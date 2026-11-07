@@ -4,7 +4,7 @@ import {
   QUIZ_GRENZEN,
   quizPruefen,
 } from "../src/regeln/quizpruefung";
-import { eingabeLesen, fehler } from "./anfrage";
+import { eingabeLesen, fehler, vonEigenerSeite } from "./anfrage";
 import { auth } from "./auth";
 import { QUIZ_ID_MUSTER } from "./betrieb";
 
@@ -154,7 +154,7 @@ async function quizLoeschen(
   besitzer: string,
   id: string,
 ): Promise<Response> {
-  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+  if (!vonEigenerSeite(anfrage, env)) {
     return fehler(403, "fremde-herkunft");
   }
   const geloescht = await env.DB.prepare(
@@ -211,7 +211,7 @@ async function quizKopieren(
   besitzer: string,
   id: string,
 ): Promise<Response> {
-  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+  if (!vonEigenerSeite(anfrage, env)) {
     return fehler(403, "fremde-herkunft");
   }
   const neueId = crypto.randomUUID();
@@ -246,7 +246,7 @@ async function quizKopieren(
 
 /**
  * Liest ein gespeichertes Quiz zum Spielen: ein öffentliches für alle, ein privates nur für seinen Besitzer.
- * Fremde private Quizze sind wie unbekannte 404.
+ * Fremde private Quizze sind wie unbekannte 404. Ohne Anmeldung 401, damit die Seite zum Anmelden führt.
  */
 export async function gespeichertesQuizLesen(
   anfrage: Request,
@@ -255,7 +255,7 @@ export async function gespeichertesQuizLesen(
 ): Promise<
   { ok: true; quiz: Quiz } | { ok: false; status: number; code: string }
 > {
-  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+  if (!vonEigenerSeite(anfrage, env)) {
     return { ok: false, status: 403, code: "fremde-herkunft" };
   }
   const unbekannt = { ok: false, status: 404, code: "quiz-unbekannt" } as const;
@@ -275,11 +275,14 @@ export async function gespeichertesQuizLesen(
     return unbekannt;
   }
   // Die Sitzung nur bei privaten Quizzen abfragen, das spart Rechenzeit (ADR 0005).
-  if (
-    zeile.oeffentlich_seit === null &&
-    (await kontoDerSitzung(anfrage)) !== zeile.besitzer
-  ) {
-    return unbekannt;
+  if (zeile.oeffentlich_seit === null) {
+    const konto = await kontoDerSitzung(anfrage);
+    if (konto === null) {
+      return { ok: false, status: 401, code: "nicht-angemeldet" };
+    }
+    if (konto !== zeile.besitzer) {
+      return unbekannt;
+    }
   }
   const pruefung = quizPruefen(JSON.parse(zeile.inhalt));
   return pruefung.ok

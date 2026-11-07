@@ -122,4 +122,20 @@ describe("raumMitQuizEroeffnen", () => {
       code: "keine-verbindung",
     });
   });
+
+  it("meldet 401 als abgelaufene Anmeldung", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          Response.json({ code: "nicht-angemeldet" }, { status: 401 }),
+        ),
+      ),
+    );
+
+    expect(await raumMitQuizEroeffnen(ID)).toEqual({
+      ok: false,
+      code: "sitzung-abgelaufen",
+    });
+  });
 });

@@ -232,7 +232,7 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 **Dateien:** Neu `docs/adr/0008-spielraum-ueber-quiz-id.md`. Ändern `CLAUDE.md` (Struktur: `worker/sammlung.ts`, `src/ansichten/Sammlung.svelte`), `docs/tools/Cloudflare D1.md` (`ALTER TABLE`, Teilindex, Blättern mit Zeiger), `docs/Glossar.md` bei neuen Begriffen
 
 - [x] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
-- [ ] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
+- [x] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
 - [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe mergen.
 
@@ -256,3 +256,16 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 8. ADR 0007 zu Playwright. Die ADR „Spielraum über die Quiz-ID“ rückt auf 0008.
 
 Nicht behoben: 7 (gemeinsamer `wrangler`-Aufruf mit `scripts/datenbank.ts`, lohnt den Umbau nicht). 9 (Trace bei seriellen Tests) geprüft: Die `trace.zip` entsteht.
+
+**Aufgaben 2–10, `/security-review` am 2026-11-07:** keine Funde. Geprüft: SQL-Injection, fremde Quizze umschalten, kopieren und spielen, Daten in `/api/sammlung`, CSRF über `Origin`, XSS.
+
+**Aufgaben 2–10, `/code-review` am 2026-11-07:** 8 Funde. Behoben nach Entscheidung des Entwicklers:
+
+1. Abgelaufene Anmeldung beim Spielen eines privaten Quiz meldete „gibt es nicht mehr“: Der Server antwortet ohne Sitzung 401 `nicht-angemeldet`, die Oberfläche führt zum Anmelden. Die Sammlung behandelt 401 wie 404, denn ein Gast bekommt für ein inzwischen privates Quiz ebenfalls 401.
+2. `/api/sammlung` las den ganzen Inhalt von 21 Quizzen: Titel und Kategorien liest D1 jetzt mit `json_extract` und `json_each`.
+3. Die Sammlung setzt eine alte Fehlermeldung bei „Noch einmal versuchen“ und „Mehr laden“ zurück.
+4. Die Prüfung des `Origin` steht einmal in `vonEigenerSeite` (`worker/anfrage.ts`) statt viermal.
+5. Beim abgelehnten Speichern springt der Editor zur ersten Kategorie mit leerem Feld (`zurErstenLuecke`).
+8. Der Zeiger der Sammlung nutzt `QUIZ_ID_MUSTER`.
+
+Nicht behoben: 6 (`RETURNING` beim Umschalten, kleiner Gewinn), 7 (doppelter Knopf „Beispiel-Quiz als Vorlage“ in der leeren Liste, so im freigegebenen Mock).

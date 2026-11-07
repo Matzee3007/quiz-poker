@@ -25,6 +25,10 @@ async function eroeffnen(inhalt: string | undefined): Promise<Eroeffnung> {
       method: "POST",
       body: inhalt,
     });
+    // 401 gibt es nur bei einem privaten gespeicherten Quiz: Wer es spielen wollte, war angemeldet.
+    if (antwort.status === 401) {
+      return { ok: false, code: "sitzung-abgelaufen" };
+    }
     if (!antwort.ok) {
       return { ok: false, code: await fehlercodeLesen(antwort) };
     }

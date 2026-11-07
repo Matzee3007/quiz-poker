@@ -4,13 +4,18 @@ export function fehler(status: number, code: string): Response {
   return Response.json({ code }, { status });
 }
 
+/** Kommt die Anfrage von der eigenen Seite? Schützt Wege mit Cookie vor Anfragen fremder Seiten (CSRF). */
+export function vonEigenerSeite(anfrage: Request, env: Env): boolean {
+  return anfrage.headers.get("Origin") === new URL(env.BETTER_AUTH_URL).origin;
+}
+
 /** Liest eine Anfrage von der eigenen Seite. Die Antwort ist der Fehler, wenn sie abgelehnt wird. */
 export async function eingabeLesen(
   anfrage: Request,
   env: Env,
   hoechstgroesse: number,
 ): Promise<Record<string, unknown> | Response> {
-  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+  if (!vonEigenerSeite(anfrage, env)) {
     return fehler(403, "fremde-herkunft");
   }
   // Die Angabe spart das Lesen großer Anfragen. Sie kann fehlen, deshalb zählt danach die echte Größe.

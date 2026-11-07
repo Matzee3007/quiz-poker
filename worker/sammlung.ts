@@ -1,10 +1,10 @@
 // Die Sammlung: öffentliche Quizze für alle, ohne Anmeldung.
-import type { Quiz } from "../src/regeln/partie";
 import { fehler } from "./anfrage";
+import { QUIZ_ID_MUSTER } from "./betrieb";
 
 export const SAMMLUNG_SEITE = 20;
 // Zeiger auf den letzten Eintrag einer Seite: "<oeffentlich_seit>_<id>".
-const ZEIGER = /^(\d+)_([0-9a-f-]{36})$/;
+const ZEIGER = new RegExp(`^(\\d+)_(${QUIZ_ID_MUSTER.source.slice(1, -1)})$`);
 
 /** GET /api/sammlung. Liefert nur Titel und Kategorien, keine Fragen, Lösungen oder Besitzer. */
 export async function sammlungAnfrage(
@@ -29,26 +29,33 @@ export async function sammlungAnfrage(
 
   // Blättern mit Zeiger statt Seitennummer: Neu veröffentlichte Quizze verschieben die nächste Seite nicht.
   // Ein Eintrag mehr als die Seite zeigt nur, dass es weitergeht.
+  // Titel und Kategorien liest D1 selbst aus dem JSON: Der ganze Inhalt kostet sonst Rechenzeit im Worker.
   const { results } = await env.DB.prepare(
-    `SELECT id, inhalt, oeffentlich_seit FROM quiz
+    `SELECT id, json_extract(inhalt, '$.titel') AS titel,
+       (SELECT json_group_array(json_extract(value, '$.name'))
+        FROM json_each(inhalt, '$.kategorien')) AS kategorien,
+       oeffentlich_seit
+     FROM quiz
      WHERE oeffentlich_seit IS NOT NULL
        AND (oeffentlich_seit < ? OR (oeffentlich_seit = ? AND id < ?))
      ORDER BY oeffentlich_seit DESC, id DESC LIMIT ?`,
   )
     .bind(vorZeit, vorZeit, vorId, SAMMLUNG_SEITE + 1)
-    .all<{ id: string; inhalt: string; oeffentlich_seit: number }>();
+    .all<{
+      id: string;
+      titel: string;
+      kategorien: string;
+      oeffentlich_seit: number;
+    }>();
   const zeilen = results.slice(0, SAMMLUNG_SEITE);
   const letzte = zeilen.at(-1);
   return Response.json({
-    quizze: zeilen.map((zeile) => {
-      const quiz = JSON.parse(zeile.inhalt) as Quiz;
-      return {
-        id: zeile.id,
-        titel: quiz.titel,
-        kategorien: quiz.kategorien.map((kategorie) => kategorie.name),
-        veroeffentlichtAm: zeile.oeffentlich_seit,
-      };
-    }),
+    quizze: zeilen.map((zeile) => ({
+      id: zeile.id,
+      titel: zeile.titel,
+      kategorien: JSON.parse(zeile.kategorien) as string[],
+      veroeffentlichtAm: zeile.oeffentlich_seit,
+    })),
     weiter:
       results.length > SAMMLUNG_SEITE && letzte
         ? `${letzte.oeffentlich_seit}_${letzte.id}`

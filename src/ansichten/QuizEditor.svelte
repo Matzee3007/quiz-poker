@@ -94,9 +94,20 @@
     } else {
       fehler = meldungFuer(ergebnis.code);
       // Ein öffentliches Quiz muss spielbar bleiben: Die leeren Felder zeigen, was fehlt.
-      leereZeigen = ergebnis.code === "oeffentlich-unfertig";
+      if (ergebnis.code === "oeffentlich-unfertig") {
+        zurErstenLuecke();
+      }
     }
     return false;
+  }
+
+  /** Markiert leere Felder und wählt die erste Kategorie, in der eines fehlt. */
+  function zurErstenLuecke() {
+    leereZeigen = true;
+    const erste = entwurf.kategorien.findIndex((k) => leereFelder(k) > 0);
+    if (erste >= 0) {
+      gewaehlt = erste;
+    }
   }
 
   async function privatStellen() {
@@ -161,11 +172,7 @@
     const pruefung = quizPruefen($state.snapshot(entwurf));
     if (!pruefung.ok) {
       if (pruefung.code === "leeres-feld") {
-        leereZeigen = true;
-        const erste = entwurf.kategorien.findIndex((k) => leereFelder(k) > 0);
-        if (erste >= 0) {
-          gewaehlt = erste;
-        }
+        zurErstenLuecke();
       } else {
         fehler = meldungFuer(pruefung.code);
       }
@@ -183,6 +190,8 @@
         entwurfLoeschen();
       }
       onEintritt(ergebnis.raumcode, ergebnis.token, false);
+    } else if (ergebnis.code === "sitzung-abgelaufen") {
+      abgelaufen = true;
     } else {
       fehler = meldungFuer(ergebnis.code);
     }

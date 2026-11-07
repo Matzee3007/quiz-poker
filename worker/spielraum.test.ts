@@ -1010,6 +1010,7 @@ describe("Spielraum mit gespeichertem Quiz", () => {
     );
   });
 
+  // Ohne Anmeldung ist ein privat gestelltes Quiz 401, die Sammlung zeigt dann „gibt es nicht mehr“.
   it("öffnet ein öffentliches Quiz auch ohne Konto, ein privat gestelltes nicht mehr", async () => {
     const { cookie, id } = await gespeichertesQuiz();
     await anQuizze(cookie, "PUT", `/${id}/sichtbarkeit`, { oeffentlich: true });
@@ -1024,7 +1025,10 @@ describe("Spielraum mit gespeichertem Quiz", () => {
     expect(await quizTitelIm(offen.daten.raumcode, offen.daten.token)).toBe(
       "Aus dem Konto",
     );
-    expect(privat).toEqual({ status: 404, daten: { code: "quiz-unbekannt" } });
+    expect(privat).toEqual({
+      status: 401,
+      daten: { code: "nicht-angemeldet" },
+    });
   });
 
   it("öffnet keine fremden privaten und unbekannten Quizze", async () => {
@@ -1037,9 +1041,14 @@ describe("Spielraum mit gespeichertem Quiz", () => {
         daten: { code: "quiz-unbekannt" },
       });
     }
+  });
+
+  it("meldet bei einem privaten Quiz ohne Anmeldung 401, damit die Seite zum Anmelden führt", async () => {
+    const { id } = await gespeichertesQuiz();
+
     expect(await mitQuizId(id)).toEqual({
-      status: 404,
-      daten: { code: "quiz-unbekannt" },
+      status: 401,
+      daten: { code: "nicht-angemeldet" },
     });
   });
 

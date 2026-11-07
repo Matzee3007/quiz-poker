@@ -71,7 +71,7 @@
     if (raum.ok) {
       onEintritt(raum.raumcode, raum.token, false);
     } else {
-      fehler = meldungFuer(raum.code);
+      fehlschlag(raum.code);
     }
   }
 
