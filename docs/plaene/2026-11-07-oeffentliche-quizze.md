@@ -143,16 +143,16 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 **Schnittstellen:** Nutzt `quizAnfrage` mit `weg = "kopie"` aus Aufgabe 2. Liefert `POST /api/quizze/:id/kopie` → 201 `{ id }`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - öffentliches Quiz eines anderen Kontos kopieren → 201, neue ID, in der eigenen Liste mit gleichem Titel, `oeffentlich: false`, `spielbar: true`
   - fremdes privates und unbekanntes Quiz → 404, keine neue Zeile (Prüf-Schwerpunkt 1)
   - Original danach ändern, privat stellen und sein Konto löschen → die Kopie ist unverändert da (Prüf-Schwerpunkt 4)
   - bei 20 eigenen Quizzen → 409 `zu-viele-quizze`
   - ohne Cookie → 401, fremder `Origin` → 403
-- [ ] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
-- [ ] **Schritt 3: Kopieren in einem Befehl:** `INSERT INTO quiz (id, besitzer, inhalt, spielbar, geaendert_am) SELECT ?, ?, inhalt, spielbar, ? FROM quiz WHERE id = ? AND oeffentlich_seit IS NOT NULL AND (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < ?`. Bei `changes === 0` mit einem `SELECT` 404 und 409 unterscheiden.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add copying public quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
+- [x] **Schritt 3: Kopieren in einem Befehl:** `INSERT INTO quiz (id, besitzer, inhalt, spielbar, geaendert_am) SELECT ?, ?, inhalt, spielbar, ? FROM quiz WHERE id = ? AND oeffentlich_seit IS NOT NULL AND (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < ?`. Bei `changes === 0` mit einem `SELECT` 404 und 409 unterscheiden.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add copying public quizzes`.
 
 ### Aufgabe 5: Spielraum über die Quiz-ID
 

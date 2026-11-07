@@ -204,6 +204,45 @@ async function sichtbarkeitSetzen(
   return Response.json({ oeffentlichSeit: zeile.oeffentlich_seit });
 }
 
+async function quizKopieren(
+  anfrage: Request,
+  env: Env,
+  besitzer: string,
+  id: string,
+): Promise<Response> {
+  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+    return fehler(403, "fremde-herkunft");
+  }
+  const neueId = crypto.randomUUID();
+  // Nur öffentliche Quizze, und wie beim Anlegen Zählen und Einfügen in einem Befehl. Die Kopie ist privat.
+  const kopiert = await env.DB.prepare(
+    `INSERT INTO quiz (id, besitzer, inhalt, spielbar, geaendert_am)
+     SELECT ?, ?, inhalt, spielbar, ? FROM quiz
+     WHERE id = ? AND oeffentlich_seit IS NOT NULL
+       AND (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < ?`,
+  )
+    .bind(
+      neueId,
+      besitzer,
+      Date.now(),
+      id,
+      besitzer,
+      QUIZ_GRENZEN.quizzeJeKonto,
+    )
+    .run();
+  if (kopiert.meta.changes === 0) {
+    const oeffentlich = await env.DB.prepare(
+      "SELECT 1 FROM quiz WHERE id = ? AND oeffentlich_seit IS NOT NULL",
+    )
+      .bind(id)
+      .first();
+    return oeffentlich
+      ? fehler(409, "zu-viele-quizze")
+      : fehler(404, "quiz-unbekannt");
+  }
+  return Response.json({ id: neueId }, { status: 201 });
+}
+
 /** Alle Wege unter /api/quizze. id ist null für die Liste selbst, weg ist der Teil nach der ID. */
 export async function quizAnfrage(
   anfrage: Request,
@@ -229,6 +268,9 @@ export async function quizAnfrage(
   }
   if (weg === "sichtbarkeit" && anfrage.method === "PUT") {
     return sichtbarkeitSetzen(anfrage, env, besitzer, id);
+  }
+  if (weg === "kopie" && anfrage.method === "POST") {
+    return quizKopieren(anfrage, env, besitzer, id);
   }
   if (weg !== null) {
     return fehler(405, "falsche-methode");
