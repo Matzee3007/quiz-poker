@@ -6,6 +6,7 @@ import { aufraeumen } from "./aufraeumen";
 import { auth } from "./auth";
 import { kontoRegistrieren, passwortNeuSetzen } from "./konto";
 import { quizAnfrage } from "./quizze";
+import { sammlungAnfrage } from "./sammlung";
 
 export { Passwortrechner } from "./passwortrechner";
 export { Raumzaehler } from "./raumzaehler";
@@ -146,6 +147,10 @@ export default {
         id ?? null,
         (weg as "sichtbarkeit" | "kopie" | undefined) ?? null,
       );
+    }
+
+    if (pathname === "/api/sammlung") {
+      return sammlungAnfrage(anfrage, env);
     }
 
     if (pathname === "/api/raeume" && anfrage.method === "POST") {

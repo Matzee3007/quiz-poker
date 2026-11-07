@@ -127,15 +127,15 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 - Liefert: `SAMMLUNG_SEITE = 20`, `sammlungAnfrage(anfrage: Request, env: Env): Promise<Response>` für `GET /api/sammlung`, andere Methoden → 405. Zeiger `weiter` ist `"<oeffentlich_seit>_<id>"` des letzten Eintrags, `null` auf der letzten Seite.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - ohne Cookie → 200, nur öffentliche Quizze, neueste zuerst, private fehlen
   - jeder Eintrag hat genau die Schlüssel `id`, `titel`, `kategorien`, `veroeffentlichtAm` (Prüf-Schwerpunkt 5), `kategorien` sind die Namen in ihrer Reihenfolge
   - 21 öffentliche Quizze (über zwei Konten verteilt, zwei mit gleichem `oeffentlich_seit` an Platz 20 und 21, direkt in D1 gesetzt): Seite 1 hat 20 und `weiter`, Seite 2 hat genau 1 und `weiter: null`. Zwischen den Seiten ein neues Quiz veröffentlichen: Seite 2 bleibt gleich (Prüf-Schwerpunkt 3)
   - `?weiter=kaputt` → 422 `ungueltige-nachricht`
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/sammlung.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: `sammlungAnfrage` schreiben:** `WHERE oeffentlich_seit IS NOT NULL AND (oeffentlich_seit, id) < (?, ?) ORDER BY oeffentlich_seit DESC, id DESC LIMIT 21`. Der 21. Treffer heißt nur „es gibt mehr“. Kategorien in TypeScript aus `inhalt` lesen. Zeiger mit `^(\d+)_([0-9a-f-]{36})$` prüfen.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add public quiz collection with paging`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/sammlung.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: `sammlungAnfrage` schreiben:** `WHERE oeffentlich_seit IS NOT NULL AND (oeffentlich_seit, id) < (?, ?) ORDER BY oeffentlich_seit DESC, id DESC LIMIT 21`. Der 21. Treffer heißt nur „es gibt mehr“. Kategorien in TypeScript aus `inhalt` lesen. Zeiger mit `^(\d+)_([0-9a-f-]{36})$` prüfen.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add public quiz collection with paging`.
 
 ### Aufgabe 4: Kopie übernehmen
 
