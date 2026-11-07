@@ -12,8 +12,8 @@ function einladungHolen(): string {
   return ausgabe.trim().split("\n").at(-1)!;
 }
 
-/** Löscht in der lokalen D1 alle Test-Konten, auch von abgebrochenen Läufen. Ihre Quizze löscht D1 mit. */
-function testKontenLoeschen() {
+/** Löscht das Test-Konto dieses Laufs in der lokalen D1, seine Quizze löscht D1 mit. */
+function testKontoLoeschen(email: string) {
   execFileSync(
     "npx",
     [
@@ -23,9 +23,10 @@ function testKontenLoeschen() {
       "quiz-poker",
       "--local",
       "--command",
-      `DELETE FROM "user" WHERE email LIKE 'test-%@beispiel.de'`,
+      `DELETE FROM "user" WHERE email = '${email}'`,
     ],
-    { stdio: "ignore" },
+    // Fehlermeldungen von wrangler bleiben sichtbar, wie in scripts/datenbank.ts.
+    { stdio: ["ignore", "ignore", "inherit"] },
   );
 }
 
@@ -35,6 +36,13 @@ async function anmelden(page: Page, email: string) {
   await page.getByLabel("Passwort").fill(PASSWORT);
   await page.getByRole("button", { name: "Anmelden" }).click();
   await expect(page.getByRole("heading", { name: "Dein Konto" })).toBeVisible();
+}
+
+/** Prüft, dass die Seite ein Spielraum ist und seinen Raumcode zeigt. */
+async function raumcodeSichtbar(page: Page) {
+  await expect(page).toHaveURL(/\/raum\/[A-Z0-9]{4}$/);
+  const raumcode = new URL(page.url()).pathname.split("/").at(-1)!;
+  await expect(page.locator(".raumcode")).toHaveText(raumcode);
 }
 
 test.describe("mit Konto", () => {
@@ -49,8 +57,8 @@ test.describe("mit Konto", () => {
 
   // Der letzte Test löscht das Konto über die Oberfläche. Bricht ein Test vorher ab, räumt das hier auf.
   test.afterAll(async () => {
-    await page.close();
-    testKontenLoeschen();
+    testKontoLoeschen(email);
+    await page?.close();
   });
 
   test("Konto: registrieren, abmelden, anmelden", async () => {
@@ -117,7 +125,7 @@ test.describe("mit Konto", () => {
 
   test("Spielen: gespeichertes Quiz eröffnet einen Spielraum", async () => {
     await page.getByRole("button", { name: "Spielen" }).click();
-    await expect(page).toHaveURL(/\/raum\/[A-Z0-9]{4}$/);
+    await raumcodeSichtbar(page);
     await expect(page.getByText("Playwright-Quiz")).toBeVisible();
   });
 
@@ -137,7 +145,7 @@ test.describe("ohne Konto", () => {
   test("Beispiel-Quiz eröffnet einen Spielraum", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Beispiel-Quiz spielen" }).click();
-    await expect(page).toHaveURL(/\/raum\/[A-Z0-9]{4}$/);
+    await raumcodeSichtbar(page);
     await expect(page.getByText("Beispiel-Quiz")).toBeVisible();
   });
 
@@ -149,7 +157,7 @@ test.describe("ohne Konto", () => {
     await page.getByLabel("Fragetext").fill("Was ist 6 mal 7?");
     await page.getByLabel("Musterlösung").fill("42");
     await page.getByRole("button", { name: "Spielraum eröffnen" }).click();
-    await expect(page).toHaveURL(/\/raum\/[A-Z0-9]{4}$/);
+    await raumcodeSichtbar(page);
     await expect(page.getByText("Einmal-Quiz aus Playwright")).toBeVisible();
   });
 });

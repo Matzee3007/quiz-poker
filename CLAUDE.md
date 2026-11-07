@@ -19,7 +19,7 @@ Gleichwertiges Ziel ist das **Lernen**: Echtzeit-Multiplayer mit WebSockets, Rol
 - **Oberfläche:** Svelte 5 mit Vite 8 (eine einzelne Seite, kein SvelteKit)
 - **Server und Echtzeit:** Cloudflare Workers und Durable Objects, WebSockets (Durable Objects ab Phase 2)
 - **Hosting:** Cloudflare (kostenloser Tarif), Werkzeug `wrangler`
-- **Tests:** Vitest 4 (bewusst nicht 5, siehe ADR 0001), Playwright für den Browser-Durchlauf
+- **Tests:** Vitest 4 (bewusst nicht 5, siehe ADR 0001), Playwright für den Browser-Durchlauf (ADR 0007)
 - **Qualität:** ESLint, Prettier, `svelte-check`
 
 Begründung und Alternativen: `docs/adr/0001-stack.md`.

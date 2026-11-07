@@ -17,7 +17,7 @@ tags: [plan, phase-3, quiz-sammlung, d1, playwright]
 
 **Entscheidungen des Entwicklers vom 2026-11-07:**
 
-- **Spielen über die ID:** Gespeicherte Quizze (eigene und öffentliche) eröffnen den Spielraum mit `POST /api/raeume { quizId }`, der Server liest den Inhalt selbst aus D1. Das Einmal-Quiz schickt weiter `{ quiz }`, ohne Inhalt gilt weiter das Beispiel-Quiz. Ersetzt die Entscheidung „Spielen schickt den Inhalt“ aus Schritt 3 (ADR 0007, Aufgabe 10).
+- **Spielen über die ID:** Gespeicherte Quizze (eigene und öffentliche) eröffnen den Spielraum mit `POST /api/raeume { quizId }`, der Server liest den Inhalt selbst aus D1. Das Einmal-Quiz schickt weiter `{ quiz }`, ohne Inhalt gilt weiter das Beispiel-Quiz. Ersetzt die Entscheidung „Spielen schickt den Inhalt“ aus Schritt 3 (ADR 0008, Aufgabe 10).
 - **Öffentliche Quizze bleiben spielbar:** Speichern eines unfertigen Stands eines öffentlichen Quiz → 422 `oeffentlich-unfertig`. Fertige Änderungen sind sofort öffentlich.
 - **Sammlung mit Blättern:** je 20 Einträge, Knopf „Mehr laden“.
 - **Playwright als eigener PR zuerst** (Aufgabe 1, Branch `feature/playwright`). Alles andere auf `feature/oeffentliche-quizze`.
@@ -227,9 +227,9 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 ### Aufgabe 10: Doku und Prüfungen
 
-**Dateien:** Neu `docs/adr/0007-spielraum-ueber-quiz-id.md`. Ändern `CLAUDE.md` (Struktur: `worker/sammlung.ts`, `src/ansichten/Sammlung.svelte`), `docs/tools/Cloudflare D1.md` (`ALTER TABLE`, Teilindex, Blättern mit Zeiger), `docs/Glossar.md` bei neuen Begriffen
+**Dateien:** Neu `docs/adr/0008-spielraum-ueber-quiz-id.md`. Ändern `CLAUDE.md` (Struktur: `worker/sammlung.ts`, `src/ansichten/Sammlung.svelte`), `docs/tools/Cloudflare D1.md` (`ALTER TABLE`, Teilindex, Blättern mit Zeiger), `docs/Glossar.md` bei neuen Begriffen
 
-- [ ] **Schritt 1: ADR 0007 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
+- [ ] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
 - [ ] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
 - [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe mergen.
@@ -240,3 +240,17 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 - [ ] **Schritt 2: Hochladen:** `npm run deploy`, danach `/api/health` antwortet 200.
 - [ ] **Schritt 3: Echter Durchlauf mit `npx wrangler tail`:** Test-Konto, Quiz veröffentlichen, Sammlung ohne Konto, spielen, kopieren, Konten löschen. Danach in D1 kein Test-Quiz und kein Test-Konto übrig. CPU-Zeit von `/api/sammlung` und `POST /api/raeume { quizId }` notieren.
 - [ ] **Schritt 4: Phase 3 abschließen:** Roadmap abhaken, Plan auf `status: abgeschlossen`, Journal und Übergabe (Regel „Phasenwechsel“).
+
+## Ergebnis der Reviews
+
+**Aufgabe 1, `/code-review` am 2026-11-07:** 9 Funde. Behoben nach Entscheidung des Entwicklers:
+
+1. Raumgrenze von 30 pro Stunde bremst wiederholte Läufe: als Fehler mit Lösung in `docs/tools/Playwright.md`.
+2. `afterAll` räumt zuerst auf und schließt dann die Seite.
+3. Die Raum-Tests prüfen den sichtbaren Raumcode (`raumcodeSichtbar`).
+4. Das Aufräumen löscht nur das Konto dieses Laufs.
+5. Fehlermeldungen von `wrangler` beim Aufräumen bleiben sichtbar.
+6. `npx vite --strictPort` statt `npm run dev`: Ein belegter Port meldet sich klar.
+8. ADR 0007 zu Playwright. Die ADR „Spielraum über die Quiz-ID“ rückt auf 0008.
+
+Nicht behoben: 7 (gemeinsamer `wrangler`-Aufruf mit `scripts/datenbank.ts`, lohnt den Umbau nicht). 9 (Trace bei seriellen Tests) geprüft: Die `trace.zip` entsteht.

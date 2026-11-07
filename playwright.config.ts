@@ -8,7 +8,8 @@ export default defineConfig({
   use: { baseURL: "http://localhost:5173", trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "npm run dev",
+    // strictPort: Ist 5173 belegt, bricht Vite mit klarer Meldung ab, statt still auf einen anderen Port auszuweichen.
+    command: "npx vite --strictPort",
     url: "http://localhost:5173/api/health",
     reuseExistingServer: true,
   },
