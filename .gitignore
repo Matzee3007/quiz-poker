@@ -26,3 +26,7 @@ npm-debug.log*
 
 # Lokale Geheimnisse von wrangler
 .dev.vars
+
+# Playwright: Ergebnisse und Bericht des Browser-Durchlaufs
+/test-results
+/playwright-report
