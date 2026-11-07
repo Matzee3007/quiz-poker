@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Öffentliche Quizze – Quiz-Poker</title>
+<style>
+/* ---------- Rahmen des Mocks, gehört nicht zur App ---------- */
+body{margin:0;background:#e9e9ec;color:#1c1f26;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+.m-kopf{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #cfd0d6;padding:12px 24px}
+.m-kopf h1{font-size:19px;margin:0 14px 0 0;display:inline;color:#1c1f26}
+.m-kopf .m-notiz{color:#555a66;font-size:13.5px}
+.m-sprung{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:13.5px}
+.m-sprung b{color:#555a66;font-weight:600;margin-left:12px}
+.m-sprung b:first-child{margin-left:0}
+.m-sprung a{border:1px solid #bfc1c9;background:#fff;color:#1c1f26;border-radius:7px;padding:3px 10px;text-decoration:none}
+.m-sprung a:hover{background:#1c1f26;color:#fff}
+.m-teil{padding:40px 24px 6px;scroll-margin-top:110px}
+.m-teil h2{font-size:25px;margin:0;color:#1c1f26}
+.m-teil p{margin:3px 0 0;color:#3f4450;max-width:980px}
+.m-ab{display:inline-block;background:#1c1f26;color:#fff;border-radius:6px;padding:0 8px;margin-right:8px}
+.m-zustand{padding:22px 24px 8px;scroll-margin-top:110px}
+.m-zustand h3{font-size:17px;margin:0;color:#1c1f26}
+.m-zustand p{margin:1px 0 0;color:#3f4450;max-width:980px}
+.m-browser{background:#d5d6db;padding:7px 12px;font-size:12.5px;color:#444955;display:flex;gap:10px;align-items:center}
+.m-browser i{width:10px;height:10px;border-radius:50%;background:#a9abb3;display:inline-block;flex:none}
+.m-browser span{background:#fff;border-radius:6px;padding:2px 12px;margin-left:8px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.m-ende{padding:26px 24px 44px;color:#555a66;font-size:13.5px}
+.m-streifen-titel{padding:12px 24px 5px;font-size:13.5px;color:#3f4450}
+.m-gekuerzt{color:var(--matt);font-size:13px;font-style:italic;text-align:center}
+
+/* ---------- aus src/stil.css übernommen (Stil C), body-Regeln liegen auf .schirm ---------- */
+:root{--grund:#0c0e13;--flaeche:#12151c;--knopf:#1c212b;--schrift:#eef0f4;--matt:#a3a9b6;--linie:#262b36;--linie-stark:#3b4252;--gold:#e8bb4f;--gold-schrift:#17120a;--gruen:#2fd98c;--rot:#ff5c6c;--radius:6px}
+*{box-sizing:border-box}
+.schirm{color-scheme:dark;background:var(--grund);color:var(--schrift);font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.45;position:relative}
+.schirm h1,.schirm h2,.schirm p{margin:0}
+.schirm button,.schirm input,.schirm textarea{font:inherit;color:inherit}
+.schirm button{background:var(--knopf);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:9px 16px;cursor:pointer;font-weight:600}
+.schirm button:hover:not(:disabled){border-color:var(--gold)}
+.schirm button:disabled{opacity:.45;cursor:not-allowed}
+.schirm button.haupt{background:var(--gold);border-color:var(--gold);color:var(--gold-schrift)}
+.schirm button.text{background:none;border:none;color:var(--matt);padding:4px;font-weight:400;text-decoration:underline}
+.schirm input,.schirm textarea{background:var(--grund);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:10px 12px;width:100%}
+.schirm label{display:block;color:var(--matt);font-size:14px;margin-bottom:6px}
+.schirm p{overflow-wrap:anywhere}
+.kopf{display:flex;align-items:center;gap:24px;background:var(--flaeche);border-bottom:1px solid var(--linie);padding:14px 32px}
+.logo{flex:none;color:var(--gold);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.kopf .rest{flex:none;margin-left:auto;display:flex;gap:20px;align-items:center;color:var(--matt);font-size:14px}
+.kopf .rest strong{color:var(--schrift);padding:4px}
+.seite{max-width:1280px;margin:0 auto;padding:32px;width:100%}
+.zwei-spalten{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+.karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:24px}
+.stapel{display:flex;flex-direction:column;gap:18px}
+.reihe{display:flex;gap:12px;align-items:center}
+.reihe.zwischen{justify-content:space-between}
+.ueberschrift{color:var(--matt);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.matt{color:var(--matt)}
+.klein{font-size:14px}
+.hinweis{background:var(--gold);color:var(--gold-schrift);border-radius:var(--radius);padding:10px 14px;font-weight:600}
+.hinweis.fehler{background:var(--rot);color:#1a0508}
+.notiz{border-left:3px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;padding:10px 14px;font-size:15px}
+.spielidee{display:flex;flex-direction:column;gap:10px}
+.spielidee h1{color:var(--gold);font-size:40px;line-height:1.1}
+.wege{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wege.drei{grid-template-columns:repeat(3,1fr)}
+.weg{display:flex;flex-direction:column;gap:8px}
+.weg button{width:100%}
+.seiten-fuss{max-width:1280px;margin:0 auto;padding:0 32px 18px;font-size:13px}
+.zaehler{color:var(--matt);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zaehler b{color:var(--schrift)}
+.editor-raster{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:640px}
+.editor-leiste{background:var(--flaeche);border-right:1px solid var(--linie);padding:22px 20px;display:flex;flex-direction:column;gap:16px}
+.editor-titel{font-size:24px;line-height:1.15}
+.editor-haupt{padding:22px 32px 28px;display:flex;flex-direction:column;gap:14px}
+.editor-liste{display:flex;flex-direction:column;gap:6px}
+.editor-zeile{display:flex;gap:6px;border:1px solid var(--linie);border-radius:var(--radius);padding:6px;background:var(--grund)}
+.editor-zeile.an{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.schirm button.editor-wahl{flex:1;min-width:0;text-align:left;background:none;border:0;padding:4px 4px 4px 8px;font-weight:400}
+.editor-wahl b{display:block;font-size:15px;overflow-wrap:anywhere;line-height:1.25}
+.editor-wahl small{display:block;color:var(--matt);font-size:13px;margin-top:2px}
+.editor-pfeile{display:flex;flex-direction:column;gap:4px;justify-content:center}
+.schirm .editor-pfeile .sym{width:30px;padding:1px 0;font-size:13px}
+.editor-katkopf{display:flex;gap:16px;align-items:flex-start}
+.editor-katkopf .feld{flex:1}
+.editor-katkopf .text{margin-top:30px}
+.editor-fuss{display:flex;align-items:center;gap:18px;background:var(--flaeche);border-top:1px solid var(--linie);padding:14px 32px}
+.editor-fuss .hinweis{flex:1}
+.schirm .editor-fuss .haupt{font-size:17px;padding:12px 26px;white-space:nowrap}
+.editor-fuss .speichern{margin-left:auto}
+.editor-fuss .hinweis + .speichern{margin-left:0}
+.feld textarea{resize:none;display:block;height:auto}
+.feld-unten{display:flex;justify-content:flex-end;gap:12px;margin-top:4px;font-size:13px;min-height:19px}
+.zeichen{color:var(--matt);font-variant-numeric:tabular-nums;white-space:nowrap}
+.feld-meldung{color:var(--rot);font-weight:600;margin-right:auto}
+.feld-fehler label{color:var(--rot);font-weight:600}
+.schirm .feld-fehler input,.schirm .feld-fehler textarea{border-color:var(--rot);box-shadow:0 0 0 1px var(--rot);background:#23101a}
+.schirm .sym{padding:5px 0;width:34px;font-size:15px;line-height:1.3;text-align:center}
+.knoepfe{display:flex;gap:6px;align-items:center;flex:none}
+.knoepfe .text{margin-left:6px}
+.leer-tag{display:inline-block;margin-top:4px;background:#3c171c;color:var(--rot);border-radius:99px;padding:1px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.frage-kopf{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.frage-kopf b{font-size:15px}
+.frage-block{border:1px solid var(--linie);border-radius:var(--radius);padding:14px 16px;background:#0f1218}
+.frage-block .feld + .feld{margin-top:6px}
+.zustand{display:inline-block;border-radius:99px;padding:1px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.zustand.spielbar{background:#0f2a1f;color:var(--gruen)}
+.zustand.unfertig{background:#2c2410;color:var(--gold)}
+.ohne-titel{color:var(--matt);font-style:italic;font-weight:400}
+.schirm button.klein-knopf{padding:6px 12px;font-size:14px}
+.schirm button.spielen{border-color:var(--gold);color:var(--gold)}
+.listenkopf{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.listenkopf .zaehler{font-size:15px}
+.listenkopf button{margin-left:auto}
+.voll-hinweis{color:var(--gold);font-size:14px;font-weight:600}
+.kachel-raster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kachel{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:10px;min-height:178px}
+.kachel h2{font-size:18px;line-height:1.25;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kachel .unten{margin-top:auto;display:flex;gap:8px;align-items:center}
+.kachel .unten .text{margin-left:auto}
+.kachel.neu{border:1px dashed var(--linie-stark);background:none;align-items:center;justify-content:center;text-align:center}
+.kachel.neu .plus-zeichen{font-size:34px;color:var(--gold);line-height:1;font-weight:300}
+.kachel.neu.gesperrt .plus-zeichen{color:var(--matt)}
+.leer-karte{text-align:center;padding:48px 24px;align-items:center}
+.leer-karte .chip{width:64px;height:64px;border-radius:50%;border:6px dashed var(--gold);opacity:.8}
+.stand{display:inline-flex;align-items:center;gap:8px;font-size:14px;white-space:nowrap}
+.stand::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--gruen)}
+.stand.ok{color:var(--matt)}
+.stand.fehlt{color:var(--rot);font-weight:600}
+.stand.fehlt::before{background:var(--rot)}
+
+/* ---------- neu für öffentliche Quizze ---------- */
+/* Kategorien als kleine Marken in der Sammlung */
+.marken{display:flex;flex-wrap:wrap;gap:6px}
+.marke{display:inline-block;background:var(--knopf);color:var(--matt);border:1px solid var(--linie);border-radius:99px;padding:0 9px;font-size:13px;line-height:20px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.marke.mehr{background:none;border-style:dashed}
+/* Sichtbarkeit: bewusst neutral, damit sie nicht mit „spielbar“ (grün) und „unfertig“ (gold) verwechselt wird */
+.sicht{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:0 10px;font-size:13px;font-weight:600;line-height:20px;white-space:nowrap;border:1px solid var(--linie-stark);color:var(--matt)}
+.sicht.oeffentlich{border-color:var(--schrift);color:var(--schrift)}
+.sicht.oeffentlich::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--schrift)}
+/* Variante A: eigene Zeile in der Kachel */
+.sicht-zeile{display:flex;align-items:center;gap:10px;border-top:1px solid var(--linie);padding-top:10px}
+.sicht-zeile .matt{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sicht-zeile button{flex:none}
+.sicht-zeile .knopf-rechts{margin-left:auto}
+/* Variante B: Kippschalter oben rechts */
+.schirm button.schalter{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:2px 0;font-size:14px;font-weight:600;color:var(--matt)}
+.schalter .bahn{position:relative;width:36px;height:20px;border-radius:99px;background:var(--knopf);border:1px solid var(--linie-stark);flex:none}
+.schalter .bahn::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--matt)}
+.schalter.an{color:var(--schrift)}
+.schalter.an .bahn{background:var(--gold);border-color:var(--gold)}
+.schalter.an .bahn::after{left:18px;background:var(--gold-schrift)}
+/* Meldung in einer Karte (Kopieren bei vollem Konto) */
+.karten-meldung{background:#3c171c;color:#ffd0d5;border-left:3px solid var(--rot);border-radius:0 var(--radius) var(--radius) 0;padding:8px 10px;font-size:14px}
+.kachel.betroffen{border-color:var(--rot)}
+.sammlung-fuss{display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:6px}
+.schirm .notiz button.text{padding:0;margin-top:6px}
+
+/* ---------- Handybreite: nur damit nichts kaputtgeht ---------- */
+@media (max-width:700px){
+  .m-teil,.m-zustand{padding-left:14px;padding-right:14px}
+  .m-teil h2{font-size:21px}
+  .kopf{flex-wrap:wrap;gap:8px 16px;padding:12px 16px}
+  .kopf .rest{flex:1 1 auto;flex-wrap:wrap;gap:4px 14px;justify-content:flex-end}
+  .seite{padding:18px 16px}
+  .spielidee h1{font-size:30px}
+  .zwei-spalten,.wege,.wege.drei,.kachel-raster{grid-template-columns:1fr !important}
+  .editor-raster{grid-template-columns:1fr;min-height:0}
+  .editor-leiste{border-right:0;border-bottom:1px solid var(--linie)}
+  .editor-haupt{padding:18px 16px}
+  .editor-fuss{flex-wrap:wrap;gap:10px 14px;padding:12px 16px}
+  .editor-fuss .hinweis{flex:1 1 100%;order:5}
+  .listenkopf button{margin-left:0}
+  .seiten-fuss{padding:0 16px 14px}
+}
+</style>
+</head>
+<body>
+
+<div class="m-kopf">
+  <h1>Mock Öffentliche Quizze</h1>
+  <span class="m-notiz">Wegwerf-Entwurf, Ziel PC-Breite. Alle Titel, Kategorien, Adressen und Zeiten sind Beispieldaten („heute“ = 7. November 2026). Die Knöpfe tun nichts. Die Varianten A und B stehen jeweils untereinander.</span>
+  <div class="m-sprung" id="sprung"></div>
+</div>
+
+<div id="inhalt"></div>
+<div class="m-ende">Ende des Mocks.</div>
+
+<script>
+const HOST='quiz-poker.quiz-poker.workers.dev', ID='3f9c2a71-5d0e-4b8a-9e61-0c7d2f4a8b13';
+
+/* ----- Beispieldaten: Sammlung, zuletzt veröffentlicht zuerst ----- */
+const SAMMLUNG=[
+  ['Spieleabend bei Mara',['Geographie','Musik der 80er','Filmzitate','Sport'],'heute, 21:14'],
+  ['Fußball-WM: Alles, was man wissen muss, wenn man eigentlich gar keine Ahnung von Fußball hat',['Weltmeister','Stadien','Trainer','Regeln','Skandale','Rekorde','Maskottchen'],'heute, 18:02'],
+  ['Weihnachtsquiz 2026',['Bräuche','Weihnachtslieder','Plätzchen'],'gestern, 22:05'],
+  ['Tiere der Arktis',['Säugetiere','Vögel','Unter dem Eis'],'gestern, 09:31'],
+  ['Hauptstädte Europas',['Nordeuropa','Südeuropa','Osteuropa','Westeuropa'],'5. Nov. 2026'],
+  ['Filmabend-Klassiker',['Filmzitate','Regie','Oscars'],'4. Nov. 2026'],
+  ['Kochen ohne Rezept',['Gewürze','Küchengeräte'],'4. Nov. 2026'],
+  ['Chemie für Laien',['Elemente','Im Haushalt','Berühmte Forschende'],'3. Nov. 2026'],
+  ['Brettspiele-Wissen',['Klassiker','Spiel des Jahres','Regeln'],'2. Nov. 2026'],
+  ['Serienjunkies',['Sitcoms','Krimis','Fantasy','Titelmusik'],'2. Nov. 2026'],
+  ['Weinprobe',['Rebsorten','Anbaugebiete'],'1. Nov. 2026'],
+  ['Comics und Manga',['Superhelden','Manga','Zeichner'],'31. Okt. 2026'],
+  ['Olympia',['Sommer','Winter','Rekorde','Austragungsorte'],'30. Okt. 2026'],
+  ['Kinderlieder',['Text ergänzen','Wer singt das?'],'29. Okt. 2026'],
+  ['Erfindungen',['Alltag','Technik','Medizin'],'28. Okt. 2026'],
+  ['Fernsehen der 90er',['Shows','Werbung','Moderatoren'],'27. Okt. 2026'],
+  ['Sprichwörter',['Ergänzen','Herkunft'],'25. Okt. 2026'],
+  ['Geburtstag Opa Heinz',['Familie','Heimatort','Lieblingsmusik'],'24. Okt. 2026'],
+  ['Weltraum',['Planeten','Raumfahrt','Sternbilder'],'22. Okt. 2026'],
+  ['Deutsche Geschichte in 10 Fragen',['Mittelalter','20. Jahrhundert'],'20. Okt. 2026'],
+];
+
+/* ----- Beispieldaten: Meine Quizze [Titel, spielbar, öffentlich, geändert] ----- */
+const MEINE=[
+  ['Spieleabend bei Mara',true,true,'heute, 21:14'],
+  ['Musik der 80er und 90er',false,false,'heute, 18:40'],
+  ['Weihnachtsquiz 2026',true,true,'gestern, 22:05'],
+  ['Fußball-WM: Alles, was man wissen muss, wenn man eigentlich gar keine Ahnung von Fußball hat',true,false,'2. Nov. 2026'],
+  ['Beispiel-Quiz',true,false,'1. Nov. 2026'],
+  ['',false,false,'27. Okt. 2026'],
+];
+
+/* ----- Kopf, Fuß, Rahmen ----- */
+const kopf=rest=>`<header class="kopf"><span class="logo">Quiz-Poker</span><div class="rest">${rest}</div></header>`;
+const K={
+  startOhneHeute:kopf('<span>Spielen geht ohne Konto</span><button class="text">Anmelden</button>'),
+  startMitHeute:kopf('<button class="text">Meine Quizze</button><button class="text">Konto</button>'),
+  startOhneB:kopf('<button class="text">Öffentliche Quizze</button><span>Spielen geht ohne Konto</span><button class="text">Anmelden</button>'),
+  startMitB:kopf('<button class="text">Öffentliche Quizze</button><button class="text">Meine Quizze</button><button class="text">Konto</button>'),
+  sammlungOhne:kopf('<button class="text">Zum Start</button><strong>Öffentliche Quizze</strong><button class="text">Anmelden</button>'),
+  sammlungMit:kopf('<button class="text">Zum Start</button><strong>Öffentliche Quizze</strong><button class="text">Meine Quizze</button><button class="text">Konto</button>'),
+  liste:kopf('<button class="text">Zum Start</button><strong>Meine Quizze</strong><button class="text">Konto</button>'),
+  editor:kopf('<button class="text">Zum Start</button><button class="text">Meine Quizze</button><button class="text">Konto</button>'),
+};
+const FUSS='<footer class="seiten-fuss"><button class="text">Datenschutz</button></footer>';
+function rahmen(id,titel,satz,pfad,kopfHtml,inhalt,fuss=FUSS){
+  return `<section class="m-zustand" id="${id}"><h3>${titel}</h3><p>${satz}</p></section>
+  <div class="m-browser"><i></i><i></i><i></i><span>${HOST}${pfad}</span></div>
+  <div class="schirm">${kopfHtml}${inhalt}${fuss}</div>`;
+}
+const teilKopf=(id,titel,satz)=>`<section class="m-teil" id="${id}"><h2>${titel}</h2><p>${satz}</p></section>`;
+const titelHtml=t=>t?t:'<span class="ohne-titel">Ohne Titel</span>';
+const zustand=s=>s?'<span class="zustand spielbar">spielbar</span>':'<span class="zustand unfertig">unfertig</span>';
+const sicht=o=>o?'<span class="sicht oeffentlich">öffentlich</span>':'<span class="sicht">privat</span>';
+
+/* ----- Startseite: Texte aus src/ansichten/Start.svelte ----- */
+const IDEE=`<section class="spielidee"><h1>Setze deine Chips auf dein Wissen.</h1>
+  <p class="matt">Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht. Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch kostet ihn. Am Ende gewinnt, wer die meisten Chips hat.</p></section>`;
+const BEITRETEN=`<section class="karte stapel"><h2>Spielraum beitreten</h2>
+  <div><label>Raumcode</label><input maxlength="4"></div><div><label>Dein Name</label><input maxlength="20"></div>
+  <div class="reihe"><button class="haupt">Beitreten</button></div></section>`;
+const W_BEISPIEL='<div class="weg"><button class="haupt">Beispiel-Quiz spielen</button><p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p></div>';
+const W_MEINE='<div class="weg"><button>Meine Quizze</button><p class="matt klein">Gespeicherte Quizze spielen oder weiterschreiben.</p></div>';
+const W_OEFF='<div class="weg"><button>Öffentliche Quizze</button><p class="matt klein">Fertige Quizze anderer Quiz-Master spielen, ohne Konto.</p></div>';
+const w_eigen=mit=>`<div class="weg"><button>${mit?'Einmal-Quiz erstellen':'Eigenes Quiz erstellen'}</button><p class="matt klein">Kategorien und Fragen selbst schreiben, ohne Konto. Das Einmal-Quiz gilt nur für diesen Spielraum.</p></div>`;
+const eroeffnen=(wege,spalten)=>`<section class="karte stapel"><h2>Spielraum eröffnen</h2>
+  <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+  <div class="wege" style="grid-template-columns:repeat(${spalten},1fr)">${wege}</div></section>`;
+const startSeite=karte=>`<main class="seite stapel">${IDEE}<div class="zwei-spalten">${karte}${BEITRETEN}</div></main>`;
+
+/* ----- Sammlung ----- */
+function marken(kats){
+  const zeig=kats.slice(0,5), rest=kats.length-zeig.length;
+  return `<div class="marken">${zeig.map(k=>`<span class="marke">${k}</span>`).join('')}${rest?`<span class="marke mehr">+${rest} weitere</span>`:''}</div>`;
+}
+function sammelKachel([t,kats,d],mitKonto,meldung=''){
+  return `<article class="kachel${meldung?' betroffen':''}">
+    <span class="matt klein">veröffentlicht ${d}</span>
+    <h2>${t}</h2>${marken(kats)}${meldung}
+    <div class="unten"><button class="klein-knopf spielen">Spielen</button>${mitKonto?'<button class="klein-knopf">Kopieren</button>':''}</div></article>`;
+}
+const SAMMEL_IDEE=mitKonto=>`<section class="spielidee"><h1>Öffentliche Quizze</h1>
+  <p class="matt">Fertige Quizze, die Quiz-Master mit allen teilen. „Spielen“ eröffnet sofort einen Spielraum, du leitest ihn als Quiz-Master.
+  ${mitKonto?'„Kopieren“ legt eine private Kopie in deinen Quizzen an, die du ändern kannst.':'Mit einem Konto kannst du ein Quiz auch kopieren und anpassen.'}</p></section>
+  <p class="notiz">Öffentliche Quizze kann jeder lesen, auch deine Mitspieler. Wer möchte, kann die Lösungen also vorher nachsehen. Für einen fairen Abend eignet sich ein eigenes Quiz besser.</p>`;
+const MEHR='<div class="sammlung-fuss"><button>Mehr laden</button><span class="matt klein">20 angezeigt</span></div>';
+const ALLE='<div class="sammlung-fuss"><span class="matt klein">Das sind alle öffentlichen Quizze.</span></div>';
+function sammlung(o){
+  const liste=o.liste??SAMMLUNG;
+  const kacheln=liste.map((q,i)=>sammelKachel(q,o.mitKonto,i===o.meldungBei?o.meldung:'')).join('');
+  return `<main class="seite stapel">${SAMMEL_IDEE(o.mitKonto)}${o.oben??''}
+    <div class="kachel-raster">${kacheln}</div>${o.gekuerzt?'<p class="m-gekuerzt">Im Mock gekürzt, die echte Seite zeigt bis zu 20 Quizze.</p>':''}${o.fuss??MEHR}</main>`;
+}
+const SAMMEL_LEER=`<main class="seite stapel">${SAMMEL_IDEE(false)}
+  <section class="karte stapel leer-karte"><div class="chip"></div><h2>Noch keine öffentlichen Quizze</h2>
+  <p class="matt" style="max-width:520px">Sobald ein Quiz-Master ein fertiges Quiz veröffentlicht, steht es hier. Bis dahin kannst du das Beispiel-Quiz spielen.</p>
+  <button class="haupt">Beispiel-Quiz spielen</button></section></main>`;
+const VOLL_MELDUNG='<p class="karten-meldung">Du hast schon 20 Quizze gespeichert. Lösche eines in „Meine Quizze“, um Platz für die Kopie zu schaffen.</p>';
+
+/* ----- Meine Quizze ----- */
+const ICH_SEHE='Deine Quizze sind privat, bis du sie veröffentlichst. Ein öffentliches Quiz sieht jeder unter „Öffentliche Quizze“, ohne deinen Namen. Spielen und veröffentlichen lässt sich ein Quiz, sobald es mindestens eine Kategorie mit einer Frage hat und kein Feld leer ist.';
+const listenKopf=(n,arbeitet)=>`<div class="listenkopf"><span class="zaehler"><b>${n}</b> von 20 Quizzen</span>
+  ${n>=20?'<span class="voll-hinweis">Dein Platz ist voll.</span>':''}
+  <button ${n>=20?'disabled':''}>Beispiel-Quiz als Vorlage</button></div>`;
+function kachelA([t,s,o,d]){
+  const knopf=o?'<button class="klein-knopf knopf-rechts">Auf privat stellen</button>'
+    :`<button class="klein-knopf knopf-rechts" ${s?'':'disabled'}>Veröffentlichen</button>`;
+  const satz=o?'für alle sichtbar':s?'nur für dich':'';
+  return `<article class="kachel">
+    <div class="reihe zwischen">${zustand(s)}<span class="matt klein">geändert ${d}</span></div>
+    <h2>${titelHtml(t)}</h2>
+    ${s?'':'<p class="matt klein">Zum Spielen und Veröffentlichen fehlen noch Inhalte.</p>'}
+    <div class="sicht-zeile">${sicht(o)}<span class="matt klein">${satz}</span>${knopf}</div>
+    <div class="unten">${s?'<button class="klein-knopf spielen">Spielen</button>':''}<button class="klein-knopf">Bearbeiten</button><button class="text">Löschen</button></div></article>`;
+}
+function kachelB([t,s,o,d]){
+  const schalter=`<button class="schalter${o?' an':''}" role="switch" aria-checked="${o}" ${s||o?'':'disabled'} title="${s?'':'Nur ein fertiges Quiz kann öffentlich werden.'}"><span>${o?'öffentlich':'privat'}</span><span class="bahn"></span></button>`;
+  return `<article class="kachel">
+    <div class="reihe zwischen">${zustand(s)}${schalter}</div>
+    <h2>${titelHtml(t)}</h2>
+    <span class="matt klein">geändert ${d}${o?' · steht in der Sammlung':''}</span>
+    ${s?'':'<p class="matt klein">Zum Spielen und Veröffentlichen fehlen noch Inhalte.</p>'}
+    <div class="unten">${s?'<button class="klein-knopf spielen">Spielen</button>':''}<button class="klein-knopf">Bearbeiten</button><button class="text">Löschen</button></div></article>`;
+}
+const NEU=n=>n>=20?`<div class="kachel neu gesperrt"><div class="plus-zeichen">+</div><b class="matt">Neues Quiz</b><p class="matt klein">20 von 20 belegt. Lösche ein Quiz, um Platz zu schaffen.</p></div>`
+  :`<button class="kachel neu"><div class="plus-zeichen">+</div><b>Neues Quiz</b><span class="matt klein">noch ${20-n} frei</span></button>`;
+const meineSeite=innen=>`<main class="seite stapel"><section class="spielidee"><h1>Meine Quizze</h1><p class="matt">${ICH_SEHE}</p></section>${innen}</main>`;
+const meine=(kachel,oben='')=>meineSeite(oben+listenKopf(MEINE.length)+`<div class="kachel-raster">${NEU(MEINE.length)}${MEINE.map(kachel).join('')}</div>`);
+const MEINE_LEER=meineSeite(`${listenKopf(0)}<section class="karte stapel leer-karte"><div class="chip"></div><h2>Noch kein Quiz gespeichert</h2>
+  <p class="matt" style="max-width:560px">Leg dein erstes Quiz an oder beginne mit einer Kopie des Beispiel-Quiz und ändere es nach deinen Wünschen. Höchstens 20 Quizze passen in dein Konto.</p>
+  <div class="reihe" style="flex-wrap:wrap;justify-content:center"><button class="haupt">Erstes Quiz anlegen</button><button>Beispiel-Quiz als Vorlage</button></div></section>`);
+
+/* ----- Editor eines öffentlichen Quiz (Leiste unten wie im freigegebenen Editor A) ----- */
+let nr=0;
+function feld(lab,wert,max,o={}){
+  const id='f'+(++nr), leer=o.fehler&&!wert;
+  const el=o.lang?`<textarea id="${id}" rows="3">${wert}</textarea>`:`<input id="${id}" value="${wert}">`;
+  return `<div class="feld ${leer?'feld-fehler':''}"><label for="${id}">${lab}</label>${el}
+    <div class="feld-unten">${leer?'<span class="feld-meldung">Bitte ausfüllen</span>':''}<span class="zeichen">${wert.length} von ${max}</span></div></div>`;
+}
+const KATS=[
+  ['Geographie',[['Welcher Fluss fließt durch Wien, Budapest und Belgrad?','Donau'],['Wie heißt die Hauptstadt von Australien?','Canberra'],['','']]],
+  ['Musik der 80er',[['Wie hieß die Band von Freddie Mercury?','Queen'],['Aus welchem Land kommt die Band a-ha?','Norwegen']]],
+  ['Filmzitate',[['Aus welchem Film stammt „Ich schau dir in die Augen, Kleines“?','Casablanca']]],
+  ['Sport',[['Wie viele Spieler hat eine Fußballmannschaft auf dem Feld?','Elf']]],
+];
+function editor(z){
+  const fehler=z==='fehler';
+  const kats=fehler?KATS:KATS.map((k,i)=>i===0?[k[0],k[1].slice(0,2)]:k);
+  const [kname,fragen]=kats[0];
+  const leer=k=>(k[0]?0:1)+k[1].reduce((n,f)=>n+(f[0]?0:1)+(f[1]?0:1),0);
+  const stand=fehler?'<span class="stand fehlt">Nicht gespeichert</span>':'<span class="stand ok">Gespeichert, heute 21:14</span>';
+  const leiste=`<aside class="editor-leiste">
+    <div class="reihe zwischen"><h1 class="editor-titel">Quiz bearbeiten</h1>${sicht(true)}</div>
+    ${feld('Titel des Quiz','Spieleabend bei Mara',100)}
+    <div class="reihe zwischen"><span class="ueberschrift">Kategorien</span><span class="zaehler"><b>4</b> von 10</span></div>
+    <div class="editor-liste">${kats.map((k,i)=>`<div class="editor-zeile ${i===0?'an':''}"><button class="editor-wahl"><b>${k[0]}</b>
+      <small>${k[1].length} von 10 Fragen</small>${fehler&&leer(k)?`<span class="leer-tag">${leer(k)} ${leer(k)===1?'leeres Feld':'leere Felder'}</span>`:''}</button>
+      <div class="editor-pfeile"><button class="sym" ${i===0?'disabled':''}>↑</button><button class="sym" ${i===3?'disabled':''}>↓</button></div></div>`).join('')}</div>
+    <div><button>Kategorie hinzufügen</button></div>
+    <div class="notiz">Dieses Quiz ist öffentlich: Jeder sieht es in der Sammlung, ohne deinen Namen. Es muss spielbar bleiben, gespeicherte Änderungen gelten dort sofort.<br><button class="text">Auf privat stellen</button></div></aside>`;
+  const haupt=`<main class="editor-haupt"><div class="editor-katkopf">${feld('Name der Kategorie 1',kname,50)}<button class="text">Kategorie löschen</button></div>
+    <div class="reihe zwischen"><span class="ueberschrift">Fragen</span><span class="zaehler"><b>${fragen.length}</b> von 10 Fragen</span></div>
+    ${fragen.map((f,i)=>`<section class="frage-block"><div class="frage-kopf"><b>Frage ${i+1}</b><div class="knoepfe"><button class="sym" ${i===0?'disabled':''}>↑</button><button class="sym" ${i===fragen.length-1?'disabled':''}>↓</button><button class="text">Frage löschen</button></div></div>
+      ${feld('Fragetext',f[0],300,{lang:true,fehler})}${feld('Musterlösung',f[1],100,{fehler})}</section>`).join('')}
+    <div><button>Frage hinzufügen</button></div></main>`;
+  const meldung=fehler?'<p class="hinweis fehler" role="alert">Ein öffentliches Quiz muss spielbar bleiben. Fülle alle Felder aus oder stelle es zuerst auf privat.</p>':'';
+  const fuss=`<div class="editor-fuss"><button class="text">Zurück zu Meine Quizze</button>${stand}${meldung}<button class="speichern" ${fehler?'':'disabled'}>Speichern</button><button class="haupt">Spielraum eröffnen</button></div>`;
+  return `<div class="editor-raster">${leiste}${haupt}</div>${fuss}`;
+}
+
+/* ----- Teile ----- */
+const teile={
+ start: teilKopf('start','1. Weg zur Sammlung von der Startseite','Offene Frage: Wo steht „Öffentliche Quizze“? A macht daraus einen weiteren Weg in der Karte „Spielraum eröffnen“, B lässt die Karte wie heute und setzt einen Link in die Kopfzeile. Die Sammlung selbst ist in beiden Fällen gleich (Teil 2).')
+   +rahmen('startA1','<span class="m-ab">A</span>Weg in der Karte, ohne Konto','Drei Wege nebeneinander. Die Sammlung steht zwischen dem schnellen Beispiel-Quiz und dem eigenen Quiz, weil sie wie das Beispiel sofort spielbar ist.','/',K.startOhneHeute,startSeite(eroeffnen(W_BEISPIEL+W_OEFF+w_eigen(false),3)))
+   +rahmen('startA2','<span class="m-ab">A</span>Weg in der Karte, mit Konto','Vier Wege als zwei mal zwei. Oben die fertigen Quizze (Beispiel, öffentliche), unten die eigenen (gespeicherte, Einmal-Quiz).','/',K.startMitHeute,startSeite(eroeffnen(W_BEISPIEL+W_OEFF+W_MEINE+w_eigen(true),2)))
+   +rahmen('startB1','<span class="m-ab">B</span>Link in der Kopfzeile, ohne Konto','Die Karte bleibt wie heute. „Öffentliche Quizze“ steht als erster Textlink im Kopf und damit auf jeder Seite außer in der Partie.','/',K.startOhneB,startSeite(eroeffnen(W_BEISPIEL+w_eigen(false),2)))
+   +rahmen('startB2','<span class="m-ab">B</span>Link in der Kopfzeile, mit Konto','Drei Textlinks im Kopf, die Karte bleibt mit ihren drei Wegen wie heute.','/',K.startMitB,startSeite(eroeffnen(W_BEISPIEL+W_MEINE+w_eigen(true),3))),
+ sammlung: teilKopf('sammlung','2. Sammlung (/sammlung)','Eine Fassung, ohne Konto erreichbar. Karten im Raster wie „Meine Quizze“: Datum, Titel, Kategorien als Marken, „Spielen“. Mit Konto zusätzlich „Kopieren“, das danach die private Kopie im Editor öffnet. Kein Ersteller. Je 20 Einträge, dann „Mehr laden“.')
+   +rahmen('s1','Ohne Konto, erste Seite','20 Karten und „Mehr laden“. Ab fünf Kategorien steht „+n weitere“, lange Titel enden nach zwei Zeilen. Der Hinweis zu den Lösungen steht über der Liste.','/sammlung',K.sammlungOhne,sammlung({mitKonto:false}))
+   +rahmen('s2','Mit Konto, letzte Seite','Jede Karte hat „Kopieren“. Auf der letzten Seite entfällt „Mehr laden“.','/sammlung',K.sammlungMit,sammlung({mitKonto:true,liste:SAMMLUNG.slice(0,6),fuss:ALLE,gekuerzt:true}))
+   +rahmen('s3','Quiz gibt es nicht mehr','Jemand hat „Spielen“ oder „Kopieren“ gedrückt, aber der Ersteller hat das Quiz inzwischen privat gestellt. Die Meldung steht oben, die erste Seite ist neu geladen und das Quiz fehlt darin.','/sammlung',K.sammlungMit,sammlung({mitKonto:true,liste:SAMMLUNG.slice(0,1).concat(SAMMLUNG.slice(2,6)),oben:'<p class="hinweis fehler" role="alert">Dieses Quiz gibt es nicht mehr.</p>',gekuerzt:true}))
+   +rahmen('s4','Kopieren bei 20 von 20','Die Meldung steht direkt in der Karte, auf die geklickt wurde, weil sie weit unten liegen kann. Die Liste bleibt sonst unverändert.','/sammlung',K.sammlungMit,sammlung({mitKonto:true,liste:SAMMLUNG.slice(0,6),meldungBei:4,meldung:VOLL_MELDUNG,gekuerzt:true}))
+   +rahmen('s5','Leere Sammlung','Noch niemand hat veröffentlicht. Statt einer leeren Seite ein Weg zum Beispiel-Quiz.','/sammlung',K.sammlungOhne,SAMMEL_LEER),
+ meine: teilKopf('meine','3. Meine Quizze (/quizze)','Jede Kachel zeigt „öffentlich“ oder „privat“. Offene Frage: Wo sitzt das Umschalten? A gibt der Sichtbarkeit eine eigene Zeile mit Knopf, B einen Kippschalter oben rechts. Bei unfertigen Quizzen ist das Umschalten in beiden gesperrt. „Beispiel-Quiz als Vorlage“ steht in beiden rechts über der Liste.')
+   +rahmen('mA','<span class="m-ab">A</span>Eigene Zeile mit Knopf','Marke, kurzer Satz und Knopf „Veröffentlichen“ bzw. „Auf privat stellen“ in einer Zeile über Spielen und Bearbeiten. Der Knopf sagt, was passiert.','/quizze',K.liste,meine(kachelA))
+   +rahmen('mB','<span class="m-ab">B</span>Kippschalter oben rechts','Der Schalter ersetzt das Datum oben rechts (Datum rückt unter den Titel). Kompakter, Zustand und Umschalten sind ein Element.','/quizze',K.liste,meine(kachelB))
+   +rahmen('mX','Meldung, wenn der Server das Veröffentlichen ablehnt','Gilt für A und B. Normal ist der Knopf bei unfertigen Quizzen gesperrt, die Meldung erscheint nur, wenn das Quiz inzwischen in einem anderen Tab unfertig gespeichert wurde.','/quizze',K.liste,meine(kachelA,'<p class="hinweis fehler" role="alert">Nur ein fertiges Quiz kann öffentlich werden. Bitte fülle zuerst alle Felder aus.</p>'))
+   +rahmen('mL','Leere Liste mit Vorlage','Gilt für A und B. Neben „Erstes Quiz anlegen“ der zweite Weg „Beispiel-Quiz als Vorlage“. Er legt eine private Kopie an und öffnet sie im Editor.','/quizze',K.liste,MEINE_LEER),
+ editor: teilKopf('editor','4. Editor eines öffentlichen Quiz (/quiz/&lt;id&gt;)','Aufbau wie der freigegebene Editor mit Leiste unten. Neben der Überschrift die Marke „öffentlich“, die Notiz links erklärt die Regel und bietet „Auf privat stellen“ an, damit niemand für das Umschalten den Editor verlassen und ungespeicherten Text verlieren muss.')
+   +rahmen('e1','Gespeichert','Nach dem Öffnen. „Speichern“ ist gesperrt, solange sich nichts geändert hat.','/quiz/'+ID,K.editor,editor('ok'),'')
+   +rahmen('e2','Speichern eines unfertigen Stands','Frage 3 ist neu und leer. Der Server lehnt ab, der Text bleibt stehen, die leeren Felder sind markiert.','/quiz/'+ID,K.editor,editor('fehler'),''),
+};
+
+/* nur zum Prüfen: ?nur=start|sammlung|meine|editor zeigt einen Teil für kürzere Screenshots */
+const nur=new URLSearchParams(location.search).get('nur');
+document.getElementById('inhalt').innerHTML=Object.keys(teile).filter(k=>!nur||k===nur).map(k=>teile[k]).join('');
+document.getElementById('sprung').innerHTML=`<b>Start</b><a href="#startA1">A in der Karte</a><a href="#startB1">B in der Kopfzeile</a>
+  <b>Sammlung</b><a href="#s1">ohne Konto</a><a href="#s2">mit Konto</a><a href="#s3">gibt es nicht mehr</a><a href="#s4">20 von 20</a><a href="#s5">leer</a>
+  <b>Meine Quizze</b><a href="#mA">A eigene Zeile</a><a href="#mB">B Schalter</a><a href="#mX">Meldung</a><a href="#mL">leer</a>
+  <b>Editor</b><a href="#e1">gespeichert</a><a href="#e2">Fehler</a>`;
+</script>
+</body>
+</html>

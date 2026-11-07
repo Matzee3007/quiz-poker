@@ -178,8 +178,10 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 ### Aufgabe 6: Mock (Entwickler)
 
-- [ ] **Schritt 1: Mock mit dem Agent `mock-bauer` bauen:** Sammlung (Karten mit Titel, Kategorien, „veröffentlicht am“, Spielen, mit Konto Kopieren, „Mehr laden“, leere Sammlung), Weg dorthin von der Startseite, in „Meine Quizze“ Kennzeichen „öffentlich“, Umschalten öffentlich/privat und „Beispiel-Quiz als Vorlage“, im Editor der Hinweis, dass ein öffentliches Quiz spielbar bleiben muss. Stil C, Ablage `docs/mocks/2026-11-07-sammlung.html`.
-- [ ] **Schritt 2: Freigabe des Entwicklers abwarten.** Ohne Freigabe keine Aufgabe 8.
+- [x] **Schritt 1: Mock mit dem Agent `mock-bauer` bauen:** Sammlung (Karten mit Titel, Kategorien, „veröffentlicht am“, Spielen, mit Konto Kopieren, „Mehr laden“, leere Sammlung), Weg dorthin von der Startseite, in „Meine Quizze“ Kennzeichen „öffentlich“, Umschalten öffentlich/privat und „Beispiel-Quiz als Vorlage“, im Editor der Hinweis, dass ein öffentliches Quiz spielbar bleiben muss. Stil C, Ablage `docs/mocks/2026-11-07-sammlung.html`.
+- [x] **Schritt 2: Freigabe des Entwicklers abwarten.** Ohne Freigabe keine Aufgabe 8.
+
+**Freigabe (2026-11-07):** Startseite A (vierter Weg „Öffentliche Quizze“ in „Spielraum eröffnen“, mit Konto 2×2), Sammlung wie im Mock, Meine Quizze B (Kippschalter oben rechts, Datum unter dem Titel, gesperrt bei unfertigen Quizzen), Editor mit Marke „öffentlich“ und dem zusätzlichen Link „Auf privat stellen“ in der Notiz. „Beispiel-Quiz als Vorlage“ oben rechts über der Liste und in der leeren Liste.
 
 ### Aufgabe 7: Anfragen der Oberfläche
 
