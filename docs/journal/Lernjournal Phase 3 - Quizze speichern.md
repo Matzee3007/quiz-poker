@@ -1,6 +1,6 @@
 ---
 titel: Lernjournal Phase 3 - Quizze speichern
-status: aktiv
+status: abgeschlossen
 phase: 3
 erstellt: 2026-11-06
 tags: [lernjournal, phase-3, d1, better-auth, svelte, playwright, sicherheit]

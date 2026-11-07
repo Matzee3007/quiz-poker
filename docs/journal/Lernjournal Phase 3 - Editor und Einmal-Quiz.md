@@ -1,6 +1,6 @@
 ---
 titel: Lernjournal Phase 3 - Editor und Einmal-Quiz
-status: aktiv
+status: abgeschlossen
 phase: 3
 erstellt: 2026-11-04
 tags: [lernjournal, phase-3, svelte, cloudflare, github-actions]

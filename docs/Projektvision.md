@@ -154,8 +154,8 @@ abgeschlossen (Regel „Phasenwechsel“ in der globalen `CLAUDE.md`).
 - [x] **Phase 1 – Regelkern:** Chips, Einsätze, Runden, Kategorien und Auswertung als reines TypeScript, testgetrieben
 - [x] **Phase 2 – Spielraum online:** Raumcode, Echtzeit über WebSockets und Durable Objects, Rollen Quiz-Master und
   Spieler, Rückkehr nach Abbruch, ein fest eingebautes Beispiel-Quiz, erste Veröffentlichung bei Cloudflare
-- [ ] **Phase 3 – Quiz-Sammlung:** in vier Schritten: (1) Editor und Einmal-Quiz im Spielraum (online seit 2026-11-04), (2) Konten mit Einladungscode (online seit 2026-11-05),
-  (3) Quizze in D1 speichern (online seit 2026-11-06), (4) öffentliche Quizze, Kopien und Schutzregeln
+- [x] **Phase 3 – Quiz-Sammlung:** in vier Schritten: (1) Editor und Einmal-Quiz im Spielraum (online seit 2026-11-04), (2) Konten mit Einladungscode (online seit 2026-11-05),
+  (3) Quizze in D1 speichern (online seit 2026-11-06), (4) öffentliche Quizze, Kopien und Schutzregeln (online seit 2026-11-07)
 - [ ] **Phase 4 – Spieleabend:** echter Test mit Freunden, Feinschliff (z. B. fürs Handy)
 
 **Für später:** Modus gegen andere Spieler (Pot), Fernseher-Ansicht, Timer, einstellbare Startchips und Einsatzgrenzen,

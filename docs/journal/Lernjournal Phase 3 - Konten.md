@@ -1,6 +1,6 @@
 ---
 titel: Lernjournal Phase 3 - Konten
-status: aktiv
+status: abgeschlossen
 phase: 3
 erstellt: 2026-11-05
 tags: [lernjournal, phase-3, better-auth, d1, durable-objects, sicherheit]

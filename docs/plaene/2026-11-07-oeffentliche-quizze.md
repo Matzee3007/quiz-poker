@@ -1,6 +1,6 @@
 ---
 titel: "Plan: Öffentliche Quizze, Kopien und Schutzregeln"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-07
 tags: [plan, phase-3, quiz-sammlung, d1, playwright]
 ---
@@ -238,10 +238,10 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 ### Aufgabe 11: Veröffentlichen (nach Freigabe des Entwicklers)
 
-- [ ] **Schritt 1: Migration vor dem Hochladen:** `npx wrangler d1 migrations apply quiz-poker --remote`
-- [ ] **Schritt 2: Hochladen:** `npm run deploy`, danach `/api/health` antwortet 200.
-- [ ] **Schritt 3: Echter Durchlauf mit `npx wrangler tail`:** Test-Konto, Quiz veröffentlichen, Sammlung ohne Konto, spielen, kopieren, Konten löschen. Danach in D1 kein Test-Quiz und kein Test-Konto übrig. CPU-Zeit von `/api/sammlung` und `POST /api/raeume { quizId }` notieren.
-- [ ] **Schritt 4: Phase 3 abschließen:** Roadmap abhaken, Plan auf `status: abgeschlossen`, Journal und Übergabe (Regel „Phasenwechsel“).
+- [x] **Schritt 1: Migration vor dem Hochladen:** `npx wrangler d1 migrations apply quiz-poker --remote`
+- [x] **Schritt 2: Hochladen:** `npm run deploy`, danach `/api/health` antwortet 200.
+- [x] **Schritt 3: Echter Durchlauf mit `npx wrangler tail`:** Test-Konto, Quiz veröffentlichen, Sammlung ohne Konto, spielen, kopieren, Konten löschen. Danach in D1 kein Test-Quiz und kein Test-Konto übrig. CPU-Zeit von `/api/sammlung` und `POST /api/raeume { quizId }` notieren.
+- [x] **Schritt 4: Phase 3 abschließen:** Roadmap abhaken, Plan auf `status: abgeschlossen`, Journal und Übergabe (Regel „Phasenwechsel“).
 
 ## Ergebnis der Reviews
 
@@ -269,3 +269,26 @@ Nicht behoben: 7 (gemeinsamer `wrangler`-Aufruf mit `scripts/datenbank.ts`, lohn
 8. Der Zeiger der Sammlung nutzt `QUIZ_ID_MUSTER`.
 
 Nicht behoben: 6 (`RETURNING` beim Umschalten, kleiner Gewinn), 7 (doppelter Knopf „Beispiel-Quiz als Vorlage“ in der leeren Liste, so im freigegebenen Mock).
+
+## Veröffentlichung
+
+Online seit 2026-11-07 (PR #26). Reihenfolge wie geplant: Migration `0003_oeffentlich.sql` auf die echte D1, dann
+`npm run deploy`. Danach `/api/health` 200 und `/api/sammlung` mit leerer Liste.
+
+Echter Durchlauf gegen die echte Adresse (Playwright im Scratchpad): Konto A legt das Beispiel-Quiz als Vorlage an und
+veröffentlicht es, ein Gast spielt es aus der Sammlung, Konto B kopiert es, A stellt es privat, die Sammlung ist danach leer,
+B spielt seine Kopie, 15 weitere Abrufe von `/api/sammlung`, beide Konten über die Oberfläche gelöscht. Bestanden. Danach in
+D1: 0 Konten, 0 Sitzungen, 0 Quizze, 0 offene Einladungen.
+
+CPU aus `wrangler tail` (Stichprobe, 44 Ereignisse, kein Fehler 1102):
+
+| Weg | Log-Zeilen | CPU Median | CPU max | über 10 ms |
+|---|---:|---:|---:|---:|
+| `GET /api/sammlung` | 12 | 0 ms | 2 ms | 0 |
+| `POST /api/raeume` (mit `quizId` und Beispiel) | 2 | 5 ms | 8 ms | 0 |
+| `PUT /api/quizze/:id/sichtbarkeit` | 2 | 3 ms | 3 ms | 0 |
+| `POST /api/quizze/:id/kopie` | 1 | – | 15 ms | 1 |
+| `GET /api/auth/get-session` | 11 | 9 ms | 38 ms | 4 |
+
+Die 4 Ereignisse mit `canceled` waren WebSocket-Verbindungen, die beim Schließen der Browserseiten endeten, ohne Ausnahme.
+
