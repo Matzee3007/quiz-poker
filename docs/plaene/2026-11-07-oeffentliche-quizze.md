@@ -52,7 +52,7 @@ PUT  /api/quizze/:id/sichtbarkeit { oeffentlich: boolean }
 POST /api/quizze/:id/kopie         → 201 { id } | 401 | 404 | 409 zu-viele-quizze
 GET  /api/sammlung[?weiter=<zeiger>] (ohne Konto)
                                    → 200 { quizze: [{ id, titel, kategorien: string[], veroeffentlichtAm }], weiter: string | null } | 422 ungueltige-nachricht
-POST /api/raeume { quizId }        → 201 { raumcode, token } | 403 fremde-herkunft | 404 quiz-unbekannt | 422 leeres-quiz, leeres-feld | 429
+POST /api/raeume { quizId }        → 201 { raumcode, token } | 401 nicht-angemeldet (privat, ohne Sitzung) | 403 fremde-herkunft | 404 quiz-unbekannt | 422 leeres-quiz, leeres-feld | 429
 ```
 
 ## Prüf-Schwerpunkte
@@ -86,7 +86,7 @@ Branch `feature/playwright`, mit diesem Plan. Inhalt ist der Durchlauf aus Schri
   - Aufräumen: Konto löschen, danach führt `/quizze` zu `/anmelden`
 - [x] **Schritt 3: Laufen lassen:** `npm run test:browser`, erwartet alle Tests PASS. Einmal absichtlich eine Erwartung ändern, erwartet FAIL mit lesbarer Meldung, dann zurück.
 - [x] **Schritt 4: Doku:** `docs/tools/Playwright.md` (Zweck, Befehl, braucht laufenden lokalen Server und lokale D1 mit Migrationen, warum nicht in der CI, Fehler mit Ursache und Lösung), Eintrag in `Tools Übersicht.md`, `CLAUDE.md` ergänzen.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add Playwright browser run`, `/code-review`, PR erstellen, nach grüner CI und Freigabe mergen.
+- [x] **Schritt 5: `npm run check`, Commit** `Add Playwright browser run`, `/code-review`, PR erstellen, nach grüner CI und Freigabe mergen.
 
 ### Aufgabe 2: Spalte „öffentlich“ und Sichtbarkeit umschalten
 
@@ -233,7 +233,7 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 - [x] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
 - [x] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
-- [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
+- [x] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`. Ergebnis: 4 Lücken in Tests und Doku, der Code war vollständig. Geschlossen: Test „alter Inhalt bleibt“, Test für URL-Kodierung des Zeigers und für `oeffentlich-unfertig` beim Speichern, Browser-Durchlauf prüft „Kopieren“ nach dem Privatstellen, ADR 0008 und Schnittstelle nennen 401.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe mergen.
 
 ### Aufgabe 11: Veröffentlichen (nach Freigabe des Entwicklers)

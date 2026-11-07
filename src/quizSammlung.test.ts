@@ -160,13 +160,22 @@ describe("Anfragen für öffentliche Quizze", () => {
     expect(abruf).toHaveBeenCalledWith("/api/sammlung", { method: "GET" });
   });
 
-  it("lädt die nächste Seite mit dem Zeiger", async () => {
+  it("lädt die nächste Seite mit dem Zeiger, URL-kodiert", async () => {
     const abruf = antwortet(200, { quizze: [], weiter: null });
 
-    await sammlungLaden(`5_${ID}`);
+    await sammlungLaden("5_a b&c");
 
-    expect(abruf).toHaveBeenCalledWith(`/api/sammlung?weiter=5_${ID}`, {
+    expect(abruf).toHaveBeenCalledWith("/api/sammlung?weiter=5_a%20b%26c", {
       method: "GET",
+    });
+  });
+
+  it("meldet beim Speichern eines öffentlichen Quiz den unfertigen Stand", async () => {
+    antwortet(422, { code: "oeffentlich-unfertig" });
+
+    expect(await quizSpeichern(ID, BEISPIEL_QUIZ)).toEqual({
+      ok: false,
+      code: "oeffentlich-unfertig",
     });
   });
 

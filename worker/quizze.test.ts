@@ -433,12 +433,14 @@ describe("Öffentlich und privat", () => {
     const unfertig = await anQuizze(cookie, "PUT", `/${daten.id}`, {
       quiz: UNFERTIG,
     });
+    const nachAblehnung = await lesen(cookie, daten.id!);
     const fertig = await anQuizze(cookie, "PUT", `/${daten.id}`, {
       quiz: { ...BEISPIEL_QUIZ, titel: "Neuer Titel" },
     });
 
     expect(unfertig.status).toBe(422);
     expect(await unfertig.json()).toEqual({ code: "oeffentlich-unfertig" });
+    expect(nachAblehnung.quiz).toEqual(BEISPIEL_QUIZ);
     expect(fertig.status).toBe(200);
     expect(await lesen(cookie, daten.id!)).toMatchObject({
       oeffentlich: true,

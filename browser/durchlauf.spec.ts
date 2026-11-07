@@ -190,6 +190,25 @@ test.describe("mit Konto", () => {
     ).toHaveAttribute("aria-checked", "false");
 
     await kachel(zweites, "Playwright-Quiz")
+      .getByRole("button", { name: "Kopieren" })
+      .click();
+    await expect(zweites.getByRole("alert")).toHaveText(
+      "Dieses Quiz gibt es nicht mehr.",
+    );
+    await expect(kachel(zweites, "Playwright-Quiz")).toHaveCount(0);
+
+    // Dasselbe für „Spielen“: wieder öffentlich, Sammlung neu laden, dann wieder privat.
+    await kachel(page, "Playwright-Quiz").getByRole("switch").click();
+    await expect(
+      kachel(page, "Playwright-Quiz").getByRole("switch"),
+    ).toHaveAttribute("aria-checked", "true");
+    await zweites.goto("/sammlung");
+    await expect(kachel(zweites, "Playwright-Quiz")).toBeVisible();
+    await kachel(page, "Playwright-Quiz").getByRole("switch").click();
+    await expect(
+      kachel(page, "Playwright-Quiz").getByRole("switch"),
+    ).toHaveAttribute("aria-checked", "false");
+    await kachel(zweites, "Playwright-Quiz")
       .getByRole("button", { name: "Spielen" })
       .click();
     await expect(zweites.getByRole("alert")).toHaveText(

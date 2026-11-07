@@ -23,8 +23,11 @@ Server muss den Inhalt also ohnehin selbst aus D1 holen.
 - **Gespeicherte Quizze, eigene wie öffentliche, eröffnen den Spielraum mit `POST /api/raeume { quizId }`.** Der Server
   liest das Quiz aus D1, prüft es mit `quizPruefen` und gibt es dem Spielraum (`gespeichertesQuizLesen` in
   `worker/quizze.ts`).
-- Ein öffentliches Quiz gilt für alle. Ein privates nur mit der Sitzung seines Erstellers, sonst 404 `quiz-unbekannt`, wie bei
-  einer unbekannten ID. Die Sitzung wird nur bei privaten Quizzen abgefragt, das spart Rechenzeit (ADR 0005).
+- Ein öffentliches Quiz gilt für alle. Ein privates nur mit der Sitzung seines Erstellers. Mit einer anderen Sitzung gibt es
+  404 `quiz-unbekannt`, wie bei einer unbekannten ID. Ohne Sitzung gibt es 401 `nicht-angemeldet`, damit eine abgelaufene
+  Anmeldung zum Anmelden führt statt zu „gibt es nicht mehr“ (Review vom 2026-11-07). Die Sammlung zeigt bei 401 trotzdem
+  „gibt es nicht mehr“, weil ein Gast ein inzwischen privates Quiz so sieht. Die Sitzung wird nur bei privaten Quizzen
+  abgefragt, das spart Rechenzeit (ADR 0005).
 - Eine Anfrage mit `quizId` braucht den eigenen `Origin`, sonst 403. So kann keine fremde Seite mit dem Cookie eines
   Angemeldeten dessen private Quizze in einen Spielraum laden.
 - Das Einmal-Quiz schickt weiter `{ quiz }`, ohne Inhalt gilt weiter das Beispiel-Quiz.
