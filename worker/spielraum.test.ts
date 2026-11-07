@@ -13,7 +13,12 @@ import {
 import worker from "./index";
 import type { Spielraum } from "./spielraum";
 import type { QuizMasterAnsicht, SpielerAnsicht } from "../src/regeln/ansicht";
+import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
 import {
+  anQuizze,
+  BASIS,
+  kontoAnlegen,
+  neueAdresse,
   post,
   raumEroeffnen,
   raumMitAnnaUndBen,
@@ -962,5 +967,113 @@ describe("Spieler entfernen und Raum beenden", () => {
       name: "Cara",
     });
     expect(beitritt.status).toBe(404);
+  });
+});
+
+describe("Spielraum mit gespeichertem Quiz", () => {
+  const GESPEICHERT = { ...BEISPIEL_QUIZ, titel: "Aus dem Konto" };
+
+  async function gespeichertesQuiz(quiz: unknown = GESPEICHERT) {
+    const cookie = await kontoAnlegen(neueAdresse(), "geheim-123");
+    const antwort = await anQuizze(cookie, "POST", "", { quiz });
+    const { id } = (await antwort.json()) as { id: string };
+    return { cookie, id };
+  }
+
+  async function mitQuizId(quizId: string, cookie = "", origin = BASIS) {
+    const antwort = await exports.default.fetch(`${BASIS}/api/raeume`, {
+      method: "POST",
+      headers: { Origin: origin, Cookie: cookie },
+      body: JSON.stringify({ quizId }),
+    });
+    return {
+      status: antwort.status,
+      daten: (await antwort.json()) as Record<string, string>,
+    };
+  }
+
+  async function quizTitelIm(raumcode: string, token: string) {
+    const quizMaster = await verbinden(raumcode, token);
+    const ansicht = await quizMaster.ansicht<QuizMasterAnsicht>();
+    quizMaster.schliessen();
+    return ansicht.quizTitel;
+  }
+
+  it("öffnet den Raum mit dem eigenen privaten Quiz", async () => {
+    const { cookie, id } = await gespeichertesQuiz();
+
+    const { status, daten } = await mitQuizId(id, cookie);
+
+    expect(status).toBe(201);
+    expect(await quizTitelIm(daten.raumcode, daten.token)).toBe(
+      "Aus dem Konto",
+    );
+  });
+
+  it("öffnet ein öffentliches Quiz auch ohne Konto, ein privat gestelltes nicht mehr", async () => {
+    const { cookie, id } = await gespeichertesQuiz();
+    await anQuizze(cookie, "PUT", `/${id}/sichtbarkeit`, { oeffentlich: true });
+
+    const offen = await mitQuizId(id);
+    await anQuizze(cookie, "PUT", `/${id}/sichtbarkeit`, {
+      oeffentlich: false,
+    });
+    const privat = await mitQuizId(id);
+
+    expect(offen.status).toBe(201);
+    expect(await quizTitelIm(offen.daten.raumcode, offen.daten.token)).toBe(
+      "Aus dem Konto",
+    );
+    expect(privat).toEqual({ status: 404, daten: { code: "quiz-unbekannt" } });
+  });
+
+  it("öffnet keine fremden privaten und unbekannten Quizze", async () => {
+    const { id } = await gespeichertesQuiz();
+    const anderes = await kontoAnlegen(neueAdresse(), "geheim-123");
+
+    for (const quizId of [id, crypto.randomUUID(), "abc"]) {
+      expect(await mitQuizId(quizId, anderes)).toEqual({
+        status: 404,
+        daten: { code: "quiz-unbekannt" },
+      });
+    }
+    expect(await mitQuizId(id)).toEqual({
+      status: 404,
+      daten: { code: "quiz-unbekannt" },
+    });
+  });
+
+  it("lehnt ein unfertiges gespeichertes Quiz mit seinem Code ab", async () => {
+    const { cookie, id } = await gespeichertesQuiz({
+      titel: "Halb",
+      kategorien: [],
+    });
+
+    expect(await mitQuizId(id, cookie)).toEqual({
+      status: 422,
+      daten: { code: "leeres-quiz" },
+    });
+  });
+
+  it("verlangt für eine quizId die eigene Seite", async () => {
+    const { cookie, id } = await gespeichertesQuiz();
+
+    expect(await mitQuizId(id, cookie, "https://fremd.test")).toEqual({
+      status: 403,
+      daten: { code: "fremde-herkunft" },
+    });
+  });
+
+  it("spielt eine Kopie: spätere Änderungen erreichen den Raum nicht", async () => {
+    const { cookie, id } = await gespeichertesQuiz();
+    const { daten } = await mitQuizId(id, cookie);
+
+    await anQuizze(cookie, "PUT", `/${id}`, {
+      quiz: { ...GESPEICHERT, titel: "Später geändert" },
+    });
+
+    expect(await quizTitelIm(daten.raumcode, daten.token)).toBe(
+      "Aus dem Konto",
+    );
   });
 });

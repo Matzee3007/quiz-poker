@@ -163,7 +163,7 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 - Liefert: `gespeichertesQuizLesen(anfrage: Request, env: Env, quizId: string): Promise<{ ok: true; quiz: Quiz } | { ok: false; status: number; code: string }>` in `worker/quizze.ts`. Liest `inhalt`, `besitzer`, `oeffentlich_seit`. Öffentlich → gilt. Privat → nur mit Sitzung des Besitzers, sonst 404. Danach `quizPruefen`.
 - `quizAusAnfrage` in `worker/index.ts` erkennt `{ quizId }` und ruft es auf, prüft vorher den `Origin`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - eigenes privates Quiz mit Cookie → 201 mit Raumcode, der Raum hat genau dieses Quiz
   - öffentliches Quiz ohne Cookie → 201
   - fremdes privates Quiz → 404 `quiz-unbekannt`, unbekannte ID und `abc` → 404 (Prüf-Schwerpunkt 1)
@@ -171,10 +171,10 @@ Ab hier Branch `feature/oeffentliche-quizze`.
   - `quizId` mit fremdem `Origin` → 403
   - Quiz nach dem Eröffnen ändern → der Raum behält den alten Inhalt
   - ohne Inhalt weiter Beispiel-Quiz, `{ quiz }` weiter Einmal-Quiz
-- [ ] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
-- [ ] **Schritt 3: Schreiben:** Die Sitzung nur abfragen, wenn das Quiz privat ist (spart die Rechenzeit der Sitzungsabfrage, ADR 0005).
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Open rooms from saved quizzes by id`.
+- [x] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
+- [x] **Schritt 3: Schreiben:** Die Sitzung nur abfragen, wenn das Quiz privat ist (spart die Rechenzeit der Sitzungsabfrage, ADR 0005).
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Open rooms from saved quizzes by id`.
 
 ### Aufgabe 6: Mock (Entwickler)
 

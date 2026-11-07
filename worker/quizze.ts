@@ -1,3 +1,4 @@
+import type { Quiz } from "../src/regeln/partie";
 import {
   entwurfPruefen,
   QUIZ_GRENZEN,
@@ -241,6 +242,49 @@ async function quizKopieren(
       : fehler(404, "quiz-unbekannt");
   }
   return Response.json({ id: neueId }, { status: 201 });
+}
+
+/**
+ * Liest ein gespeichertes Quiz zum Spielen: ein öffentliches für alle, ein privates nur für seinen Besitzer.
+ * Fremde private Quizze sind wie unbekannte 404.
+ */
+export async function gespeichertesQuizLesen(
+  anfrage: Request,
+  env: Env,
+  quizId: string,
+): Promise<
+  { ok: true; quiz: Quiz } | { ok: false; status: number; code: string }
+> {
+  if (anfrage.headers.get("Origin") !== new URL(env.BETTER_AUTH_URL).origin) {
+    return { ok: false, status: 403, code: "fremde-herkunft" };
+  }
+  const unbekannt = { ok: false, status: 404, code: "quiz-unbekannt" } as const;
+  if (!QUIZ_ID_MUSTER.test(quizId)) {
+    return unbekannt;
+  }
+  const zeile = await env.DB.prepare(
+    "SELECT inhalt, besitzer, oeffentlich_seit FROM quiz WHERE id = ?",
+  )
+    .bind(quizId)
+    .first<{
+      inhalt: string;
+      besitzer: string;
+      oeffentlich_seit: number | null;
+    }>();
+  if (!zeile) {
+    return unbekannt;
+  }
+  // Die Sitzung nur bei privaten Quizzen abfragen, das spart Rechenzeit (ADR 0005).
+  if (
+    zeile.oeffentlich_seit === null &&
+    (await kontoDerSitzung(anfrage)) !== zeile.besitzer
+  ) {
+    return unbekannt;
+  }
+  const pruefung = quizPruefen(JSON.parse(zeile.inhalt));
+  return pruefung.ok
+    ? pruefung
+    : { ok: false, status: 422, code: pruefung.code };
 }
 
 /** Alle Wege unter /api/quizze. id ist null für die Liste selbst, weg ist der Teil nach der ID. */
