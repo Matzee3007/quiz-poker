@@ -107,7 +107,9 @@
         <p class="notiz warnung klein">
           Das Löschen ist endgültig. Deine Adresse, dein Passwort und deine
           Quizze werden sofort entfernt, und niemand kann das Konto
-          wiederherstellen. Spielen kannst du weiter ohne Konto.
+          wiederherstellen. Kopien, die andere von deinen öffentlichen Quizzen
+          übernommen haben, bleiben bestehen. Spielen kannst du weiter ohne
+          Konto.
         </p>
         <div class:feld-fehler={loeschFehler !== null}>
           <label for="passwort">Passwort zur Bestätigung</label>
@@ -129,7 +131,8 @@
       <section class="karte stapel">
         <h2>Konto löschen</h2>
         <p class="matt klein">
-          Entfernt deine Adresse, dein Passwort und deine Quizze.
+          Entfernt deine Adresse, dein Passwort und deine Quizze. Kopien anderer
+          bleiben.
         </p>
         <div>
           <button onclick={() => (loeschenOffen = true)}>Konto löschen</button>

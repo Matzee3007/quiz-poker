@@ -29,6 +29,14 @@
       Konto löschst. Der Betreiber kann einzelne Quizze löschen, zum Beispiel
       wenn ein Inhalt nicht auf diese Seite gehört.
     </p>
+    <p class="matt">
+      Ein Quiz, das du veröffentlichst, sieht jeder unter „Öffentliche Quizze“,
+      mit Titel, Kategorien und beim Spielen auch mit Fragen und Lösungen. Dein
+      Name und deine Adresse stehen nicht dabei. Andere Quiz-Master mit Konto
+      können es als eigene Kopie übernehmen. Solche Kopien gehören dann ihnen
+      und bleiben bestehen, wenn du dein Quiz auf privat stellst, es löschst
+      oder dein Konto löschst.
+    </p>
   </section>
   <section class="karte stapel">
     <h2>IP-Adressen</h2>

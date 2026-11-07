@@ -223,9 +223,9 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 **Dateien:** Ändern `src/ansichten/Datenschutz.svelte`, `src/ansichten/Konto.svelte`, `docs/Betrieb.md`, `browser/durchlauf.spec.ts`
 
-- [ ] **Schritt 1: Texte ergänzen:** Datenschutz: Öffentliche Quizze sieht jeder ohne Ersteller, Kopien anderer bleiben beim Löschen des Quiz oder Kontos bestehen. Konto löschen: Hinweis, dass Kopien anderer bleiben. `docs/Betrieb.md`: Abfrage, die alle öffentlichen Quizze mit Titel und Besitzer zeigt, und dass `npm run quiz-loeschen` auch für öffentliche gilt.
-- [ ] **Schritt 2: Durchlauf erweitern:** veröffentlichen, in der Sammlung sehen (zweiter Browser-Kontext ohne Konto), dort spielen, mit zweitem Konto kopieren, Original privat stellen → Kopieren meldet „gibt es nicht mehr“, Beispiel-Quiz als Vorlage. `npm run test:browser`, erwartet alle PASS.
-- [ ] **Schritt 3: `npm run check`, Commit** `Document public quizzes and extend browser run`.
+- [x] **Schritt 1: Texte ergänzen:** Datenschutz: Öffentliche Quizze sieht jeder ohne Ersteller, Kopien anderer bleiben beim Löschen des Quiz oder Kontos bestehen. Konto löschen: Hinweis, dass Kopien anderer bleiben. `docs/Betrieb.md`: Abfrage, die alle öffentlichen Quizze mit Titel und Besitzer zeigt, und dass `npm run quiz-loeschen` auch für öffentliche gilt.
+- [x] **Schritt 2: Durchlauf erweitern:** veröffentlichen, in der Sammlung sehen (zweiter Browser-Kontext ohne Konto), dort spielen, mit zweitem Konto kopieren, Original privat stellen → Kopieren meldet „gibt es nicht mehr“, Beispiel-Quiz als Vorlage. `npm run test:browser`, erwartet alle PASS.
+- [x] **Schritt 3: `npm run check`, Commit** `Document public quizzes and extend browser run`.
 
 ### Aufgabe 10: Doku und Prüfungen
 

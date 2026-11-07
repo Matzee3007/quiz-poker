@@ -14,7 +14,9 @@ ohne Browser. Gehört zu [[projects/quiz-poker/docs/tools/Tools Übersicht|Tools
 ## Wofür wir es nutzen
 
 Ein Browser-Durchlauf in `browser/durchlauf.spec.ts`. Mit Konto: registrieren, abmelden, anmelden, Quiz anlegen,
-unfertig speichern, neu laden, fertig schreiben, Rückfrage im Editor, Spielraum eröffnen und Konto löschen. Ohne Konto:
+unfertig speichern, neu laden, fertig schreiben, Rückfrage im Editor, Spielraum eröffnen, veröffentlichen, die Sammlung
+ohne Konto, Kopieren mit einem zweiten Konto, privat stellen während die Sammlung offen ist, öffentliches Quiz im Editor,
+Beispiel-Quiz als Vorlage und Konto löschen. Ohne Konto:
 Beispiel-Quiz und Einmal-Quiz eröffnen je einen Spielraum. Bis Schritt 3 von Phase 3 lag dieses Skript nur im
 Scratchpad, seit 2026-11-07 liegt es im Repo.
 
@@ -62,8 +64,8 @@ npx wrangler d1 migrations apply quiz-poker --local   # Lokale D1 auf den Stand 
   Ursache steht beim ersten roten Test. Unter `Error Context` liegt eine Datei mit dem Seiteninhalt zum Zeitpunkt des Fehlers.
 - **`no such table: quiz` oder ähnlich:** Die lokale D1 kennt eine neue Migration noch nicht. Lösung:
   `npx wrangler d1 migrations apply quiz-poker --local`.
-- **Die Raum-Tests scheitern mit „Gerade wurden zu viele Spielräume eröffnet“:** Jeder Lauf eröffnet drei Spielräume, lokal
-  gilt dieselbe Grenze wie online (`RAEUME_PRO_STUNDE`: 30 pro Stunde in `wrangler.jsonc`). Nach etwa zehn Läufen in einer
+- **Die Raum-Tests scheitern mit „Gerade wurden zu viele Spielräume eröffnet“:** Jeder Lauf eröffnet fünf Spielräume, lokal
+  gilt dieselbe Grenze wie online (`RAEUME_PRO_STUNDE`: 30 pro Stunde in `wrangler.jsonc`). Nach sechs Läufen in einer
   Stunde ist sie erreicht. Lösung: in `.dev.vars` die Zeile `RAEUME_PRO_STUNDE=1000` ergänzen und den Server neu starten.
   `.dev.vars` gilt nur lokal und steht nicht im Repo.
 - **`Timed out waiting … from config.webServer` oder `Port 5173 is already in use`:** Ein anderes Programm belegt Port 5173.
