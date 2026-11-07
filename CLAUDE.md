@@ -42,7 +42,7 @@ Begründung und Alternativen: `docs/adr/0001-stack.md`.
 quiz-poker/
 ├── src/                Oberfläche (Svelte)
 │   ├── App.svelte      Wählt je nach Adresse, Token und Ansicht, was zu sehen ist
-│   ├── ansichten/      Eine Komponente je Ansicht (Start, Editor, Meine Quizze, Warten, Runde, Auflösung, Ende)
+│   ├── ansichten/      Eine Komponente je Ansicht (Start, Editor, Meine Quizze, Sammlung, Warten, Runde, Auflösung, Ende)
 │   ├── entwurfSpeicher.ts  Entwurf des Einmal-Quiz im localStorage
 │   ├── konto.ts        Anfragen für Anmelden, Registrieren, Passwort und Konto
 │   ├── main.ts         Einstieg im Browser
@@ -50,7 +50,7 @@ quiz-poker/
 │   ├── stil.css        Stil C aus dem Mock
 │   ├── verbindung.svelte.ts  WebSocket mit Neuverbinden, Token im localStorage
 │   ├── protokoll.ts    Nachrichten zwischen Gerät und Server
-│   ├── quizSammlung.ts Anfragen für gespeicherte Quizze
+│   ├── quizSammlung.ts Anfragen für gespeicherte und öffentliche Quizze
 │   ├── raumEroeffnen.ts  Anfrage zum Eröffnen eines Spielraums
 │   └── regeln/         Spielregeln als reines TypeScript, ohne Svelte und Cloudflare
 │       ├── ansicht.ts  Was jede Rolle sehen darf
@@ -69,7 +69,8 @@ quiz-poker/
 │   ├── passwortrechner.ts  Durable Object: Passwort-Hashing
 │   ├── auth.ts         Einrichtung von Better Auth
 │   ├── konto.ts        Registrieren mit Einladungscode, Passwort über Link
-│   ├── quizze.ts       Gespeicherte Quizze: anlegen, auflisten, lesen, ändern, löschen
+│   ├── quizze.ts       Gespeicherte Quizze: anlegen, auflisten, lesen, ändern, löschen, veröffentlichen, kopieren
+│   ├── sammlung.ts     Öffentliche Quizze für alle, mit Blättern
 │   ├── anfrage.ts      Anfragen von der eigenen Seite lesen: Herkunft, Größe, JSON
 │   ├── betrieb.ts      SQL für die Befehle des Betreibers
 │   ├── geheimnis.ts    Codes und Links erzeugen und hashen

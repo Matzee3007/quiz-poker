@@ -1,11 +1,12 @@
 import { BEISPIEL_QUIZ } from "../src/regeln/beispielQuiz";
 import type { Quiz } from "../src/regeln/partie";
-import { quizPruefen, type QuizFehlerCode } from "../src/regeln/quizpruefung";
+import { quizPruefen } from "../src/regeln/quizpruefung";
 import { istGueltigerRaumcode, raumcodeErzeugen } from "../src/regeln/raumcode";
 import { aufraeumen } from "./aufraeumen";
 import { auth } from "./auth";
 import { kontoRegistrieren, passwortNeuSetzen } from "./konto";
-import { quizAnfrage } from "./quizze";
+import { gespeichertesQuizLesen, quizAnfrage } from "./quizze";
+import { sammlungAnfrage } from "./sammlung";
 
 export { Passwortrechner } from "./passwortrechner";
 export { Raumzaehler } from "./raumzaehler";
@@ -22,19 +23,30 @@ const AUTH_WEGE = new Set([
 ]);
 const ANFRAGE_HOECHSTGROESSE = 256 * 1024;
 
-/** Ohne Inhalt gilt das Beispiel-Quiz, sonst das mitgeschickte Einmal-Quiz. */
-function quizAusAnfrage(
+/** Ohne Inhalt gilt das Beispiel-Quiz, mit quizId ein gespeichertes Quiz, sonst das mitgeschickte Einmal-Quiz. */
+async function quizAusAnfrage(
+  anfrage: Request,
+  env: Env,
   text: string,
-): { ok: true; quiz: Quiz } | { ok: false; code: QuizFehlerCode } {
+): Promise<
+  { ok: true; quiz: Quiz } | { ok: false; status: number; code: string }
+> {
   if (text === "") {
     return { ok: true, quiz: BEISPIEL_QUIZ };
   }
+  let daten: { quiz?: unknown; quizId?: unknown } | null;
   try {
-    const daten = JSON.parse(text) as { quiz?: unknown } | null;
-    return quizPruefen(daten?.quiz);
+    daten = JSON.parse(text) as typeof daten;
   } catch {
-    return { ok: false, code: "ungueltige-nachricht" };
+    return { ok: false, status: 422, code: "ungueltige-nachricht" };
   }
+  if (typeof daten?.quizId === "string") {
+    return gespeichertesQuizLesen(anfrage, env, daten.quizId);
+  }
+  const pruefung = quizPruefen(daten?.quiz);
+  return pruefung.ok
+    ? pruefung
+    : { ok: false, status: 422, code: pruefung.code };
 }
 
 async function raumEroeffnen(anfrage: Request, env: Env): Promise<Response> {
@@ -46,9 +58,13 @@ async function raumEroeffnen(anfrage: Request, env: Env): Promise<Response> {
   if (inhalt.byteLength > ANFRAGE_HOECHSTGROESSE) {
     return Response.json({ code: "anfrage-zu-gross" }, { status: 413 });
   }
-  const pruefung = quizAusAnfrage(new TextDecoder().decode(inhalt));
+  const pruefung = await quizAusAnfrage(
+    anfrage,
+    env,
+    new TextDecoder().decode(inhalt),
+  );
   if (!pruefung.ok) {
-    return Response.json({ code: pruefung.code }, { status: 422 });
+    return Response.json({ code: pruefung.code }, { status: pruefung.status });
   }
 
   const zugelassen = await env.RAUMZAEHLER.getByName("global").raumZulassen(
@@ -136,9 +152,20 @@ export default {
       return passwortNeuSetzen(anfrage, env);
     }
 
-    const quizTreffer = /^\/api\/quizze(?:\/([^/]+))?$/.exec(pathname);
+    const quizTreffer =
+      /^\/api\/quizze(?:\/([^/]+)(?:\/(sichtbarkeit|kopie))?)?$/.exec(pathname);
     if (quizTreffer) {
-      return quizAnfrage(anfrage, env, quizTreffer[1] ?? null);
+      const [, id, weg] = quizTreffer;
+      return quizAnfrage(
+        anfrage,
+        env,
+        id ?? null,
+        (weg as "sichtbarkeit" | "kopie" | undefined) ?? null,
+      );
+    }
+
+    if (pathname === "/api/sammlung") {
+      return sammlungAnfrage(anfrage, env);
     }
 
     if (pathname === "/api/raeume" && anfrage.method === "POST") {

@@ -35,6 +35,11 @@ Die Befehle für den Betrieb stehen in [[projects/quiz-poker/docs/Betrieb|Betrie
 ## Muster
 
 - **Grenze in einem Befehl:** `INSERT INTO quiz (…) SELECT … WHERE (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < 20`. Zählen und Einfügen laufen zusammen, zwei gleichzeitige Anfragen kommen nicht über 20. `meta.changes` ist 0, wenn die Grenze greift.
+- **Spalte nachträglich:** `ALTER TABLE quiz ADD COLUMN oeffentlich_seit INTEGER` (Migration 0003). Vorhandene Zeilen bekommen `NULL`, also privat. Eine Spalte mit `NOT NULL` bräuchte einen Standardwert.
+- **Teilindex:** `CREATE INDEX … ON quiz (oeffentlich_seit, id) WHERE oeffentlich_seit IS NOT NULL` enthält nur öffentliche Quizze. Er bleibt klein und passt genau zur Abfrage der Sammlung.
+- **Blättern mit Zeiger (Keyset Pagination):** Statt `OFFSET` merkt sich die nächste Seite den letzten Eintrag: `WHERE oeffentlich_seit < ? OR (oeffentlich_seit = ? AND id < ?) ORDER BY oeffentlich_seit DESC, id DESC LIMIT 21`. Die `id` entscheidet bei gleichem Zeitpunkt. Ein neu veröffentlichtes Quiz verschiebt die nächste Seite nicht, und der 21. Treffer zeigt nur, dass es weitergeht.
+- **Kopie in einem Befehl:** `INSERT INTO quiz (…) SELECT ?, ?, inhalt, spielbar, ? FROM quiz WHERE id = ? AND oeffentlich_seit IS NOT NULL AND (SELECT COUNT(*) …) < 20`. Ist `meta.changes` 0, unterscheidet ein zweites `SELECT` zwischen 404 und 409.
+- **`COALESCE(a, b)`:** liefert `a`, wenn es nicht `NULL` ist, sonst `b`. Beim Veröffentlichen behält ein schon öffentliches Quiz so seinen Zeitpunkt.
 - **Nur eigene Zeilen:** Jede Abfrage auf `quiz` enthält `besitzer = ?`. Ändert ein `UPDATE` oder `DELETE` nichts, war das Quiz fremd oder unbekannt, beides antwortet mit 404.
 
 ## Fehler

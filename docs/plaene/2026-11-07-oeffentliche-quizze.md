@@ -52,7 +52,7 @@ PUT  /api/quizze/:id/sichtbarkeit { oeffentlich: boolean }
 POST /api/quizze/:id/kopie         → 201 { id } | 401 | 404 | 409 zu-viele-quizze
 GET  /api/sammlung[?weiter=<zeiger>] (ohne Konto)
                                    → 200 { quizze: [{ id, titel, kategorien: string[], veroeffentlichtAm }], weiter: string | null } | 422 ungueltige-nachricht
-POST /api/raeume { quizId }        → 201 { raumcode, token } | 403 fremde-herkunft | 404 quiz-unbekannt | 422 leeres-quiz, leeres-feld | 429
+POST /api/raeume { quizId }        → 201 { raumcode, token } | 401 nicht-angemeldet (privat, ohne Sitzung) | 403 fremde-herkunft | 404 quiz-unbekannt | 422 leeres-quiz, leeres-feld | 429
 ```
 
 ## Prüf-Schwerpunkte
@@ -86,7 +86,7 @@ Branch `feature/playwright`, mit diesem Plan. Inhalt ist der Durchlauf aus Schri
   - Aufräumen: Konto löschen, danach führt `/quizze` zu `/anmelden`
 - [x] **Schritt 3: Laufen lassen:** `npm run test:browser`, erwartet alle Tests PASS. Einmal absichtlich eine Erwartung ändern, erwartet FAIL mit lesbarer Meldung, dann zurück.
 - [x] **Schritt 4: Doku:** `docs/tools/Playwright.md` (Zweck, Befehl, braucht laufenden lokalen Server und lokale D1 mit Migrationen, warum nicht in der CI, Fehler mit Ursache und Lösung), Eintrag in `Tools Übersicht.md`, `CLAUDE.md` ergänzen.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add Playwright browser run`, `/code-review`, PR erstellen, nach grüner CI und Freigabe mergen.
+- [x] **Schritt 5: `npm run check`, Commit** `Add Playwright browser run`, `/code-review`, PR erstellen, nach grüner CI und Freigabe mergen.
 
 ### Aufgabe 2: Spalte „öffentlich“ und Sichtbarkeit umschalten
 
@@ -107,17 +107,17 @@ Ab hier Branch `feature/oeffentliche-quizze`.
   - `quizAnfrage(anfrage, env, id, weg: "sichtbarkeit" | "kopie" | null)`. `worker/index.ts` erkennt `/api/quizze/<id>/(sichtbarkeit|kopie)`.
   - Liste und Lesen liefern `oeffentlich: boolean`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - neues Quiz → in Liste und `GET` `oeffentlich: false`, auch mit `oeffentlich: true` im Inhalt
   - Sichtbarkeit `true` bei spielbarem Quiz → 200, `oeffentlichSeit` ist eine Zahl, Liste zeigt `oeffentlich: true`. Nochmal `true` → `oeffentlichSeit` bleibt gleich
   - Sichtbarkeit `true` bei unfertigem Quiz → 422 `quiz-unfertig`
   - Sichtbarkeit `false` → 200 `{ oeffentlichSeit: null }`
   - `{ oeffentlich: "ja" }` → 422 `ungueltige-nachricht`, fremdes Konto → 404, fremder `Origin` → 403, ohne Cookie → 401
   - `PUT /api/quizze/:id` mit unfertigem Inhalt bei öffentlichem Quiz → 422 `oeffentlich-unfertig`, der alte Inhalt bleibt. Mit fertigem Inhalt → 200
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/quizze.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: Migration und Wege schreiben:** Veröffentlichen in einem Befehl: `UPDATE quiz SET oeffentlich_seit = COALESCE(oeffentlich_seit, ?) WHERE id = ? AND besitzer = ? AND spielbar = 1`. Bei `changes === 0` mit einem `SELECT spielbar` 404 und 422 unterscheiden. Ändern: `WHERE … AND (oeffentlich_seit IS NULL OR ? = 1)` mit `spielbar` als Wert, bei `changes === 0` ebenso unterscheiden. Die Migration lokal anwenden: `npx wrangler d1 migrations apply quiz-poker --local`.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS, auch alle bisherigen.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add public visibility for saved quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/quizze.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: Migration und Wege schreiben:** Veröffentlichen in einem Befehl: `UPDATE quiz SET oeffentlich_seit = COALESCE(oeffentlich_seit, ?) WHERE id = ? AND besitzer = ? AND spielbar = 1`. Bei `changes === 0` mit einem `SELECT spielbar` 404 und 422 unterscheiden. Ändern: `WHERE … AND (oeffentlich_seit IS NULL OR ? = 1)` mit `spielbar` als Wert, bei `changes === 0` ebenso unterscheiden. Die Migration lokal anwenden: `npx wrangler d1 migrations apply quiz-poker --local`.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS, auch alle bisherigen.
+- [x] **Schritt 5: `npm run check`, Commit** `Add public visibility for saved quizzes`.
 
 ### Aufgabe 3: Sammlung mit Blättern
 
@@ -127,15 +127,15 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 - Liefert: `SAMMLUNG_SEITE = 20`, `sammlungAnfrage(anfrage: Request, env: Env): Promise<Response>` für `GET /api/sammlung`, andere Methoden → 405. Zeiger `weiter` ist `"<oeffentlich_seit>_<id>"` des letzten Eintrags, `null` auf der letzten Seite.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - ohne Cookie → 200, nur öffentliche Quizze, neueste zuerst, private fehlen
   - jeder Eintrag hat genau die Schlüssel `id`, `titel`, `kategorien`, `veroeffentlichtAm` (Prüf-Schwerpunkt 5), `kategorien` sind die Namen in ihrer Reihenfolge
   - 21 öffentliche Quizze (über zwei Konten verteilt, zwei mit gleichem `oeffentlich_seit` an Platz 20 und 21, direkt in D1 gesetzt): Seite 1 hat 20 und `weiter`, Seite 2 hat genau 1 und `weiter: null`. Zwischen den Seiten ein neues Quiz veröffentlichen: Seite 2 bleibt gleich (Prüf-Schwerpunkt 3)
   - `?weiter=kaputt` → 422 `ungueltige-nachricht`
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/sammlung.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: `sammlungAnfrage` schreiben:** `WHERE oeffentlich_seit IS NOT NULL AND (oeffentlich_seit, id) < (?, ?) ORDER BY oeffentlich_seit DESC, id DESC LIMIT 21`. Der 21. Treffer heißt nur „es gibt mehr“. Kategorien in TypeScript aus `inhalt` lesen. Zeiger mit `^(\d+)_([0-9a-f-]{36})$` prüfen.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add public quiz collection with paging`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run worker/sammlung.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: `sammlungAnfrage` schreiben:** `WHERE oeffentlich_seit IS NOT NULL AND (oeffentlich_seit, id) < (?, ?) ORDER BY oeffentlich_seit DESC, id DESC LIMIT 21`. Der 21. Treffer heißt nur „es gibt mehr“. Kategorien in TypeScript aus `inhalt` lesen. Zeiger mit `^(\d+)_([0-9a-f-]{36})$` prüfen.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add public quiz collection with paging`.
 
 ### Aufgabe 4: Kopie übernehmen
 
@@ -143,16 +143,16 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 **Schnittstellen:** Nutzt `quizAnfrage` mit `weg = "kopie"` aus Aufgabe 2. Liefert `POST /api/quizze/:id/kopie` → 201 `{ id }`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - öffentliches Quiz eines anderen Kontos kopieren → 201, neue ID, in der eigenen Liste mit gleichem Titel, `oeffentlich: false`, `spielbar: true`
   - fremdes privates und unbekanntes Quiz → 404, keine neue Zeile (Prüf-Schwerpunkt 1)
   - Original danach ändern, privat stellen und sein Konto löschen → die Kopie ist unverändert da (Prüf-Schwerpunkt 4)
   - bei 20 eigenen Quizzen → 409 `zu-viele-quizze`
   - ohne Cookie → 401, fremder `Origin` → 403
-- [ ] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
-- [ ] **Schritt 3: Kopieren in einem Befehl:** `INSERT INTO quiz (id, besitzer, inhalt, spielbar, geaendert_am) SELECT ?, ?, inhalt, spielbar, ? FROM quiz WHERE id = ? AND oeffentlich_seit IS NOT NULL AND (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < ?`. Bei `changes === 0` mit einem `SELECT` 404 und 409 unterscheiden.
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add copying public quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
+- [x] **Schritt 3: Kopieren in einem Befehl:** `INSERT INTO quiz (id, besitzer, inhalt, spielbar, geaendert_am) SELECT ?, ?, inhalt, spielbar, ? FROM quiz WHERE id = ? AND oeffentlich_seit IS NOT NULL AND (SELECT COUNT(*) FROM quiz WHERE besitzer = ?) < ?`. Bei `changes === 0` mit einem `SELECT` 404 und 409 unterscheiden.
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add copying public quizzes`.
 
 ### Aufgabe 5: Spielraum über die Quiz-ID
 
@@ -163,7 +163,7 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 - Liefert: `gespeichertesQuizLesen(anfrage: Request, env: Env, quizId: string): Promise<{ ok: true; quiz: Quiz } | { ok: false; status: number; code: string }>` in `worker/quizze.ts`. Liest `inhalt`, `besitzer`, `oeffentlich_seit`. Öffentlich → gilt. Privat → nur mit Sitzung des Besitzers, sonst 404. Danach `quizPruefen`.
 - `quizAusAnfrage` in `worker/index.ts` erkennt `{ quizId }` und ruft es auf, prüft vorher den `Origin`.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben:**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben:**
   - eigenes privates Quiz mit Cookie → 201 mit Raumcode, der Raum hat genau dieses Quiz
   - öffentliches Quiz ohne Cookie → 201
   - fremdes privates Quiz → 404 `quiz-unbekannt`, unbekannte ID und `abc` → 404 (Prüf-Schwerpunkt 1)
@@ -171,15 +171,17 @@ Ab hier Branch `feature/oeffentliche-quizze`.
   - `quizId` mit fremdem `Origin` → 403
   - Quiz nach dem Eröffnen ändern → der Raum behält den alten Inhalt
   - ohne Inhalt weiter Beispiel-Quiz, `{ quiz }` weiter Einmal-Quiz
-- [ ] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
-- [ ] **Schritt 3: Schreiben:** Die Sitzung nur abfragen, wenn das Quiz privat ist (spart die Rechenzeit der Sitzungsabfrage, ADR 0005).
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Open rooms from saved quizzes by id`.
+- [x] **Schritt 2: Tests laufen lassen:** erwartet FAIL.
+- [x] **Schritt 3: Schreiben:** Die Sitzung nur abfragen, wenn das Quiz privat ist (spart die Rechenzeit der Sitzungsabfrage, ADR 0005).
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Open rooms from saved quizzes by id`.
 
 ### Aufgabe 6: Mock (Entwickler)
 
-- [ ] **Schritt 1: Mock mit dem Agent `mock-bauer` bauen:** Sammlung (Karten mit Titel, Kategorien, „veröffentlicht am“, Spielen, mit Konto Kopieren, „Mehr laden“, leere Sammlung), Weg dorthin von der Startseite, in „Meine Quizze“ Kennzeichen „öffentlich“, Umschalten öffentlich/privat und „Beispiel-Quiz als Vorlage“, im Editor der Hinweis, dass ein öffentliches Quiz spielbar bleiben muss. Stil C, Ablage `docs/mocks/2026-11-07-sammlung.html`.
-- [ ] **Schritt 2: Freigabe des Entwicklers abwarten.** Ohne Freigabe keine Aufgabe 8.
+- [x] **Schritt 1: Mock mit dem Agent `mock-bauer` bauen:** Sammlung (Karten mit Titel, Kategorien, „veröffentlicht am“, Spielen, mit Konto Kopieren, „Mehr laden“, leere Sammlung), Weg dorthin von der Startseite, in „Meine Quizze“ Kennzeichen „öffentlich“, Umschalten öffentlich/privat und „Beispiel-Quiz als Vorlage“, im Editor der Hinweis, dass ein öffentliches Quiz spielbar bleiben muss. Stil C, Ablage `docs/mocks/2026-11-07-sammlung.html`.
+- [x] **Schritt 2: Freigabe des Entwicklers abwarten.** Ohne Freigabe keine Aufgabe 8.
+
+**Freigabe (2026-11-07):** Startseite A (vierter Weg „Öffentliche Quizze“ in „Spielraum eröffnen“, mit Konto 2×2), Sammlung wie im Mock, Meine Quizze B (Kippschalter oben rechts, Datum unter dem Titel, gesperrt bei unfertigen Quizzen), Editor mit Marke „öffentlich“ und dem zusätzlichen Link „Auf privat stellen“ in der Notiz. „Beispiel-Quiz als Vorlage“ oben rechts über der Liste und in der leeren Liste.
 
 ### Aufgabe 7: Anfragen der Oberfläche
 
@@ -199,13 +201,13 @@ Ab hier Branch `feature/oeffentliche-quizze`.
   raumMitQuizEroeffnen(quizId: string): Promise<Eroeffnung>                    // in src/raumEroeffnen.ts
   ```
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben (nachgebautes `fetch`):** richtige Pfade und Methoden, `weiter` landet URL-kodiert in der Adresse, 404 → `quiz-unbekannt`, 409 → `zu-viele-quizze`, 422 → `quiz-unfertig` bzw. `oeffentlich-unfertig`, Netzfehler → `keine-verbindung`. Neue Meldungen:
+- [x] **Schritt 1: Fehlschlagende Tests schreiben (nachgebautes `fetch`):** richtige Pfade und Methoden, `weiter` landet URL-kodiert in der Adresse, 404 → `quiz-unbekannt`, 409 → `zu-viele-quizze`, 422 → `quiz-unfertig` bzw. `oeffentlich-unfertig`, Netzfehler → `keine-verbindung`. Neue Meldungen:
   - `quiz-unfertig`: „Nur ein fertiges Quiz kann öffentlich werden. Bitte fülle zuerst alle Felder aus.“
   - `oeffentlich-unfertig`: „Ein öffentliches Quiz muss spielbar bleiben. Fülle alle Felder aus oder stelle es zuerst auf privat.“
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run src/quizSammlung.test.ts src/raumEroeffnen.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: Funktionen und Meldungen schreiben.**
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add client requests for public quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run src/quizSammlung.test.ts src/raumEroeffnen.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: Funktionen und Meldungen schreiben.**
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add client requests for public quizzes`.
 
 ### Aufgabe 8: Ansichten
 
@@ -213,25 +215,25 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 
 **Schnittstellen:** Nutzt Aufgabe 7. Liefert den Pfad `/sammlung` (ohne Konto erreichbar, in `KONTO_PFADE`).
 
-- [ ] **Schritt 1: Ansichten nach dem Mock bauen:** „Spielen“ überall über `raumMitQuizEroeffnen`, auch „Spielraum eröffnen“ im Editor eines gespeicherten Quiz (erst speichern, dann über die ID). Kopieren und Vorlage öffnen danach die Kopie im Editor. Bei `quiz-unbekannt` in der Sammlung: Meldung zeigen und die erste Seite neu laden (Prüf-Schwerpunkt 2).
-- [ ] **Schritt 2: Im Browser durchspielen** (`npm run dev`), vor allem Prüf-Schwerpunkt 2 mit zwei Browserfenstern.
-- [ ] **Schritt 3: `npm run check`, Commit** `Add views for the public collection`.
+- [x] **Schritt 1: Ansichten nach dem Mock bauen:** „Spielen“ überall über `raumMitQuizEroeffnen`, auch „Spielraum eröffnen“ im Editor eines gespeicherten Quiz (erst speichern, dann über die ID). Kopieren und Vorlage öffnen danach die Kopie im Editor. Bei `quiz-unbekannt` in der Sammlung: Meldung zeigen und die erste Seite neu laden (Prüf-Schwerpunkt 2).
+- [x] **Schritt 2: Im Browser durchspielen** (`npm run dev`), vor allem Prüf-Schwerpunkt 2 mit zwei Browserfenstern.
+- [x] **Schritt 3: `npm run check`, Commit** `Add views for the public collection`.
 
 ### Aufgabe 9: Datenschutz, Betrieb und Browser-Durchlauf
 
 **Dateien:** Ändern `src/ansichten/Datenschutz.svelte`, `src/ansichten/Konto.svelte`, `docs/Betrieb.md`, `browser/durchlauf.spec.ts`
 
-- [ ] **Schritt 1: Texte ergänzen:** Datenschutz: Öffentliche Quizze sieht jeder ohne Ersteller, Kopien anderer bleiben beim Löschen des Quiz oder Kontos bestehen. Konto löschen: Hinweis, dass Kopien anderer bleiben. `docs/Betrieb.md`: Abfrage, die alle öffentlichen Quizze mit Titel und Besitzer zeigt, und dass `npm run quiz-loeschen` auch für öffentliche gilt.
-- [ ] **Schritt 2: Durchlauf erweitern:** veröffentlichen, in der Sammlung sehen (zweiter Browser-Kontext ohne Konto), dort spielen, mit zweitem Konto kopieren, Original privat stellen → Kopieren meldet „gibt es nicht mehr“, Beispiel-Quiz als Vorlage. `npm run test:browser`, erwartet alle PASS.
-- [ ] **Schritt 3: `npm run check`, Commit** `Document public quizzes and extend browser run`.
+- [x] **Schritt 1: Texte ergänzen:** Datenschutz: Öffentliche Quizze sieht jeder ohne Ersteller, Kopien anderer bleiben beim Löschen des Quiz oder Kontos bestehen. Konto löschen: Hinweis, dass Kopien anderer bleiben. `docs/Betrieb.md`: Abfrage, die alle öffentlichen Quizze mit Titel und Besitzer zeigt, und dass `npm run quiz-loeschen` auch für öffentliche gilt.
+- [x] **Schritt 2: Durchlauf erweitern:** veröffentlichen, in der Sammlung sehen (zweiter Browser-Kontext ohne Konto), dort spielen, mit zweitem Konto kopieren, Original privat stellen → Kopieren meldet „gibt es nicht mehr“, Beispiel-Quiz als Vorlage. `npm run test:browser`, erwartet alle PASS.
+- [x] **Schritt 3: `npm run check`, Commit** `Document public quizzes and extend browser run`.
 
 ### Aufgabe 10: Doku und Prüfungen
 
 **Dateien:** Neu `docs/adr/0008-spielraum-ueber-quiz-id.md`. Ändern `CLAUDE.md` (Struktur: `worker/sammlung.ts`, `src/ansichten/Sammlung.svelte`), `docs/tools/Cloudflare D1.md` (`ALTER TABLE`, Teilindex, Blättern mit Zeiger), `docs/Glossar.md` bei neuen Begriffen
 
-- [ ] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
-- [ ] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
-- [ ] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`.
+- [x] **Schritt 1: ADR 0008 schreiben** (Kontext: Review-Fund 9, öffentliche Quizze; Entscheidung: Spielen über die ID; Alternativen: Inhalt schicken, gemischt; Konsequenzen) **und Doku ergänzen,** Commit `Document public quizzes`.
+- [x] **Schritt 2: `/code-review` und `/security-review`:** Funde mit dem Entwickler durchgehen.
+- [x] **Schritt 3: `npm run check` und Agent `plan-pruefer`:** erwartet `STATUS: ERFÜLLT`. Ergebnis: 4 Lücken in Tests und Doku, der Code war vollständig. Geschlossen: Test „alter Inhalt bleibt“, Test für URL-Kodierung des Zeigers und für `oeffentlich-unfertig` beim Speichern, Browser-Durchlauf prüft „Kopieren“ nach dem Privatstellen, ADR 0008 und Schnittstelle nennen 401.
 - [ ] **Schritt 4: PR erstellen,** nach grüner CI und Freigabe mergen.
 
 ### Aufgabe 11: Veröffentlichen (nach Freigabe des Entwicklers)
@@ -254,3 +256,16 @@ Ab hier Branch `feature/oeffentliche-quizze`.
 8. ADR 0007 zu Playwright. Die ADR „Spielraum über die Quiz-ID“ rückt auf 0008.
 
 Nicht behoben: 7 (gemeinsamer `wrangler`-Aufruf mit `scripts/datenbank.ts`, lohnt den Umbau nicht). 9 (Trace bei seriellen Tests) geprüft: Die `trace.zip` entsteht.
+
+**Aufgaben 2–10, `/security-review` am 2026-11-07:** keine Funde. Geprüft: SQL-Injection, fremde Quizze umschalten, kopieren und spielen, Daten in `/api/sammlung`, CSRF über `Origin`, XSS.
+
+**Aufgaben 2–10, `/code-review` am 2026-11-07:** 8 Funde. Behoben nach Entscheidung des Entwicklers:
+
+1. Abgelaufene Anmeldung beim Spielen eines privaten Quiz meldete „gibt es nicht mehr“: Der Server antwortet ohne Sitzung 401 `nicht-angemeldet`, die Oberfläche führt zum Anmelden. Die Sammlung behandelt 401 wie 404, denn ein Gast bekommt für ein inzwischen privates Quiz ebenfalls 401.
+2. `/api/sammlung` las den ganzen Inhalt von 21 Quizzen: Titel und Kategorien liest D1 jetzt mit `json_extract` und `json_each`.
+3. Die Sammlung setzt eine alte Fehlermeldung bei „Noch einmal versuchen“ und „Mehr laden“ zurück.
+4. Die Prüfung des `Origin` steht einmal in `vonEigenerSeite` (`worker/anfrage.ts`) statt viermal.
+5. Beim abgelehnten Speichern springt der Editor zur ersten Kategorie mit leerem Feld (`zurErstenLuecke`).
+8. Der Zeiger der Sammlung nutzt `QUIZ_ID_MUSTER`.
+
+Nicht behoben: 6 (`RETURNING` beim Umschalten, kleiner Gewinn), 7 (doppelter Knopf „Beispiel-Quiz als Vorlage“ in der leeren Liste, so im freigegebenen Mock).

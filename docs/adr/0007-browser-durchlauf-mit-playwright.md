@@ -38,6 +38,6 @@ Editor erneut. Ein wiederholbarer Durchlauf im Repo soll zeigen, dass die bisher
 
 - Ein Fehler in der Oberfläche fällt nur auf, wenn jemand `npm run test:browser` startet. Der Plan jedes Schritts nennt das
   deshalb als eigenen Schritt.
-- Jeder Lauf eröffnet drei Spielräume und zählt gegen die lokale Grenze von 30 pro Stunde (siehe
+- Jeder Lauf eröffnet fünf Spielräume und zählt gegen die lokale Grenze von 30 pro Stunde (siehe
   [[projects/quiz-poker/docs/tools/Playwright|Playwright]], „Fehler“).
 - Einzelheiten zu Einrichtung und Befehlen: [[projects/quiz-poker/docs/tools/Playwright|Playwright]].

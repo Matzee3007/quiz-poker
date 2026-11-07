@@ -39,6 +39,15 @@ Die IDs der Quizze eines Kontos zeigt diese Abfrage:
 npx wrangler d1 execute quiz-poker --remote --command "SELECT id, json_extract(inhalt, '$.titel') AS titel FROM quiz WHERE besitzer = (SELECT id FROM \"user\" WHERE email = 'freund@beispiel.de')"
 ```
 
+Alle öffentlichen Quizze mit Titel und Besitzer, die neuesten zuerst:
+
+```bash
+npx wrangler d1 execute quiz-poker --remote --command "SELECT quiz.id, json_extract(inhalt, '$.titel') AS titel, \"user\".email FROM quiz JOIN \"user\" ON \"user\".id = quiz.besitzer WHERE oeffentlich_seit IS NOT NULL ORDER BY oeffentlich_seit DESC"
+```
+
+`npm run quiz-loeschen` gilt auch für öffentliche Quizze: Sie verschwinden sofort aus der Sammlung. Kopien, die andere schon
+übernommen haben, bleiben, sie haben eine eigene ID und gehören deren Konto.
+
 Gelöschte Quizze lassen sich nicht wiederherstellen. Laufende Spielräume spielen mit ihrer Kopie weiter.
 
 ## Vertippte Optionen

@@ -11,6 +11,7 @@
   import Quizze from "./ansichten/Quizze.svelte";
   import Registrieren from "./ansichten/Registrieren.svelte";
   import RueckkehrHinweise from "./ansichten/RueckkehrHinweise.svelte";
+  import Sammlung from "./ansichten/Sammlung.svelte";
   import SpielerRunde from "./ansichten/SpielerRunde.svelte";
   import Start from "./ansichten/Start.svelte";
   import Warten from "./ansichten/Warten.svelte";
@@ -40,6 +41,7 @@
     "/passwort-neu",
     "/konto",
     "/quizze",
+    "/sammlung",
     "/datenschutz",
   ];
 
@@ -55,7 +57,11 @@
   let kontoPfad = $state(kontoPfadAusAdresse());
   let quizId = $state(quizIdAusPfad());
   // Das gerade geladene Quiz aus dem Konto, null solange es lädt oder fehlt.
-  let gespeichertesQuiz = $state<{ id: string; quiz: Quiz } | null>(null);
+  let gespeichertesQuiz = $state<{
+    id: string;
+    quiz: Quiz;
+    oeffentlich: boolean;
+  } | null>(null);
   let quizFehler = $state<string | null>(null);
   let editorUngespeichert = $state(false);
   // undefined: Der Server hat noch nicht oder mit einem Fehler geantwortet.
@@ -102,7 +108,7 @@
         return;
       }
       if (ergebnis.ok) {
-        gespeichertesQuiz = { id, quiz: ergebnis.wert };
+        gespeichertesQuiz = { id, ...ergebnis.wert };
       } else if (ergebnis.code === "sitzung-abgelaufen") {
         sitzungAbgelaufen();
       } else {
@@ -261,6 +267,9 @@
   {#if kontoPfad}
     <div class="rest">
       <button class="text" onclick={zumStart}>Zum Start</button>
+      {#if kontoPfad === "/sammlung"}
+        <strong>Öffentliche Quizze</strong>
+      {/if}
       {#if adresse && kontoPfad === "/quizze"}
         <strong>Meine Quizze</strong>
       {:else if adresse}
@@ -331,6 +340,13 @@
   />
 {:else if kontoPfad === "/datenschutz"}
   <Datenschutz />
+{:else if kontoPfad === "/sammlung"}
+  <Sammlung
+    angemeldet={Boolean(adresse)}
+    onEintritt={eintreten}
+    onBearbeiten={(id) => zu(`/quiz/${id}`)}
+    onSitzungAbgelaufen={sitzungAbgelaufen}
+  />
 {:else if kontoPfad === "/quizze" && adresse}
   <Quizze
     onBearbeiten={(id) => zu(`/quiz/${id}`)}
@@ -387,6 +403,7 @@
     {raumcode}
     angemeldet={Boolean(adresse)}
     onMeineQuizze={() => zu("/quizze")}
+    onSammlung={() => zu("/sammlung")}
     meldung={startMeldung}
     onEintritt={eintreten}
     onEditor={zumEditor}

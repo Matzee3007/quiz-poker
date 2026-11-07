@@ -6,8 +6,8 @@
     entwurfSpeichern,
   } from "../entwurfSpeicher";
   import { meldungFuer } from "../meldungen";
-  import { quizSpeichern } from "../quizSammlung";
-  import { raumEroeffnen } from "../raumEroeffnen";
+  import { quizSpeichern, sichtbarkeitSetzen } from "../quizSammlung";
+  import { raumEroeffnen, raumMitQuizEroeffnen } from "../raumEroeffnen";
   import type { Kategorie, Quiz } from "../regeln/partie";
   import { bearbeitbar, verschieben } from "../regeln/quizEntwurf";
   import { QUIZ_GRENZEN, quizPruefen } from "../regeln/quizpruefung";
@@ -15,7 +15,7 @@
 
   interface Props {
     /** null: Einmal-Quiz, der Entwurf liegt nur im Browser. Sonst ein Quiz aus dem Konto. */
-    gespeichert: { id: string; quiz: Quiz } | null;
+    gespeichert: { id: string; quiz: Quiz; oeffentlich: boolean } | null;
     onEintritt: (raumcode: string, token: string, rueckkehr: boolean) => void;
     onZurueck: () => void;
     /** Meldet, ob es ungespeicherte Änderungen gibt, damit die Kopfzeile vor dem Verlassen fragen kann. */
@@ -30,6 +30,7 @@
     anfang ? bearbeitbar($state.snapshot(anfang.quiz)) : entwurfLesen(),
   );
   let gespeicherterStand = $state(anfang ? JSON.stringify(entwurf) : "");
+  let oeffentlich = $state(anfang?.oeffentlich ?? false);
   let speichertGerade = $state(false);
   let speichernFehlgeschlagen = $state(false);
   let abgelaufen = $state(false);
@@ -92,8 +93,39 @@
       abgelaufen = true;
     } else {
       fehler = meldungFuer(ergebnis.code);
+      // Ein öffentliches Quiz muss spielbar bleiben: Die leeren Felder zeigen, was fehlt.
+      if (ergebnis.code === "oeffentlich-unfertig") {
+        zurErstenLuecke();
+      }
     }
     return false;
+  }
+
+  /** Markiert leere Felder und wählt die erste Kategorie, in der eines fehlt. */
+  function zurErstenLuecke() {
+    leereZeigen = true;
+    const erste = entwurf.kategorien.findIndex((k) => leereFelder(k) > 0);
+    if (erste >= 0) {
+      gewaehlt = erste;
+    }
+  }
+
+  async function privatStellen() {
+    if (!anfang) {
+      return;
+    }
+    fehler = null;
+    abgelaufen = false;
+    speichertGerade = true;
+    const ergebnis = await sichtbarkeitSetzen(anfang.id, false);
+    speichertGerade = false;
+    if (ergebnis.ok) {
+      oeffentlich = false;
+    } else if (ergebnis.code === "sitzung-abgelaufen") {
+      abgelaufen = true;
+    } else {
+      fehler = meldungFuer(ergebnis.code);
+    }
   }
 
   /** Neue leere Felder sollen nicht sofort rot sein. */
@@ -140,11 +172,7 @@
     const pruefung = quizPruefen($state.snapshot(entwurf));
     if (!pruefung.ok) {
       if (pruefung.code === "leeres-feld") {
-        leereZeigen = true;
-        const erste = entwurf.kategorien.findIndex((k) => leereFelder(k) > 0);
-        if (erste >= 0) {
-          gewaehlt = erste;
-        }
+        zurErstenLuecke();
       } else {
         fehler = meldungFuer(pruefung.code);
       }
@@ -152,13 +180,18 @@
     }
 
     eroeffnetGerade = true;
-    const ergebnis = await raumEroeffnen(pruefung.quiz);
+    // Ein gespeichertes Quiz liest der Server selbst, das Einmal-Quiz geht mit.
+    const ergebnis = anfang
+      ? await raumMitQuizEroeffnen(anfang.id)
+      : await raumEroeffnen(pruefung.quiz);
     eroeffnetGerade = false;
     if (ergebnis.ok) {
       if (!anfang) {
         entwurfLoeschen();
       }
       onEintritt(ergebnis.raumcode, ergebnis.token, false);
+    } else if (ergebnis.code === "sitzung-abgelaufen") {
+      abgelaufen = true;
     } else {
       fehler = meldungFuer(ergebnis.code);
     }
@@ -171,9 +204,14 @@
 <fieldset class="editor-sperre" disabled={eroeffnetGerade || speichertGerade}>
   <div class="editor-raster">
     <aside class="editor-leiste">
-      <h1 class="editor-titel">
-        {anfang ? "Quiz bearbeiten" : "Einmal-Quiz erstellen"}
-      </h1>
+      <div class="reihe zwischen">
+        <h1 class="editor-titel">
+          {anfang ? "Quiz bearbeiten" : "Einmal-Quiz erstellen"}
+        </h1>
+        {#if oeffentlich}
+          <span class="sicht oeffentlich">öffentlich</span>
+        {/if}
+      </div>
       <EditorFeld
         id="quiz-titel"
         label="Titel des Quiz"
@@ -232,17 +270,28 @@
           onclick={kategorieHinzufuegen}>Kategorie hinzufügen</button
         >
       </div>
-      <p class="notiz">
-        {#if anfang}
-          Dieses Quiz liegt in deinem Konto, nur du siehst es. Ein Spielraum
-          spielt eine Kopie: Was du danach änderst, gilt erst im nächsten
-          Spielraum.
-        {:else}
-          Dein Entwurf liegt nur in diesem Browser und wird gelöscht, sobald du
-          den Spielraum eröffnest. Das Einmal-Quiz besteht nur so lange wie sein
-          Spielraum.
-        {/if}
-      </p>
+      {#if anfang && oeffentlich}
+        <div class="notiz">
+          Dieses Quiz ist öffentlich: Jeder sieht es in der Sammlung, ohne
+          deinen Namen. Es muss spielbar bleiben, gespeicherte Änderungen gelten
+          dort sofort.<br />
+          <button class="text" onclick={privatStellen}
+            >Auf privat stellen</button
+          >
+        </div>
+      {:else}
+        <p class="notiz">
+          {#if anfang}
+            Dieses Quiz liegt in deinem Konto, nur du siehst es. Ein Spielraum
+            spielt eine Kopie: Was du danach änderst, gilt erst im nächsten
+            Spielraum.
+          {:else}
+            Dein Entwurf liegt nur in diesem Browser und wird gelöscht, sobald
+            du den Spielraum eröffnest. Das Einmal-Quiz besteht nur so lange wie
+            sein Spielraum.
+          {/if}
+        </p>
+      {/if}
     </aside>
 
     <main class="editor-haupt">
