@@ -5,26 +5,37 @@ export type QuizEintrag = {
   id: string;
   titel: string;
   spielbar: boolean;
+  oeffentlich: boolean;
   geaendertAm: number;
+};
+export type SammlungEintrag = {
+  id: string;
+  titel: string;
+  kategorien: string[];
+  veroeffentlichtAm: number;
+};
+export type SammlungSeite = {
+  quizze: SammlungEintrag[];
+  weiter: string | null;
 };
 export type Ergebnis<T> = { ok: true; wert: T } | { ok: false; code: string };
 
-/** Ruft /api/quizze auf. lesen macht aus der Antwort den Wert, nur bei Erfolg. */
+/** Ruft den Server auf. lesen macht aus der Antwort den Wert, nur bei Erfolg. daten geht als JSON mit. */
 async function anfrage<T>(
   pfad: string,
   methode: string,
   lesen: (antwort: Response) => Promise<T>,
-  quiz?: Quiz,
+  daten?: unknown,
 ): Promise<Ergebnis<T>> {
   try {
     const antwort = await fetch(
-      `/api/quizze${pfad}`,
-      quiz === undefined
+      pfad,
+      daten === undefined
         ? { method: methode }
         : {
             method: methode,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quiz }),
+            body: JSON.stringify(daten),
           },
     );
     if (antwort.ok) {
@@ -41,11 +52,11 @@ async function anfrage<T>(
 }
 
 export function quizzeLaden(): Promise<Ergebnis<QuizEintrag[]>> {
-  return anfrage("", "GET", (antwort) => antwort.json());
+  return anfrage("/api/quizze", "GET", (antwort) => antwort.json());
 }
 
 export function quizLaden(id: string): Promise<Ergebnis<Quiz>> {
-  return anfrage(`/${id}`, "GET", async (antwort) => {
+  return anfrage(`/api/quizze/${id}`, "GET", async (antwort) => {
     const daten = (await antwort.json()) as { quiz: Quiz };
     return daten.quiz;
   });
@@ -53,10 +64,10 @@ export function quizLaden(id: string): Promise<Ergebnis<Quiz>> {
 
 export function quizAnlegen(quiz: Quiz): Promise<Ergebnis<string>> {
   return anfrage(
-    "",
+    "/api/quizze",
     "POST",
     async (antwort) => ((await antwort.json()) as { id: string }).id,
-    quiz,
+    { quiz },
   );
 }
 
@@ -65,16 +76,51 @@ export function quizSpeichern(
   quiz: Quiz,
 ): Promise<Ergebnis<number>> {
   return anfrage(
-    `/${id}`,
+    `/api/quizze/${id}`,
     "PUT",
     async (antwort) =>
       ((await antwort.json()) as { geaendertAm: number }).geaendertAm,
-    quiz,
+    { quiz },
   );
 }
 
 export function quizLoeschen(id: string): Promise<Ergebnis<null>> {
-  return anfrage(`/${id}`, "DELETE", () => Promise.resolve(null));
+  return anfrage(`/api/quizze/${id}`, "DELETE", () => Promise.resolve(null));
+}
+
+/** Eine Seite der Sammlung öffentlicher Quizze, weiter ist der Zeiger der vorigen Seite. */
+export function sammlungLaden(
+  weiter: string | null,
+): Promise<Ergebnis<SammlungSeite>> {
+  const pfad =
+    weiter === null
+      ? "/api/sammlung"
+      : `/api/sammlung?weiter=${encodeURIComponent(weiter)}`;
+  return anfrage(pfad, "GET", (antwort) => antwort.json());
+}
+
+/** Übernimmt ein öffentliches Quiz als eigene private Kopie, liefert deren ID. */
+export function quizKopieren(id: string): Promise<Ergebnis<string>> {
+  return anfrage(
+    `/api/quizze/${id}/kopie`,
+    "POST",
+    async (antwort) => ((await antwort.json()) as { id: string }).id,
+  );
+}
+
+/** Liefert den Zeitpunkt des Veröffentlichens, null bei privat. */
+export function sichtbarkeitSetzen(
+  id: string,
+  oeffentlich: boolean,
+): Promise<Ergebnis<number | null>> {
+  return anfrage(
+    `/api/quizze/${id}/sichtbarkeit`,
+    "PUT",
+    async (antwort) =>
+      ((await antwort.json()) as { oeffentlichSeit: number | null })
+        .oeffentlichSeit,
+    { oeffentlich },
+  );
 }
 
 /** „heute, 21:14“, „gestern, 22:05“, Älteres als „2. Nov. 2026“. */

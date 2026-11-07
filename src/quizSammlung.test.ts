@@ -5,8 +5,11 @@ import {
   quizAnlegen,
   quizLaden,
   quizLoeschen,
+  quizKopieren,
   quizSpeichern,
   quizzeLaden,
+  sammlungLaden,
+  sichtbarkeitSetzen,
 } from "./quizSammlung";
 import { BEISPIEL_QUIZ } from "./regeln/beispielQuiz";
 
@@ -137,6 +140,77 @@ describe("geaendertText", () => {
   it("nennt Älteres mit Datum", () => {
     expect(geaendertText(new Date(2026, 10, 2, 12, 0).getTime(), jetzt)).toBe(
       "2. Nov. 2026",
+    );
+  });
+});
+
+describe("Anfragen für öffentliche Quizze", () => {
+  it("lädt die erste Seite der Sammlung", async () => {
+    const seite = {
+      quizze: [{ id: ID, titel: "T", kategorien: ["K"], veroeffentlichtAm: 5 }],
+      weiter: `5_${ID}`,
+    };
+    const abruf = antwortet(200, seite);
+
+    expect(await sammlungLaden(null)).toEqual({ ok: true, wert: seite });
+    expect(abruf).toHaveBeenCalledWith("/api/sammlung", { method: "GET" });
+  });
+
+  it("lädt die nächste Seite mit dem Zeiger", async () => {
+    const abruf = antwortet(200, { quizze: [], weiter: null });
+
+    await sammlungLaden(`5_${ID}`);
+
+    expect(abruf).toHaveBeenCalledWith(`/api/sammlung?weiter=5_${ID}`, {
+      method: "GET",
+    });
+  });
+
+  it("kopiert ein Quiz und liefert die neue ID", async () => {
+    const neu = "3f2b0c1e-0000-4000-8000-000000000001";
+    const abruf = antwortet(201, { id: neu });
+
+    expect(await quizKopieren(ID)).toEqual({ ok: true, wert: neu });
+    expect(abruf).toHaveBeenCalledWith(`/api/quizze/${ID}/kopie`, {
+      method: "POST",
+    });
+  });
+
+  it.each([
+    [404, "quiz-unbekannt"],
+    [409, "zu-viele-quizze"],
+  ])("meldet beim Kopieren %i als %s", async (status, code) => {
+    antwortet(status, { code });
+
+    expect(await quizKopieren(ID)).toEqual({ ok: false, code });
+  });
+
+  it("stellt ein Quiz öffentlich und liefert den Zeitpunkt", async () => {
+    const abruf = antwortet(200, { oeffentlichSeit: 7 });
+
+    expect(await sichtbarkeitSetzen(ID, true)).toEqual({ ok: true, wert: 7 });
+    expect(abruf).toHaveBeenCalledWith(`/api/quizze/${ID}/sichtbarkeit`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oeffentlich: true }),
+    });
+  });
+
+  it("meldet ein unfertiges Quiz beim Veröffentlichen", async () => {
+    antwortet(422, { code: "quiz-unfertig" });
+
+    expect(await sichtbarkeitSetzen(ID, true)).toEqual({
+      ok: false,
+      code: "quiz-unfertig",
+    });
+  });
+
+  it("hat Meldungen für unfertige öffentliche Quizze", () => {
+    expect(meldungFuer("quiz-unfertig")).toBe(
+      "Nur ein fertiges Quiz kann öffentlich werden. Bitte fülle zuerst alle Felder aus.",
+    );
+    expect(meldungFuer("oeffentlich-unfertig")).toBe(
+      "Ein öffentliches Quiz muss spielbar bleiben. Fülle alle Felder aus oder stelle es zuerst auf privat.",
     );
   });
 });

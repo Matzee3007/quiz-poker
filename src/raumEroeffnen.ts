@@ -10,11 +10,20 @@ export async function fehlercodeLesen(antwort: Response): Promise<string> {
 }
 
 /** Ohne Quiz eröffnet der Server den Spielraum mit dem Beispiel-Quiz. */
-export async function raumEroeffnen(quiz?: Quiz): Promise<Eroeffnung> {
+export function raumEroeffnen(quiz?: Quiz): Promise<Eroeffnung> {
+  return eroeffnen(quiz ? JSON.stringify({ quiz }) : undefined);
+}
+
+/** Eröffnet den Spielraum mit einem gespeicherten Quiz, der Server liest es selbst. */
+export function raumMitQuizEroeffnen(quizId: string): Promise<Eroeffnung> {
+  return eroeffnen(JSON.stringify({ quizId }));
+}
+
+async function eroeffnen(inhalt: string | undefined): Promise<Eroeffnung> {
   try {
     const antwort = await fetch("/api/raeume", {
       method: "POST",
-      body: quiz ? JSON.stringify({ quiz }) : undefined,
+      body: inhalt,
     });
     if (!antwort.ok) {
       return { ok: false, code: await fehlercodeLesen(antwort) };

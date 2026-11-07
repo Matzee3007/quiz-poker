@@ -199,13 +199,13 @@ Ab hier Branch `feature/oeffentliche-quizze`.
   raumMitQuizEroeffnen(quizId: string): Promise<Eroeffnung>                    // in src/raumEroeffnen.ts
   ```
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben (nachgebautes `fetch`):** richtige Pfade und Methoden, `weiter` landet URL-kodiert in der Adresse, 404 → `quiz-unbekannt`, 409 → `zu-viele-quizze`, 422 → `quiz-unfertig` bzw. `oeffentlich-unfertig`, Netzfehler → `keine-verbindung`. Neue Meldungen:
+- [x] **Schritt 1: Fehlschlagende Tests schreiben (nachgebautes `fetch`):** richtige Pfade und Methoden, `weiter` landet URL-kodiert in der Adresse, 404 → `quiz-unbekannt`, 409 → `zu-viele-quizze`, 422 → `quiz-unfertig` bzw. `oeffentlich-unfertig`, Netzfehler → `keine-verbindung`. Neue Meldungen:
   - `quiz-unfertig`: „Nur ein fertiges Quiz kann öffentlich werden. Bitte fülle zuerst alle Felder aus.“
   - `oeffentlich-unfertig`: „Ein öffentliches Quiz muss spielbar bleiben. Fülle alle Felder aus oder stelle es zuerst auf privat.“
-- [ ] **Schritt 2: Tests laufen lassen:** `npx vitest run src/quizSammlung.test.ts src/raumEroeffnen.test.ts`, erwartet FAIL.
-- [ ] **Schritt 3: Funktionen und Meldungen schreiben.**
-- [ ] **Schritt 4: Tests laufen lassen:** erwartet PASS.
-- [ ] **Schritt 5: `npm run check`, Commit** `Add client requests for public quizzes`.
+- [x] **Schritt 2: Tests laufen lassen:** `npx vitest run src/quizSammlung.test.ts src/raumEroeffnen.test.ts`, erwartet FAIL.
+- [x] **Schritt 3: Funktionen und Meldungen schreiben.**
+- [x] **Schritt 4: Tests laufen lassen:** erwartet PASS.
+- [x] **Schritt 5: `npm run check`, Commit** `Add client requests for public quizzes`.
 
 ### Aufgabe 8: Ansichten
 

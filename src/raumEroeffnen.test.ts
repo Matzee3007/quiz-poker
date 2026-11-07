@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { raumEroeffnen } from "./raumEroeffnen";
+import { raumEroeffnen, raumMitQuizEroeffnen } from "./raumEroeffnen";
 
 const quiz = {
   titel: "T",
@@ -74,5 +74,52 @@ describe("raumEroeffnen", () => {
     );
 
     expect(await raumEroeffnen(quiz)).toEqual({ ok: false, code: "" });
+  });
+});
+
+describe("raumMitQuizEroeffnen", () => {
+  const ID = "3f2b0c1e-0000-4000-8000-000000000000";
+
+  it("schickt nur die ID des gespeicherten Quiz", async () => {
+    const abruf = vi.fn(() =>
+      Promise.resolve(
+        Response.json({ raumcode: "ABCD", token: "t" }, { status: 201 }),
+      ),
+    );
+    vi.stubGlobal("fetch", abruf);
+
+    expect(await raumMitQuizEroeffnen(ID)).toEqual({
+      ok: true,
+      raumcode: "ABCD",
+      token: "t",
+    });
+    expect(abruf).toHaveBeenCalledWith("/api/raeume", {
+      method: "POST",
+      body: JSON.stringify({ quizId: ID }),
+    });
+  });
+
+  it("meldet ein verschwundenes Quiz und fehlende Verbindung", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          Response.json({ code: "quiz-unbekannt" }, { status: 404 }),
+        ),
+      ),
+    );
+    expect(await raumMitQuizEroeffnen(ID)).toEqual({
+      ok: false,
+      code: "quiz-unbekannt",
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new TypeError("offline"))),
+    );
+    expect(await raumMitQuizEroeffnen(ID)).toEqual({
+      ok: false,
+      code: "keine-verbindung",
+    });
   });
 });

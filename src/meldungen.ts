@@ -48,6 +48,10 @@ const MELDUNGEN: Record<string, string> = {
     "Das ging nicht über diese Seite. Bitte lade sie neu und versuche es noch einmal.",
   "nicht-angemeldet": "Dafür musst du angemeldet sein.",
   "quiz-unbekannt": "Dieses Quiz gibt es nicht mehr.",
+  "quiz-unfertig":
+    "Nur ein fertiges Quiz kann öffentlich werden. Bitte fülle zuerst alle Felder aus.",
+  "oeffentlich-unfertig":
+    "Ein öffentliches Quiz muss spielbar bleiben. Fülle alle Felder aus oder stelle es zuerst auf privat.",
   "zu-viele-quizze": `Du hast schon ${QUIZ_GRENZEN.quizzeJeKonto} Quizze gespeichert. Lösche eines, um ein neues anzulegen.`,
 };
 
