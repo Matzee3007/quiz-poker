@@ -48,6 +48,18 @@ Fehler 1102 auf, zuerst `session.cookieCache` von Better Auth prüfen.
 
 Restpunkte als Vorschläge:
 
+- **Aus [[Engineering for Vibe Coders - Auswertung]] (2026-11-08), im Code geprüft:**
+  - **IP-Adressen und D1 Time Travel:** Die Datenschutzseite (`src/ansichten/Datenschutz.svelte`) sagt „nach etwa
+    einem Tag automatisch gelöscht“. D1 hält frühere Stände aber per Time Travel wiederherstellbar, im Projekt steht
+    dazu nichts. Frist im kostenlosen Tarif in der Cloudflare-Doku nachlesen, dann den Text anpassen oder als ADR
+    festhalten (Artikel 111).
+  - **Stiller Ausfall des Lösch-Crons:** `worker/aufraeumen.ts` hält keinen letzten Lauf fest. Fällt der Cron aus,
+    bleiben IP-Adressen unbemerkt länger. Vorschlag: Zeitstempel des letzten Laufs speichern und bei Verzug warnen
+    (Artikel 35, 101).
+  - Ungeprüft: Was sehen Spieler, wenn mitten im Spiel eine Grenze des kostenlosen Tarifs erreicht ist (Artikel 83,
+    102)? Ein Wiederherstellen aus D1 einmal proben (Artikel 24).
+  - Schon in Ordnung: Doppelte Einsätze zählen einmal, keine IP-Adressen in Logs, Anmeldeversuche begrenzt.
+
 - Prüfen, ob der Cron-Trigger gelaufen ist (`npx wrangler tail` oder Dashboard, Zeitplan `17 3 * * *`).
 - `worker/spielraum.ts:234` nimmt den WebSocket vor der Token-Prüfung an (Audit, `needs_validation`).
 - Test, dass ein Spieler vor der Auflösung keine Lösung über den WebSocket bekommt: Eine Anforderung, die man nicht
