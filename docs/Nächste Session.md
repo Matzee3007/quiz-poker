@@ -50,9 +50,11 @@ Restpunkte als Vorschläge:
 
 - **Aus [[Engineering for Vibe Coders - Auswertung]] (2026-11-08), im Code geprüft:**
   - **IP-Adressen und D1 Time Travel:** Die Datenschutzseite (`src/ansichten/Datenschutz.svelte`) sagt „nach etwa
-    einem Tag automatisch gelöscht“. D1 hält frühere Stände aber per Time Travel wiederherstellbar, im Projekt steht
-    dazu nichts. Frist im kostenlosen Tarif in der Cloudflare-Doku nachlesen, dann den Text anpassen oder als ADR
-    festhalten (Artikel 111).
+    einem Tag automatisch gelöscht“. Laut Cloudflare-Doku (Stand 2026-11-06, geprüft 2026-11-08) ist Time Travel
+    „always on“, kostenlos und hält im kostenlosen Tarif 7 Tage (bezahlt 30) frühere Stände, abschalten oder verkürzen
+    ist dort nicht beschrieben. Gelöschte IP-Adressen sind also bis zu 7 Tage per Zurücksetzen der ganzen Datenbank
+    wiederherstellbar. Entscheiden: Text der Datenschutzseite ergänzen (z. B. „Sicherungen von Cloudflare halten sie
+    bis zu 7 Tage“) und als ADR festhalten (Artikel 111).
   - **Stiller Ausfall des Lösch-Crons:** `worker/aufraeumen.ts` hält keinen letzten Lauf fest. Fällt der Cron aus,
     bleiben IP-Adressen unbemerkt länger. Vorschlag: Zeitstempel des letzten Laufs speichern und bei Verzug warnen
     (Artikel 35, 101).
