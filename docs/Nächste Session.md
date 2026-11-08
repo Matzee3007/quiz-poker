@@ -50,6 +50,9 @@ Restpunkte als Vorschläge:
 
 - Prüfen, ob der Cron-Trigger gelaufen ist (`npx wrangler tail` oder Dashboard, Zeitplan `17 3 * * *`).
 - `worker/spielraum.ts:234` nimmt den WebSocket vor der Token-Prüfung an (Audit, `needs_validation`).
+- Test, dass ein Spieler vor der Auflösung keine Lösung über den WebSocket bekommt: Eine Anforderung, die man nicht
+  sieht, braucht einen Test aus Sicht des Spielers (aus [[Build with AI - Auswertung]], Artikel 13, 2026-11-08). Passt
+  zum Punkt davor.
 - Noch nicht geprüft aus dem Audit: Größe von Anfragen an Better Auth, Verlängerung der Raumlaufzeit durch wirkungslose
   Aktionen, Gesamtzahl gespeicherter Räume.
 - `anfrage-zu-gross` sagt „Das Quiz ist zu groß“, auch bei Konto-Anfragen.
