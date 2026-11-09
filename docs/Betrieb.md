@@ -50,6 +50,18 @@ npx wrangler d1 execute quiz-poker --remote --command "SELECT quiz.id, json_extr
 
 Gelöschte Quizze lassen sich nicht wiederherstellen. Laufende Spielräume spielen mit ihrer Kopie weiter.
 
+## Täglichen Lauf prüfen
+
+Der Worker löscht jeden Tag um 3:17 Uhr UTC alte IP-Adressen und abgelaufene Links. Ob das geklappt hat, prüft die GitHub
+Action `cron-pruefen.yml` jeden Morgen und schickt bei einem Fehler eine E-Mail. Von Hand:
+
+```bash
+CLOUDFLARE_ANALYTICS_TOKEN=$(cat ~/.cloudflare-analytics-token) CLOUDFLARE_ACCOUNT_ID=<id aus npx wrangler whoami> npm run cron-pruefen
+```
+
+Kommt die E-Mail, zuerst mit `npx wrangler deployments list` nachsehen, ob ein Deploy den Zeitplan verändert hat, und mit
+`npx wrangler tail` den nächsten Lauf beobachten. Hintergrund: [[projects/quiz-poker/docs/adr/0009-sicherungen-und-loeschfristen|ADR 0009]].
+
 ## Vertippte Optionen
 
 Alle Befehle brechen bei einer unbekannten Option ab, bevor sie etwas ausführen, zum Beispiel bei `--local` statt `--lokal`. Sonst liefen sie still gegen die echte Datenbank.

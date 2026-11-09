@@ -106,6 +106,7 @@ npm run deploy         # Zu Cloudflare hochladen (braucht Konto und wrangler log
 npm run einladung      # Einladungslink erzeugen, siehe docs/Betrieb.md
 npm run passwort-link -- <email>   # Link zum Zurücksetzen erzeugen, siehe docs/Betrieb.md
 npm run quiz-loeschen -- <id>      # Ein gespeichertes Quiz löschen, siehe docs/Betrieb.md
+npm run cron-pruefen               # Prüfen, ob der tägliche Lauf stattfand, siehe docs/Betrieb.md
 ```
 
 Vor jedem Commit: `npm run check` (Linter, Format, Typen, Tests und Build)

@@ -21,7 +21,8 @@
     "einladung": "node scripts/einladung.ts",
     "passwort-link": "node scripts/passwort-link.ts",
     "quiz-loeschen": "node scripts/quiz-loeschen.ts",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "cron-pruefen": "node scripts/cron-pruefen.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.67.0",
