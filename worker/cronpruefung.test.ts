@@ -3,15 +3,15 @@ import { cronAbfrage, cronLaufAuswerten } from "./cronpruefung";
 
 const JETZT = Date.parse("2026-11-09T05:00:00Z");
 
-function antwortMit(zeilen: { status: string; requests: number }[]) {
+/** Zeilen wie von der Schnittstelle: neuester Lauf zuerst. */
+function antwortMit(zeilen: { status: string; datetime: string }[]) {
   return {
     data: {
       viewer: {
         accounts: [
           {
-            workersInvocationsAdaptive: zeilen.map(({ status, requests }) => ({
-              sum: { requests },
-              dimensions: { status },
+            workersInvocationsAdaptive: zeilen.map(({ status, datetime }) => ({
+              dimensions: { status, datetime },
             })),
           },
         ],
@@ -22,7 +22,7 @@ function antwortMit(zeilen: { status: string; requests: number }[]) {
 }
 
 describe("Prüfung des täglichen Laufs", () => {
-  it("fragt die Cron-Aufrufe von quiz-poker der letzten 26 Stunden ab", () => {
+  it("fragt nur den neuesten Cron-Lauf von quiz-poker der letzten 24 Stunden ab", () => {
     const { query } = JSON.parse(cronAbfrage("konto-123", JETZT)) as {
       query: string;
     };
@@ -30,30 +30,46 @@ describe("Prüfung des täglichen Laufs", () => {
     expect(query).toContain('accountTag: "konto-123"');
     expect(query).toContain('scriptName: "quiz-poker"');
     expect(query).toContain('eventType: "cron"');
-    expect(query).toContain('datetime_geq: "2026-11-08T03:00:00.000Z"');
+    expect(query).toContain('datetime_geq: "2026-11-08T05:00:00.000Z"');
+    expect(query).toContain("orderBy: [datetime_DESC]");
+    expect(query).toContain("limit: 1");
   });
 
   it("ist zufrieden mit einem erfolgreichen Lauf", () => {
     expect(
-      cronLaufAuswerten(antwortMit([{ status: "success", requests: 1 }])),
+      cronLaufAuswerten(
+        antwortMit([{ status: "success", datetime: "2026-11-09T03:17:00Z" }]),
+      ),
     ).toEqual({ ok: true });
   });
 
   it("meldet, wenn kein Lauf stattfand", () => {
     expect(cronLaufAuswerten(antwortMit([]))).toEqual({
       ok: false,
-      grund: "Kein Lauf in den letzten 26 Stunden",
+      grund: "Kein Lauf in den letzten 24 Stunden",
     });
   });
 
-  it("meldet einen Lauf, der mit Fehler endete", () => {
+  it("wertet nur den neuesten Lauf aus", () => {
     expect(
       cronLaufAuswerten(
-        antwortMit([{ status: "scriptThrewException", requests: 1 }]),
+        antwortMit([
+          { status: "scriptThrewException", datetime: "2026-11-09T03:17:00Z" },
+          { status: "success", datetime: "2026-11-08T03:17:00Z" },
+        ]),
       ),
     ).toEqual({
       ok: false,
-      grund: "Lauf ohne Erfolg: scriptThrewException",
+      grund: "Lauf um 2026-11-09T03:17:00Z ohne Erfolg: scriptThrewException",
+    });
+  });
+
+  it("meldet ein unbekanntes Konto", () => {
+    expect(
+      cronLaufAuswerten({ data: { viewer: { accounts: [] } }, errors: null }),
+    ).toEqual({
+      ok: false,
+      grund: "Konto nicht gefunden, CLOUDFLARE_ACCOUNT_ID prüfen",
     });
   });
 

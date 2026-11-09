@@ -21,13 +21,14 @@
       Gespeichert werden deine E-Mail-Adresse als Login-Name und dein Passwort
       als Hash, also nicht im Klartext. Ein Cookie und ein Eintrag auf dem
       Server halten dich 30 Tage angemeldet. Wenn du dein Konto löschst, sind
-      diese Daten sofort entfernt.
+      diese Daten sofort aus der Datenbank entfernt (zu Sicherungen siehe
+      unten).
     </p>
     <p class="matt">
       Quizze, die du speicherst, liegen mit deinem Konto in der Datenbank, und
-      nur du siehst sie. Sie sind sofort entfernt, wenn du das Quiz oder dein
-      Konto löschst. Der Betreiber kann einzelne Quizze löschen, zum Beispiel
-      wenn ein Inhalt nicht auf diese Seite gehört.
+      nur du siehst sie. Sie sind sofort aus der Datenbank entfernt, wenn du das
+      Quiz oder dein Konto löschst. Der Betreiber kann einzelne Quizze löschen,
+      zum Beispiel wenn ein Inhalt nicht auf diese Seite gehört.
     </p>
     <p class="matt">
       Ein Quiz, das du veröffentlichst, sieht jeder unter „Öffentliche Quizze“,
@@ -42,7 +43,7 @@
     <h2>IP-Adressen</h2>
     <p class="matt">
       Beim Anmelden, Abmelden und Löschen eines Kontos wird deine IP-Adresse
-      gespeichert, um Versuche zu begrenzen. Sie wird nach etwa einem Tag
+      gespeichert, um Versuche zu begrenzen. Sie wird nach ein bis zwei Tagen
       automatisch gelöscht.
     </p>
   </section>

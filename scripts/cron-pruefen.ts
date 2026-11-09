@@ -1,4 +1,4 @@
-// Prüft, ob der tägliche Lauf in den letzten 26 Stunden erfolgreich war: npm run cron-pruefen
+// Prüft, ob der tägliche Lauf in den letzten 24 Stunden erfolgreich war: npm run cron-pruefen
 // Braucht CLOUDFLARE_ANALYTICS_TOKEN (Recht „Account Analytics: Read“) und CLOUDFLARE_ACCOUNT_ID.
 // Läuft täglich in .github/workflows/cron-pruefen.yml, schlägt fehl, wenn der Lauf fehlt.
 import {
@@ -29,6 +29,12 @@ const antwort = await fetch("https://api.cloudflare.com/client/v4/graphql", {
   },
   body: cronAbfrage(kontoId, Date.now()),
 });
+if (!antwort.ok) {
+  console.error(
+    `Analytics-Abfrage fehlgeschlagen: HTTP ${antwort.status} ${antwort.statusText}`,
+  );
+  process.exit(1);
+}
 const ergebnis = cronLaufAuswerten((await antwort.json()) as AnalyticsAntwort);
 
 if (!ergebnis.ok) {
@@ -37,4 +43,4 @@ if (!ergebnis.ok) {
   );
   process.exit(1);
 }
-console.log("Täglicher Lauf in den letzten 26 Stunden: erfolgreich.");
+console.log("Täglicher Lauf in den letzten 24 Stunden: erfolgreich.");

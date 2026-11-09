@@ -33,8 +33,8 @@ Dann blieben IP-Adressen unbemerkt länger gespeichert.
   Spielräume bis zu 30 Tage. Dazu kommt die Zusage, dass der Betreiber die Sicherungen nur nutzt, um einen Datenverlust zu
   beheben. Für die Spielräume nennen wir vorsichtig die 30 Tage, solange die Doku offen lässt, ob sie im kostenlosen Tarif gelten.
 - **Eine GitHub Action prüft den Lösch-Lauf täglich** (`.github/workflows/cron-pruefen.yml`, 5 Uhr UTC). Sie fragt die
-  Analytics von Cloudflare nach Aufrufen mit `eventType: "cron"` in den letzten 26 Stunden. Fehlt ein erfolgreicher Lauf,
-  schlägt der Workflow fehl, und GitHub schickt eine E-Mail. Die Logik steht getestet in `worker/cronpruefung.ts`, der
+  Analytics von Cloudflare nach dem neuesten Aufruf mit `eventType: "cron"` in den letzten 24 Stunden. Fehlt er oder war
+  er nicht erfolgreich, schlägt der Workflow fehl, und GitHub schickt eine E-Mail. Die Logik steht getestet in `worker/cronpruefung.ts`, der
   Befehl in `scripts/cron-pruefen.ts`.
 
 ## Alternativen
@@ -50,8 +50,10 @@ Dann blieben IP-Adressen unbemerkt länger gespeichert.
 
 - Die GitHub Action braucht zwei Secrets: `CLOUDFLARE_ANALYTICS_TOKEN` (API-Token, nur „Account Analytics: Read“) und
   `CLOUDFLARE_ACCOUNT_ID`.
-- GitHub pausiert geplante Workflows nach 60 Tagen ohne Aktivität im Repo. Ruht das Projekt länger, fällt auch die Prüfung
-  aus. GitHub kündigt das vorher per E-Mail an.
+- GitHub pausiert geplante Workflows nach 60 Tagen ohne Aktivität nur in öffentlichen Repos (Doku, geprüft 2026-11-09).
+  Würde das Repo öffentlich, könnte die Prüfung bei Ruhe im Projekt ausfallen.
+- Die IP-Adressen bleiben im Betrieb bis zu etwa 48 Stunden: Der Lauf ist täglich und löscht nur Einträge, die älter als
+  24 Stunden sind. Die Datenschutzseite sagt deshalb „nach ein bis zwei Tagen“.
 - Ein Lauf mit `status: success` heißt nur, dass `aufraeumen` keinen Fehler geworfen hat. Wie viele Zeilen gelöscht
   wurden, zeigen die Analytics nicht.
 - Wechselt das Projekt in den bezahlten Tarif, steigt die Frist von D1 auf 30 Tage. Dann muss die Datenschutzseite
