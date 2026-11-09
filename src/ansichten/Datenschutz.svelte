@@ -55,6 +55,15 @@
     </p>
   </section>
   <section class="karte stapel">
+    <h2>Sicherungen</h2>
+    <p class="matt">
+      Cloudflare hält automatisch frühere Stände: die Datenbank mit Konten,
+      Quizzen und IP-Adressen bis zu 7 Tage, Spielräume bis zu 30 Tage.
+      Gelöschte Daten verschwinden dort erst nach dieser Frist. Der Betreiber
+      nutzt die Sicherungen nur, um einen Datenverlust zu beheben.
+    </p>
+  </section>
+  <section class="karte stapel">
     <h2>Fragen</h2>
     <p class="matt">
       Wende dich an den Betreiber, der dir die Einladung geschickt hat, oder an
