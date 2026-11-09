@@ -45,4 +45,9 @@ Die Befehle für den Betrieb stehen in [[projects/quiz-poker/docs/Betrieb|Betrie
 ## Fehler
 
 - **`no such table` bei `npm run dev`:** Die lokale Migration fehlt. Lösung: `--local` wie oben.
+- **`The given account is not valid or is not authorized to access this service [code: 7403]`** bei
+  `wrangler d1 execute --remote` (2026-11-08): Konto und Recht `d1 (write)` stimmten laut `npx wrangler whoami`. Ursache
+  nicht geklärt, vermutlich hat sich die OAuth-Anmeldung im Hintergrund erneuert. Lösung: Befehl wiederholen.
+- **Time Travel:** D1 hält frühere Stände im kostenlosen Tarif 7 Tage, das lässt sich nicht abschalten. Gelöschte Daten
+  bleiben dort so lange, siehe [[projects/quiz-poker/docs/adr/0009-sicherungen-und-loeschfristen|ADR 0009]].
 - **Tabellennamen `user` und `rateLimit`:** Im SQL immer in doppelten Anführungszeichen schreiben, damit Name und Schreibweise eindeutig bleiben.

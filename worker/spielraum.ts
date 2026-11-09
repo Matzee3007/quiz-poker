@@ -231,6 +231,10 @@ export class Spielraum extends DurableObject<Env> {
     const token = new URL(anfrage.url).searchParams.get("token") ?? "";
     const paar = new WebSocketPair();
     const verbindung = paar[1];
+    // Erst annehmen, dann prüfen: Nur über den Schließcode erfährt das Gerät, dass sein Token unbekannt ist.
+    // Ein HTTP-Fehler käme im Browser als allgemeiner Fehler an, und das Gerät würde endlos neu verbinden.
+    // Eine Verbindung ohne gültiges Token wird sofort geschlossen und bekommt keinen Anhang: Sie kann keine Aktion
+    // auslösen und nichts lesen. Ihr Schließen verteilt nur die unveränderten Ansichten neu (webSocketClose).
     this.ctx.acceptWebSocket(verbindung);
     const antwort = new Response(null, { status: 101, webSocket: paar[0] });
 

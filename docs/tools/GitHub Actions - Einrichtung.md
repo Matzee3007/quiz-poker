@@ -37,6 +37,12 @@ kein Cloudflare-Konto.
 
 **2026-11-04, vor Phase 3:** PR #12. Läufe auf `main` verdrängen sich nicht mehr gegenseitig, siehe Abschnitt „Fehler“.
 
+**2026-11-09, Phase 4:** Zweiter Workflow `cron-pruefen.yml`. Er läuft täglich um 5 Uhr UTC und schlägt fehl, wenn der
+Lösch-Lauf des Workers in den letzten 24 Stunden fehlt ([[projects/quiz-poker/docs/adr/0009-sicherungen-und-loeschfristen|ADR 0009]]).
+Er braucht die Secrets `CLOUDFLARE_ANALYTICS_TOKEN` und `CLOUDFLARE_ACCOUNT_ID`. Bei einem Fehlschlag schickt GitHub eine
+E-Mail an die Person, die den Zeitplan zuletzt geändert hat. Die Pause nach 60 Tagen ohne Aktivität gilt laut GitHub-Doku
+nur für öffentliche Repos, dieses ist privat (geprüft 2026-11-09).
+
 ## Regeln
 
 - **Vor jedem Merge `gh pr checks <nr>`: Die CI muss grün sein.** Das Repo ist privat und läuft mit GitHub Free. Dort
@@ -50,6 +56,8 @@ kein Cloudflare-Konto.
 gh pr checks <nr> --watch      # Checks eines PRs anzeigen und warten, bis sie fertig sind
 gh run list                    # letzte Läufe aller Workflows
 gh run view <id> --log-failed  # nur die Log-Zeilen der fehlgeschlagenen Schritte
+gh workflow run cron-pruefen.yml   # Cron-Prüfung von Hand starten (workflow_dispatch)
+gh secret set <NAME> < <datei>     # Secret aus einer Datei setzen, ohne dass es im Verlauf landet
 ```
 
 ## Fehler

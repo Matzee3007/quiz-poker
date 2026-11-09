@@ -75,6 +75,7 @@ quiz-poker/
 │   ├── betrieb.ts      SQL für die Befehle des Betreibers
 │   ├── geheimnis.ts    Codes und Links erzeugen und hashen
 │   ├── aufraeumen.ts   Löscht täglich alte IP-Adressen und abgelaufene Links
+│   ├── cronpruefung.ts Prüft den täglichen Lauf über die Analytics, läuft unter Node (scripts/cron-pruefen.ts)
 │   ├── testhilfen.ts   Hilfen für Tests mit WebSockets
 │   └── *.test.ts       Tests des Workers
 ├── migrations/         Tabellen in D1 als SQL-Dateien
@@ -106,6 +107,7 @@ npm run deploy         # Zu Cloudflare hochladen (braucht Konto und wrangler log
 npm run einladung      # Einladungslink erzeugen, siehe docs/Betrieb.md
 npm run passwort-link -- <email>   # Link zum Zurücksetzen erzeugen, siehe docs/Betrieb.md
 npm run quiz-loeschen -- <id>      # Ein gespeichertes Quiz löschen, siehe docs/Betrieb.md
+npm run cron-pruefen               # Prüfen, ob der tägliche Lauf stattfand, siehe docs/Betrieb.md
 ```
 
 Vor jedem Commit: `npm run check` (Linter, Format, Typen, Tests und Build)

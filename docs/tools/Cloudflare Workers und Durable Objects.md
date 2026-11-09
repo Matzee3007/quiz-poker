@@ -64,6 +64,23 @@ Rate-Limiting-Binding von Cloudflare nutzen wir nicht: Die Doku bestätigt es ni
 - Lösung: warten, nach rund 3 Minuten kam die Antwort.
 - Prüfen: `/usr/bin/curl -sS 'https://quiz-poker.quiz-poker.workers.dev/api/health'` liefert `{"status":"ok"}`.
 
+## Analytics
+
+Ob der tägliche Lauf stattfand, zeigt die GraphQL-Schnittstelle `https://api.cloudflare.com/client/v4/graphql`
+(2026-11-09, [[projects/quiz-poker/docs/adr/0009-sicherungen-und-loeschfristen|ADR 0009]]):
+
+- **Sie braucht ein eigenes API-Token** mit „Account Analytics: Read“. Die OAuth-Anmeldung von wrangler lehnt sie mit
+  `Authentication error` (Code 10000) ab, obwohl sie `account:read` enthält. Das Token liegt lokal in
+  `~/.cloudflare-analytics-token` und als Secret `CLOUDFLARE_ANALYTICS_TOKEN` in GitHub.
+- **Cron-Läufe:** `workersInvocationsAdaptive` mit dem Filter `eventType: "cron"` zeigt jeden Lauf minutengenau, mit `status`.
+  `workersInvocationsScheduled` bleibt im kostenlosen Tarif leer, obwohl der Cron läuft.
+- **Höchstens eine Woche** je Abfrage im kostenlosen Tarif, sonst Fehler `quota`.
+- Der Zeitplan selbst steht unter `GET /accounts/<id>/workers/scripts/quiz-poker/schedules`. Dafür reicht die Anmeldung von wrangler.
+
+```bash
+npm run cron-pruefen   # braucht CLOUDFLARE_ANALYTICS_TOKEN und CLOUDFLARE_ACCOUNT_ID, siehe scripts/cron-pruefen.ts
+```
+
 ## Befehle
 
 ```bash
