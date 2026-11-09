@@ -72,3 +72,6 @@ npx wrangler d1 migrations apply quiz-poker --local   # Lokale D1 auf den Stand 
   Lösung: das andere Programm beenden (`lsof -i :5173` zeigt es).
 - **`Executable doesn't exist at …/chromium-…`:** Die installierte Playwright-Version erwartet einen anderen
   Browser-Ordner. Lösung: `npx playwright install chromium` oder die Version passend zum vorhandenen Ordner wählen.
+  Am 2026-11-09 erneut (`chromium_headless_shell-1248` fehlte, `-1254` war da): Ursache war vermutlich ein anderes
+  Projekt mit neuerem Playwright. Dessen `playwright install` räumt Browser-Ordner weg, die es für unbenutzt hält. Der Cache
+  `~/Library/Caches/ms-playwright/` gilt für alle Projekte.
