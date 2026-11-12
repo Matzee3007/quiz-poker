@@ -25,7 +25,6 @@ body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
   line-height: 1.45;
-  min-width: 1100px;
 }
 
 h1,
@@ -1004,4 +1003,89 @@ button.schalter {
 .notiz button.text {
   padding: 0;
   margin-top: 6px;
+}
+
+/* Handy: Spieler sitzen mit dem Handy am Tisch (Mock 2026-11-09-handy.html, Plan 2026-11-09-handy-layout). */
+@media (max-width: 700px) {
+  .kopf {
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding: 8px 16px;
+  }
+
+  .kopf .rest {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .seite {
+    padding: 16px;
+  }
+
+  .karte {
+    padding: 16px;
+  }
+
+  .stapel {
+    gap: 14px;
+  }
+
+  .zwei-spalten,
+  .frage-loesung,
+  .wege,
+  .wege.drei {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .reihe {
+    flex-wrap: wrap;
+  }
+
+  .reihe > .matt {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Am Tisch treten fast alle bei, nur einer eröffnet. */
+  .beitreten {
+    order: -1;
+  }
+
+  .spielidee h1 {
+    font-size: 29px;
+  }
+
+  .frage {
+    font-size: 23px;
+  }
+
+  .loesung {
+    font-size: 24px;
+  }
+
+  .raumcode {
+    font-size: 52px;
+  }
+
+  button {
+    min-height: 44px;
+  }
+
+  button.haupt {
+    width: 100%;
+    min-height: 52px;
+    font-size: 17px;
+  }
+
+  /* Unter 16 px zoomt Safari beim Antippen in das Feld. */
+  input,
+  textarea {
+    font-size: 17px;
+    min-height: 48px;
+  }
+
+  textarea {
+    height: 96px;
+  }
 }
