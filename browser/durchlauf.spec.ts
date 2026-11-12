@@ -270,6 +270,29 @@ test.describe("ohne Konto", () => {
     await expect(page.getByText("Beispiel-Quiz")).toBeVisible();
   });
 
+  test("Desktop zeigt die Rangliste daneben, keine Leiste", async ({
+    page,
+    browser,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Beispiel-Quiz spielen" }).click();
+    await raumcodeSichtbar(page);
+    const raumcode = new URL(page.url()).pathname.split("/").at(-1)!;
+    const spieler: Page[] = [];
+    for (const name of ["Sophie", "Tim"]) {
+      const seite = await (await browser.newContext()).newPage();
+      await seite.goto(`/raum/${raumcode}`);
+      await seite.getByLabel("Dein Name").fill(name);
+      await seite.getByRole("button", { name: "Beitreten" }).click();
+      await expect(seite.locator(".raumcode")).toHaveText(raumcode);
+      spieler.push(seite);
+    }
+    await page.getByRole("button", { name: "Partie starten" }).click();
+
+    await expect(spieler[0].locator("aside")).toContainText("Tim");
+    await expect(spieler[0].locator(".rang-leiste")).toBeHidden();
+  });
+
   test("Einmal-Quiz eröffnet einen Spielraum", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Eigenes Quiz erstellen" }).click();

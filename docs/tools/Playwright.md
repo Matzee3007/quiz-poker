@@ -64,9 +64,9 @@ npx wrangler d1 migrations apply quiz-poker --local   # Lokale D1 auf den Stand 
   Ursache steht beim ersten roten Test. Unter `Error Context` liegt eine Datei mit dem Seiteninhalt zum Zeitpunkt des Fehlers.
 - **`no such table: quiz` oder ähnlich:** Die lokale D1 kennt eine neue Migration noch nicht. Lösung:
   `npx wrangler d1 migrations apply quiz-poker --local`.
-- **Die Raum-Tests scheitern mit „Gerade wurden zu viele Spielräume eröffnet“:** Jeder Lauf eröffnet fünf Spielräume, lokal
-  gilt dieselbe Grenze wie online (`RAEUME_PRO_STUNDE`: 30 pro Stunde in `wrangler.jsonc`). Nach sechs Läufen in einer
-  Stunde ist sie erreicht. Lösung: in `.dev.vars` die Zeile `RAEUME_PRO_STUNDE=1000` ergänzen und den Server neu starten.
+- **Die Raum-Tests scheitern mit „Gerade wurden zu viele Spielräume eröffnet“:** Jeder Lauf eröffnet acht Spielräume (seit
+  2026-11-12 mit dem Projekt `handy`), lokal gilt dieselbe Grenze wie online (`RAEUME_PRO_STUNDE`: 30 pro Stunde in
+  `wrangler.jsonc`). Nach vier Läufen in einer Stunde ist sie erreicht. Am 2026-11-12 erneut aufgetreten. Lösung: in `.dev.vars` die Zeile `RAEUME_PRO_STUNDE=1000` ergänzen und den Server neu starten.
   `.dev.vars` gilt nur lokal und steht nicht im Repo.
 - **`Timed out waiting … from config.webServer` oder `Port 5173 is already in use`:** Ein anderes Programm belegt Port 5173.
   Lösung: das andere Programm beenden (`lsof -i :5173` zeigt es).

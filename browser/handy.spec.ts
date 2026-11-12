@@ -61,3 +61,36 @@ test("Startseite, Beitreten und Warten passen auf 375 px", async ({
     .boundingBox();
   expect(beitreten!.y).toBeLessThan(eroeffnen!.y);
 });
+
+test("Runde: Leiste zeigt Platz und Chips, Einsatz und Antwort per Daumen", async ({
+  browser,
+}) => {
+  const { quizMaster, sophie } = await raumMitSpielern(browser);
+  await quizMaster.getByRole("button", { name: "Partie starten" }).click();
+
+  const leiste = sophie.locator(".rang-leiste");
+  await expect(leiste).toContainText("Platz 1 von 2");
+  await expect(leiste).toContainText("100");
+  const rangliste = sophie.getByRole("button", { name: /Rangliste/ });
+  await rangliste.click();
+  await expect(sophie.getByLabel("Rangliste")).toContainText("Tim");
+  await rangliste.click();
+  await expect(sophie.getByLabel("Rangliste")).toBeHidden();
+
+  const setzen = sophie.getByRole("button", { name: "Einsatz setzen" });
+  expect((await setzen.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await setzen.click();
+  await expect(
+    sophie.getByRole("button", { name: "Einsatz ändern" }),
+  ).toBeVisible();
+  await ohneSeitlichesScrollen(sophie);
+
+  await quizMaster.getByRole("button", { name: "Frage zeigen" }).click();
+  await expect(sophie.getByText("Hauptstadt")).toBeVisible();
+  // Musterlösung der ersten Frage im Beispiel-Quiz, erst in der Auflösung sichtbar
+  await expect(sophie.locator("body")).not.toContainText("Canberra");
+  await sophie.getByLabel(/Deine Antwort/).fill("Sydney");
+  await sophie.getByRole("button", { name: "Bereit" }).click();
+  await expect(sophie.getByText("Deine Antwort:")).toBeVisible();
+  await ohneSeitlichesScrollen(sophie);
+});
