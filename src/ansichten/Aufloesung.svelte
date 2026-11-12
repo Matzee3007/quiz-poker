@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { Aktion } from "../protokoll";
-  import type { QuizMasterAnsicht, SpielerAnsicht } from "../regeln/ansicht";
+  import {
+    platzVon,
+    type QuizMasterAnsicht,
+    type SpielerAnsicht,
+  } from "../regeln/ansicht";
   import EntfernenKnopf from "./EntfernenKnopf.svelte";
 
   interface Props {
@@ -14,10 +18,6 @@
   const reihenfolge = $derived(
     [...ansicht.spieler].sort((links, rechts) => rechts.chips - links.chips),
   );
-
-  function platzVon(chips: number): number {
-    return reihenfolge.findIndex((spieler) => spieler.chips === chips) + 1;
-  }
 </script>
 
 <main class="seite stapel">
@@ -51,7 +51,7 @@
       {#each reihenfolge as spieler (spieler.id)}
         {@const einsatz = spieler.einsatz ?? 0}
         <tr>
-          <td class="zahl">{platzVon(spieler.chips)}</td>
+          <td class="zahl">{platzVon(ansicht.spieler, spieler.chips)}</td>
           <td>
             <strong>{spieler.name}</strong>
             {#if spieler.id === ichId}<span class="matt">(du)</span>{/if}

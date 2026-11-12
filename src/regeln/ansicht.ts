@@ -13,6 +13,11 @@ export interface SpielerZeile {
   richtig: boolean | null;
 }
 
+/** Platz in der Rangliste: 1 plus die Zahl der Spieler mit mehr Chips, Gleichstand teilt sich den Platz. */
+export function platzVon(spieler: SpielerZeile[], chips: number): number {
+  return 1 + spieler.filter((andere) => andere.chips > chips).length;
+}
+
 export interface GemeinsameAnsicht {
   phase: Phase;
   quizTitel: string;

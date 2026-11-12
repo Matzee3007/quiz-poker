@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { quizMasterAnsicht, spielerAnsicht } from "./ansicht";
+import {
+  platzVon,
+  quizMasterAnsicht,
+  spielerAnsicht,
+  type SpielerZeile,
+} from "./ansicht";
 import {
   antwortAuswerten,
   antwortBestaetigen,
@@ -260,5 +265,35 @@ describe("Ansicht des Quiz-Masters", () => {
 
     expect(ansicht.kategorie).toBeNull();
     expect(ansicht.frage).toBeNull();
+  });
+});
+
+describe("Platz in der Rangliste", () => {
+  function zeile(id: string, chips: number): SpielerZeile {
+    return {
+      id,
+      name: id,
+      chips,
+      verbunden: true,
+      spieltMit: true,
+      hatGesetzt: false,
+      istBereit: false,
+      einsatz: null,
+      antwort: null,
+      richtig: null,
+    };
+  }
+
+  it("gibt Spielern mit gleichen Chips denselben Platz", () => {
+    const spieler = [
+      zeile("a", 150),
+      zeile("b", 100),
+      zeile("c", 100),
+      zeile("d", 80),
+    ];
+
+    expect([150, 100, 80].map((chips) => platzVon(spieler, chips))).toEqual([
+      1, 2, 4,
+    ]);
   });
 });
