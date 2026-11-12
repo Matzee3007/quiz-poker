@@ -22,7 +22,8 @@ Editor erneut. Ein wiederholbarer Durchlauf im Repo soll zeigen, dass die bisher
   D1 mit allen Migrationen und erzeugt Einladungen. Er läuft vor jedem PR, der die Oberfläche ändert.
 - **Version fest auf 1.64.1 (ohne `^`):** Jede Playwright-Version gehört zu genau einer Browser-Version. 1.64.1 passt zu den
   Browsern, die schon im Cache liegen. Ein Update ist eine bewusste Aufgabe mit `npx playwright install chromium`.
-- **Nur Chromium:** Für eine Freundesrunde reicht ein Browser.
+- **Nur Chromium:** Für eine Freundesrunde reicht ein Browser. Für die Spieler am Handy kam am 2026-11-12 WebKit dazu,
+  siehe [[projects/quiz-poker/docs/adr/0010-webkit-fuer-handy-durchlauf|ADR 0010]].
 
 ## Alternativen
 

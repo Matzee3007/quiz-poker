@@ -38,7 +38,11 @@ Scratchpad, seit 2026-11-07 liegt es im Repo.
 - `@playwright/test` **1.64.1, ohne `^`:** Jede Playwright-Version gehört zu genau einer Browser-Version. 1.64.1
   passt zu `chromium-1248`, das schon unter `~/Library/Caches/ms-playwright` lag. Ein Update von Playwright lädt neue
   Browser (`npx playwright install chromium`), deshalb ist die Version festgelegt.
-- Nur Chromium. Für eine Freundesrunde reicht ein Browser.
+- Chromium für alle Tests in `durchlauf.spec.ts`. **Seit 2026-11-12 dazu WebKit** im Projekt `handy`, nur für
+  `browser/handy.spec.ts` (Gerät „iPhone 13 Mini“, 375 px), siehe
+  [[projects/quiz-poker/docs/adr/0010-webkit-fuer-handy-durchlauf|ADR 0010]]. Browser dafür: `npx playwright install webkit`.
+- Tests mit mehreren Geräten öffnen eigene Kontexte (`browser.newContext`). Sie müssen am Ende geschlossen werden, sonst
+  bleiben ihre WebSockets offen, und spätere Tests laufen in den Timeout von 30 Sekunden (`page.goto: Test ended`).
 - **Nicht in `npm run check` und nicht in der CI:** Der Durchlauf braucht den lokalen Server, eine lokale D1 mit allen
   Migrationen und erzeugt eine Einladung. Er läuft von Hand vor einem PR, der die Oberfläche ändert.
 - Jeder Lauf erzeugt eine eigene Einladung (`node scripts/einladung.ts --lokal`) und ein eigenes Konto
@@ -53,6 +57,7 @@ Scratchpad, seit 2026-11-07 liegt es im Repo.
 npm run test:browser                          # Durchlauf starten, startet bei Bedarf den lokalen Server
 npx playwright test --headed                  # Mit sichtbarem Browserfenster, zum Zuschauen
 npx playwright test -g "Einmal-Quiz"          # Nur Tests, deren Name den Text enthält
+npx playwright test --project handy           # Nur die Handy-Tests in WebKit
 npx playwright show-trace test-results/<ordner>/trace.zip   # Ablauf eines fehlgeschlagenen Tests ansehen
 npx playwright install --dry-run chromium     # Zeigt, welcher Browser-Ordner zur installierten Version gehört
 npx wrangler d1 migrations apply quiz-poker --local   # Lokale D1 auf den Stand der Migrationen bringen

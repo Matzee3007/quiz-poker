@@ -67,7 +67,7 @@ keine
   Hilfen in `handy.spec.ts`: `raumMitSpielern(browser): Promise<{ quizMaster: Page; sophie: Page; tim: Page; raumcode: string }>`
   (Quiz-Master mit `viewport: 1280×800`, Spieler mit `devices["iPhone 13 Mini"]`), `ohneSeitlichesScrollen(page): Promise<void>`
 
-- [ ] **Schritt 1: Fehlschlagenden Test schreiben**
+- [x] **Schritt 1: Fehlschlagenden Test schreiben**
 
 ```ts
 test("Startseite, Beitreten und Warten passen auf 375 px", async ({ browser }) => {
@@ -84,23 +84,23 @@ test("Startseite, Beitreten und Warten passen auf 375 px", async ({ browser }) =
 });
 ```
 
-- [ ] **Schritt 2: Test laufen lassen, er muss fehlschlagen**
+- [x] **Schritt 2: Test laufen lassen, er muss fehlschlagen**
 
 `npx playwright test --project handy`
 Erwartet: FAIL, `scrollWidth` ist 1100
 
-- [ ] **Schritt 3: CSS**
+- [x] **Schritt 3: CSS**
 
 `body { min-width: 1100px }` entfernen. Block `@media (max-width: 700px)` mit den Werten aus dem Mock: `.seite` und `.karte`
 mit 16 px Innenabstand, `.zwei-spalten`, `.frage-loesung`, `.wege`, `.wege.drei` einspaltig, Kopf zweizeilig, Schriftgrößen,
 Knopf- und Eingabehöhen aus den festen Vorgaben, Startseite mit `order`, damit „Beitreten“ oben steht.
 
-- [ ] **Schritt 4: Tests laufen lassen, sie müssen bestehen**
+- [x] **Schritt 4: Tests laufen lassen, sie müssen bestehen**
 
 `npm run test:browser`
 Erwartet: PASS in `chromium` und `handy`
 
-- [ ] **Schritt 5: Prüfen und committen**
+- [x] **Schritt 5: Prüfen und committen**
 
 ```bash
 npm run check
@@ -115,7 +115,7 @@ git commit -m "Add phone test run and base mobile layout"
 **Schnittstellen:**
 - Liefert: `platzVon(spieler: SpielerZeile[], chips: number): number`. Der Platz ist 1 plus die Zahl der Spieler mit mehr Chips.
 
-- [ ] **Schritt 1: Fehlschlagenden Test schreiben**
+- [x] **Schritt 1: Fehlschlagenden Test schreiben**
 
 ```ts
 it("gibt Spielern mit gleichen Chips denselben Platz", () => {
@@ -124,19 +124,19 @@ it("gibt Spielern mit gleichen Chips denselben Platz", () => {
 });
 ```
 
-- [ ] **Schritt 2: Test laufen lassen, er muss fehlschlagen**
+- [x] **Schritt 2: Test laufen lassen, er muss fehlschlagen**
 
 `npx vitest run src/regeln/ansicht.test.ts`
 Erwartet: FAIL, `platzVon` ist nicht exportiert
 
-- [ ] **Schritt 3: `platzVon` in `src/regeln/ansicht.ts`**, in `Aufloesung.svelte` die lokale Funktion dadurch ersetzen
+- [x] **Schritt 3: `platzVon` in `src/regeln/ansicht.ts`**, in `Aufloesung.svelte` die lokale Funktion dadurch ersetzen
 
-- [ ] **Schritt 4: Tests laufen lassen, sie müssen bestehen**
+- [x] **Schritt 4: Tests laufen lassen, sie müssen bestehen**
 
 `npm test`
 Erwartet: PASS
 
-- [ ] **Schritt 5: Prüfen und committen** (`npm run check`, `git commit -m "Share rank calculation with ties"`)
+- [x] **Schritt 5: Prüfen und committen** (`npm run check`, `git commit -m "Share rank calculation with ties"`)
 
 ### Aufgabe 3: Ranglisten-Leiste und Runde auf dem Handy
 
@@ -148,7 +148,7 @@ Erwartet: PASS
   „Rangliste“ und hat `aria-expanded`, das Panel `aria-label="Rangliste"`. Über 700 px: `display: none`. Unter 700 px ist die
   `<aside>` von `Rangliste` neben der Runde ausgeblendet.
 
-- [ ] **Schritt 1: Fehlschlagende Tests schreiben**
+- [x] **Schritt 1: Fehlschlagende Tests schreiben**
 
 ```ts
 test("Runde: Leiste zeigt Platz und Chips, Einsatz und Antwort per Daumen", async ({ browser }) => {
@@ -175,19 +175,19 @@ test("Desktop zeigt keine Leiste", async ({ page }) => { /* im Projekt chromium:
 
 Den Desktop-Test legt `durchlauf.spec.ts` an, im Block „ohne Konto“.
 
-- [ ] **Schritt 2: Tests laufen lassen, sie müssen fehlschlagen**
+- [x] **Schritt 2: Tests laufen lassen, sie müssen fehlschlagen**
 
 `npm run test:browser`
 Erwartet: FAIL, `.rang-leiste` nicht gefunden
 
-- [ ] **Schritt 3: `RanglisteLeiste.svelte`, in `SpielerRunde.svelte` über der Karte einbinden, Hauptknöpfe („Einsatz setzen/ändern“, „Bereit“) in `<div class="aktion">` (`position: sticky; bottom: 0` nur unter 700 px), Regler mit 44 px Trefferhöhe und Griff in Gold, `.schnellwahl` als Raster `1fr 1fr 1fr 1.5fr`**
+- [x] **Schritt 3: `RanglisteLeiste.svelte`, in `SpielerRunde.svelte` über der Karte einbinden, Hauptknöpfe („Einsatz setzen/ändern“, „Bereit“) in `<div class="aktion">` (`position: sticky; bottom: 0` nur unter 700 px), Regler mit 44 px Trefferhöhe und Griff in Gold, `.schnellwahl` als Raster `1fr 1fr 1fr 1.5fr`**
 
-- [ ] **Schritt 4: Tests laufen lassen, sie müssen bestehen**
+- [x] **Schritt 4: Tests laufen lassen, sie müssen bestehen**
 
 `npm run test:browser`
 Erwartet: PASS in beiden Projekten
 
-- [ ] **Schritt 5: Prüfen und committen** (`npm run check`, `git commit -m "Add ranking bar and thumb-sized round view on phones"`)
+- [x] **Schritt 5: Prüfen und committen** (`npm run check`, `git commit -m "Add ranking bar and thumb-sized round view on phones"`)
 
 ### Aufgabe 4: Auflösung und Ende auf dem Handy
 
@@ -198,7 +198,7 @@ Erwartet: PASS in beiden Projekten
 - Liefert: Klassen an den Zellen der Tabelle (`platz`, `name`, `einsatz`, `antwort`, `ergebnis`, `aenderung`, `chips`). Unter 700 px
   werden `thead` ausgeblendet und jedes `tr` zu einem Grid: Zeile 1 enthält Platz, Name und Chips, Zeile 2 Antwort, Ergebnis und Änderung.
 
-- [ ] **Schritt 1: Fehlschlagenden Test schreiben**
+- [x] **Schritt 1: Fehlschlagenden Test schreiben**
 
 ```ts
 test("Auflösung und Ende passen auf 375 px", async ({ browser }) => {
@@ -214,22 +214,22 @@ test("Auflösung und Ende passen auf 375 px", async ({ browser }) => {
 
 Ist der Weg zum Ende über 9 Runden zu lang (über 30 Sekunden), prüft der Test das Ende über ein Einmal-Quiz mit einer Frage.
 
-- [ ] **Schritt 2: Test laufen lassen, er muss fehlschlagen**
+- [x] **Schritt 2: Test laufen lassen, er muss fehlschlagen**
 
 `npx playwright test --project handy -g "Auflösung"`
 Erwartet: FAIL, `scrollWidth` größer als 375 wegen der Tabelle mit 7 Spalten
 
-- [ ] **Schritt 3: Klassen an den Zellen, Grid-Regeln im Block für das Handy, `.podest` mit `gap: 8px`, `.podest-platz` schmaler**
+- [x] **Schritt 3: Klassen an den Zellen, Grid-Regeln im Block für das Handy, `.podest` mit `gap: 8px`, `.podest-platz` schmaler**
 
-- [ ] **Schritt 4: Tests laufen lassen, sie müssen bestehen** (`npm run test:browser`, PASS)
+- [x] **Schritt 4: Tests laufen lassen, sie müssen bestehen** (`npm run test:browser`, PASS)
 
-- [ ] **Schritt 5: Prüfen und committen** (`npm run check`, `git commit -m "Fit resolution and end view on phones"`)
+- [x] **Schritt 5: Prüfen und committen** (`npm run check`, `git commit -m "Fit resolution and end view on phones"`)
 
 ### Aufgabe 5: Entscheidung festhalten und Abnahme am Handy
 
 **Dateien:** `docs/adr/0010-webkit-fuer-handy-durchlauf.md`, `docs/tools/Playwright.md`, `docs/mocks/2026-11-09-handy.html`
 
-- [ ] **Schritt 1: ADR 0010** (Kontext: ADR 0007 hat WebKit für Phase 4 offen gelassen. Entscheidung: Projekt `handy` in WebKit
+- [x] **Schritt 1: ADR 0010** (Kontext: ADR 0007 hat WebKit für Phase 4 offen gelassen. Entscheidung: Projekt `handy` in WebKit
   nur für `handy.spec.ts`. Alternativen: alle Tests in drei Browsern, oder nur die Breite in Chromium. Konsequenzen: der
   Browser-Cache braucht WebKit 2370, und der Durchlauf dauert länger.) Dazu ein Verweis in ADR 0007 und in der Playwright-Notiz.
 - [ ] **Schritt 2: Lokaler Server im WLAN:** `npx vite --host` macht den Server im eigenen Netz erreichbar. Die Adresse
