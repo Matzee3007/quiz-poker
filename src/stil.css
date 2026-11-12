@@ -1214,4 +1214,75 @@ button.schalter {
     border-radius: 50%;
     background: var(--gold);
   }
+
+  /* Auflösung: jede Zeile der Tabelle als kleiner Block in drei Zeilen. */
+  .ergebnisse,
+  .ergebnisse tbody {
+    display: block;
+  }
+
+  .ergebnisse thead,
+  .ergebnisse .einsatz {
+    display: none;
+  }
+
+  .ergebnisse tr {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "platz name chips"
+      ". antwort antwort"
+      ". ergebnis aenderung";
+    gap: 2px 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .ergebnisse td {
+    padding: 0;
+    border: 0;
+  }
+
+  .ergebnisse .platz {
+    grid-area: platz;
+  }
+
+  .ergebnisse .name {
+    grid-area: name;
+  }
+
+  .ergebnisse .chips {
+    grid-area: chips;
+  }
+
+  .ergebnisse .antwort {
+    grid-area: antwort;
+    overflow-wrap: anywhere;
+  }
+
+  .ergebnisse .ergebnis {
+    grid-area: ergebnis;
+  }
+
+  .ergebnisse .aenderung {
+    grid-area: aenderung;
+  }
+
+  .podest {
+    gap: 8px;
+  }
+
+  .podest-platz {
+    min-width: 0;
+    padding: 12px 6px;
+    font-size: 15px;
+  }
+
+  .podest-platz.erster {
+    padding: 26px 6px;
+  }
+
+  .podest-platz .chips {
+    font-size: 24px;
+  }
 }

@@ -291,6 +291,8 @@ test.describe("ohne Konto", () => {
 
     await expect(spieler[0].locator("aside")).toContainText("Tim");
     await expect(spieler[0].locator(".rang-leiste")).toBeHidden();
+    // Offene WebSockets bremsen sonst die folgenden Tests
+    await Promise.all(spieler.map((seite) => seite.context().close()));
   });
 
   test("Einmal-Quiz eröffnet einen Spielraum", async ({ page }) => {

@@ -4,26 +4,57 @@ import {
   expect,
   test,
   type Browser,
+  type BrowserContext,
   type Page,
 } from "@playwright/test";
 
 const HANDY = devices["iPhone 13 Mini"];
 
-/** Quiz-Master eröffnet das Beispiel-Quiz am Laptop, Sophie und Tim treten am Handy über den Link bei. */
-async function raumMitSpielern(browser: Browser) {
-  const laptop = await browser.newContext({
-    viewport: { width: 1280, height: 800 },
-  });
-  const quizMaster = await laptop.newPage();
+// Offene Kontexte halten ihre WebSockets, ohne Schließen bremsen sie die folgenden Tests.
+const kontexte: BrowserContext[] = [];
+
+test.afterEach(async () => {
+  await Promise.all(kontexte.splice(0).map((kontext) => kontext.close()));
+});
+
+async function beispielQuiz(quizMaster: Page) {
   await quizMaster.goto("/");
   await quizMaster
     .getByRole("button", { name: "Beispiel-Quiz spielen" })
     .click();
+}
+
+/** Einmal-Quiz mit einer einzigen Frage, damit die Partie nach einer Runde endet. */
+async function einFrageQuiz(quizMaster: Page) {
+  await quizMaster.goto("/");
+  await quizMaster
+    .getByRole("button", { name: "Eigenes Quiz erstellen" })
+    .click();
+  await quizMaster.getByLabel("Titel des Quiz").fill("Kurzes Quiz");
+  await quizMaster.getByLabel("Name der Kategorie 1").fill("Zahlen");
+  await quizMaster.getByLabel("Fragetext").fill("Was ist 6 mal 7?");
+  await quizMaster.getByLabel("Musterlösung").fill("42");
+  await quizMaster.getByRole("button", { name: "Spielraum eröffnen" }).click();
+}
+
+/** Quiz-Master eröffnet am Laptop einen Raum, Sophie und Tim treten am Handy über den Link bei. */
+async function raumMitSpielern(
+  browser: Browser,
+  eroeffnen: (quizMaster: Page) => Promise<void> = beispielQuiz,
+) {
+  const laptop = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
+  kontexte.push(laptop);
+  const quizMaster = await laptop.newPage();
+  await eroeffnen(quizMaster);
   await expect(quizMaster).toHaveURL(/\/raum\/[A-Z0-9]{4}$/);
   const raumcode = new URL(quizMaster.url()).pathname.split("/").at(-1)!;
 
   async function beitreten(name: string): Promise<Page> {
-    const seite = await (await browser.newContext(HANDY)).newPage();
+    const handy = await browser.newContext(HANDY);
+    kontexte.push(handy);
+    const seite = await handy.newPage();
     await seite.goto(`/raum/${raumcode}`);
     await seite.getByLabel("Dein Name").fill(name);
     await seite.getByRole("button", { name: "Beitreten" }).click();
@@ -92,5 +123,24 @@ test("Runde: Leiste zeigt Platz und Chips, Einsatz und Antwort per Daumen", asyn
   await sophie.getByLabel(/Deine Antwort/).fill("Sydney");
   await sophie.getByRole("button", { name: "Bereit" }).click();
   await expect(sophie.getByText("Deine Antwort:")).toBeVisible();
+  await ohneSeitlichesScrollen(sophie);
+});
+
+test("Auflösung und Ende passen auf 375 px", async ({ browser }) => {
+  const { quizMaster, sophie } = await raumMitSpielern(browser, einFrageQuiz);
+  await quizMaster.getByRole("button", { name: "Partie starten" }).click();
+  await sophie.getByRole("button", { name: "Einsatz setzen" }).click();
+  await quizMaster.getByRole("button", { name: "Frage zeigen" }).click();
+  await sophie.getByLabel(/Deine Antwort/).fill("42");
+  await sophie.getByRole("button", { name: "Bereit" }).click();
+  await quizMaster.getByRole("button", { name: "Auswertung starten" }).click();
+  await quizMaster.getByRole("button", { name: "Richtig" }).click();
+  await quizMaster.getByRole("button", { name: "Auflösen" }).click();
+
+  await expect(sophie.getByText("Musterlösung")).toBeVisible();
+  await ohneSeitlichesScrollen(sophie);
+
+  await quizMaster.getByRole("button", { name: "Weiter" }).click();
+  await expect(sophie.getByLabel("Podest")).toBeVisible();
   await ohneSeitlichesScrollen(sophie);
 });
