@@ -77,7 +77,7 @@
           {/if}
           <td class="zahl gold chips">{spieler.chips}</td>
           {#if ansicht.rolle === "quiz-master"}
-            <td>
+            <td class="entfernen">
               <EntfernenKnopf id={spieler.id} name={spieler.name} {senden} />
             </td>
           {/if}

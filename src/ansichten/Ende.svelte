@@ -1,5 +1,9 @@
 <script lang="ts">
-  import type { QuizMasterAnsicht, SpielerAnsicht } from "../regeln/ansicht";
+  import {
+    platzVon,
+    type QuizMasterAnsicht,
+    type SpielerAnsicht,
+  } from "../regeln/ansicht";
 
   interface Props {
     ansicht: SpielerAnsicht | QuizMasterAnsicht;
@@ -15,10 +19,6 @@
   const endstand = $derived(
     [...ansicht.spieler].sort((links, rechts) => rechts.chips - links.chips),
   );
-
-  function platzVon(chips: number): number {
-    return endstand.findIndex((spieler) => spieler.chips === chips) + 1;
-  }
 </script>
 
 <main class="seite stapel">
@@ -38,7 +38,9 @@
         class="podest-platz"
         class:erster={ansicht.sieger.includes(spieler.id)}
       >
-        <p class="ueberschrift">Platz {platzVon(spieler.chips)}</p>
+        <p class="ueberschrift">
+          Platz {platzVon(ansicht.spieler, spieler.chips)}
+        </p>
         <p><strong>{spieler.name}</strong></p>
         <p class="chips">{spieler.chips}</p>
       </div>
@@ -56,7 +58,7 @@
     <tbody>
       {#each endstand as spieler (spieler.id)}
         <tr>
-          <td class="zahl">{platzVon(spieler.chips)}</td>
+          <td class="zahl">{platzVon(ansicht.spieler, spieler.chips)}</td>
           <td><strong>{spieler.name}</strong></td>
           <td class="zahl gold">{spieler.chips}</td>
         </tr>

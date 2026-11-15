@@ -1,6 +1,6 @@
 // Durchlauf durch die Oberfläche wie ein Mensch: Konto, Meine Quizze, Editor, Spielraum.
 import { execFileSync } from "node:child_process";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 const PASSWORT = "playwright-passwort";
 
@@ -263,6 +263,13 @@ test.describe("mit Konto", () => {
 });
 
 test.describe("ohne Konto", () => {
+  // Offene Kontexte halten ihre WebSockets, ohne Schließen bremsen sie die folgenden Tests.
+  const kontexte: BrowserContext[] = [];
+
+  test.afterEach(async () => {
+    await Promise.all(kontexte.splice(0).map((kontext) => kontext.close()));
+  });
+
   test("Beispiel-Quiz eröffnet einen Spielraum", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Beispiel-Quiz spielen" }).click();
@@ -280,7 +287,9 @@ test.describe("ohne Konto", () => {
     const raumcode = new URL(page.url()).pathname.split("/").at(-1)!;
     const spieler: Page[] = [];
     for (const name of ["Sophie", "Tim"]) {
-      const seite = await (await browser.newContext()).newPage();
+      const kontext = await browser.newContext();
+      kontexte.push(kontext);
+      const seite = await kontext.newPage();
       await seite.goto(`/raum/${raumcode}`);
       await seite.getByLabel("Dein Name").fill(name);
       await seite.getByRole("button", { name: "Beitreten" }).click();
@@ -291,8 +300,6 @@ test.describe("ohne Konto", () => {
 
     await expect(spieler[0].locator("aside")).toContainText("Tim");
     await expect(spieler[0].locator(".rang-leiste")).toBeHidden();
-    // Offene WebSockets bremsen sonst die folgenden Tests
-    await Promise.all(spieler.map((seite) => seite.context().close()));
   });
 
   test("Einmal-Quiz eröffnet einen Spielraum", async ({ page }) => {

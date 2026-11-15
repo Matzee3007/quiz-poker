@@ -8,8 +8,6 @@ import {
   type Page,
 } from "@playwright/test";
 
-const HANDY = devices["iPhone 13 Mini"];
-
 // Offene Kontexte halten ihre WebSockets, ohne Schließen bremsen sie die folgenden Tests.
 const kontexte: BrowserContext[] = [];
 
@@ -42,7 +40,9 @@ async function raumMitSpielern(
   browser: Browser,
   eroeffnen: (quizMaster: Page) => Promise<void> = beispielQuiz,
 ) {
+  // Das Projekt „handy“ gibt jedem Kontext die iPhone-Einstellungen, der Laptop überschreibt sie.
   const laptop = await browser.newContext({
+    ...devices["Desktop Safari"],
     viewport: { width: 1280, height: 800 },
   });
   kontexte.push(laptop);
@@ -52,7 +52,7 @@ async function raumMitSpielern(
   const raumcode = new URL(quizMaster.url()).pathname.split("/").at(-1)!;
 
   async function beitreten(name: string): Promise<Page> {
-    const handy = await browser.newContext(HANDY);
+    const handy = await browser.newContext();
     kontexte.push(handy);
     const seite = await handy.newPage();
     await seite.goto(`/raum/${raumcode}`);

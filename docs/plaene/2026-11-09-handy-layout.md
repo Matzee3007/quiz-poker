@@ -12,7 +12,7 @@ Auflösung und Ende sehen, ohne seitlich zu scrollen.
 
 **Vorgehen:** Hauptsächlich CSS: `min-width: 1100px` entfällt, ein Block `@media (max-width: 700px)` setzt die Werte aus
 dem Mock. Neu ist nur die Ranglisten-Leiste (Variante A) als eigene Komponente. Die Tabelle der Auflösung wird auf dem Handy
-per CSS-Grid zur zweizeiligen Liste, ohne zweites Markup. Ein neuer Playwright-Durchlauf in WebKit mit Gerät „iPhone 13
+per CSS-Grid zur Liste mit drei Zeilen je Spieler, ohne zweites Markup. Ein neuer Playwright-Durchlauf in WebKit mit Gerät „iPhone 13
 Mini“ belegt jede Ansicht.
 
 **Technik:** Svelte 5, CSS, Playwright 1.64.1 mit WebKit (Version 2370)
@@ -64,7 +64,7 @@ keine
 
 **Schnittstellen:**
 - Liefert: Projekt `handy` (WebKit, `testMatch: /handy\.spec\.ts/`); das Projekt `chromium` bekommt `testIgnore: /handy\.spec\.ts/`.
-  Hilfen in `handy.spec.ts`: `raumMitSpielern(browser): Promise<{ quizMaster: Page; sophie: Page; tim: Page; raumcode: string }>`
+  Hilfen in `handy.spec.ts`: `raumMitSpielern(browser, eroeffnen = beispielQuiz): Promise<{ quizMaster: Page; sophie: Page; tim: Page; raumcode: string }>`
   (Quiz-Master mit `viewport: 1280×800`, Spieler mit `devices["iPhone 13 Mini"]`), `ohneSeitlichesScrollen(page): Promise<void>`
 
 - [x] **Schritt 1: Fehlschlagenden Test schreiben**
@@ -144,8 +144,8 @@ Erwartet: PASS
 
 **Schnittstellen:**
 - Nutzt: `platzVon` (Aufgabe 2), `raumMitSpielern`, `ohneSeitlichesScrollen` (Aufgabe 1), `Rangliste.svelte` unverändert im Panel
-- Liefert: `RanglisteLeiste.svelte` mit Props `{ spieler: SpielerZeile[]; ichId: string }`. Der Knopf heißt
-  „Rangliste“ und hat `aria-expanded`, das Panel `aria-label="Rangliste"`. Über 700 px: `display: none`. Unter 700 px ist die
+- Liefert: `RanglisteLeiste.svelte` mit Props `{ spieler: SpielerZeile[]; ichId: string }`. Der Knopf enthält
+  Platz, Chips und „Rangliste“ (kein `aria-label`, damit VoiceOver Platz und Chips vorliest) und hat `aria-expanded`, das Panel `aria-label="Rangliste"`. Über 700 px: `display: none`. Unter 700 px ist die
   `<aside>` von `Rangliste` neben der Runde ausgeblendet.
 
 - [x] **Schritt 1: Fehlschlagende Tests schreiben**
@@ -156,9 +156,9 @@ test("Runde: Leiste zeigt Platz und Chips, Einsatz und Antwort per Daumen", asyn
   await quizMaster.getByRole("button", { name: "Partie starten" }).click();
   await expect(sophie.locator(".rang-leiste")).toContainText("Platz 1 von 2");
   await expect(sophie.locator(".rang-leiste")).toContainText("100");
-  await sophie.getByRole("button", { name: "Rangliste" }).click();
+  await sophie.getByRole("button", { name: /Rangliste/ }).click();
   await expect(sophie.getByLabel("Rangliste")).toContainText("Tim");
-  await sophie.getByRole("button", { name: "Rangliste" }).click();
+  await sophie.getByRole("button", { name: /Rangliste/ }).click();
   const setzen = sophie.getByRole("button", { name: "Einsatz setzen" });
   expect((await setzen.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await setzen.click();
@@ -196,7 +196,7 @@ Erwartet: PASS in beiden Projekten
 **Schnittstellen:**
 - Nutzt: `raumMitSpielern`, `ohneSeitlichesScrollen` (Aufgabe 1)
 - Liefert: Klassen an den Zellen der Tabelle (`platz`, `name`, `einsatz`, `antwort`, `ergebnis`, `aenderung`, `chips`). Unter 700 px
-  werden `thead` ausgeblendet und jedes `tr` zu einem Grid: Zeile 1 enthält Platz, Name und Chips, Zeile 2 Antwort, Ergebnis und Änderung.
+  werden `thead` ausgeblendet und jedes `tr` zu einem Grid: Zeile 1 enthält Platz, Name und Chips, Zeile 2 die Antwort über die volle Breite, Zeile 3 Ergebnis und Änderung (so haben lange Antworten Platz).
 
 - [x] **Schritt 1: Fehlschlagenden Test schreiben**
 
@@ -236,4 +236,4 @@ Erwartet: FAIL, `scrollWidth` größer als 375 wegen der Tabelle mit 7 Spalten
   `http://<IP des Mac>:5173` steht in der Ausgabe. So muss nichts Ungemergtes deployt werden.
 - [x] **Schritt 3: Abnahme am eigenen iPhone:** Der Entwickler eröffnet am Mac einen Raum, tritt mit dem Handy bei, setzt, (2026-11-15: „passt“)
   antwortet bei offener Tastatur und sieht Auflösung und Ende. Was auffällt, wird im selben PR behoben.
-- [ ] **Schritt 4: Committen, PR, `/code-review`, `plan-pruefer`**
+- [x] **Schritt 4: Committen, PR, `/code-review`, `plan-pruefer`**

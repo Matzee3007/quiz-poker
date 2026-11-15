@@ -40,4 +40,5 @@ WebKit mit dem lokalen Vite-Server und den WebSockets der Spielräume läuft.
   Ordner `webkit-2370`).
 - Ein Lauf eröffnet jetzt acht Spielräume. Lokal ist dafür `RAEUME_PRO_STUNDE=1000` in `.dev.vars` nötig (siehe
   [[projects/quiz-poker/docs/tools/Playwright|Playwright]], „Fehler“).
+- Der Durchlauf dauert länger: Die drei Handy-Tests brauchen in WebKit zusammen etwa 30 Sekunden.
 - Die offene Tastatur von iOS kann Playwright nicht nachbauen. Sie wird nur bei der Abnahme am echten Gerät geprüft.

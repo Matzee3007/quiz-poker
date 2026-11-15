@@ -18,6 +18,13 @@
   box-sizing: border-box;
 }
 
+/* Über 700 px sieht die Seite aus wie vor dem Handy-Layout, darunter gilt der Block am Ende */
+@media (min-width: 701px) {
+  body {
+    min-width: 1100px;
+  }
+}
+
 body {
   margin: 0;
   background: var(--grund);
@@ -1154,6 +1161,8 @@ button.schalter {
     position: absolute;
     left: 0;
     right: 0;
+    max-height: calc(100dvh - 60px);
+    overflow-y: auto;
     border-bottom: 1px solid var(--gold);
     box-shadow: 0 14px 30px rgb(0 0 0 / 50%);
   }
@@ -1186,6 +1195,10 @@ button.schalter {
   .schnellwahl {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1.5fr;
+  }
+
+  .schnellwahl > :last-child {
+    grid-column: 4;
   }
 
   /* Größerer Griff und Trefferfläche für den Daumen. */
@@ -1245,6 +1258,11 @@ button.schalter {
 
   .ergebnisse .platz {
     grid-area: platz;
+  }
+
+  .ergebnisse .entfernen {
+    grid-row: 4;
+    grid-column: 2 / -1;
   }
 
   .ergebnisse .name {
