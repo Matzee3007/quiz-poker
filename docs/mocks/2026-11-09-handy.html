@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Handy – Quiz-Poker</title>
+<style>
+/* ---------- Rahmen des Mocks, gehört nicht zur App ---------- */
+body{margin:0;background:#e9e9ec;color:#1c1f26;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+.m-kopf{background:#fff;border-bottom:1px solid #cfd0d6;padding:14px 24px}
+.m-kopf h1{font-size:20px;margin:0 0 4px}
+.m-kopf p{margin:2px 0 0;color:#3f4450;font-size:13.5px;max-width:1100px}
+.m-teil{padding:34px 24px 4px}
+.m-teil h2{font-size:24px;margin:0}
+.m-teil p{margin:3px 0 0;color:#3f4450;max-width:1100px}
+.m-ab{display:inline-block;background:#1c1f26;color:#fff;border-radius:6px;padding:0 8px;margin-right:8px}
+.m-reihe{display:flex;flex-wrap:wrap;gap:26px 20px;padding:18px 24px 10px}
+.m-zelle{width:395px}
+.m-zelle h3{font-size:15.5px;margin:0}
+.m-zelle .m-satz{margin:1px 0 9px;color:#3f4450;font-size:13.5px;min-height:58px}
+.m-ende{padding:26px 24px 44px;color:#555a66;font-size:13.5px}
+
+.telefon{width:395px;padding:10px;border-radius:48px;background:#08090b;box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.bildschirm{width:375px;height:812px;border-radius:38px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 32px;font:600 15px -apple-system,"Helvetica Neue",Arial,sans-serif;color:#fff;background:var(--flaeche)}
+.status small{font-size:12px;font-weight:600}
+.safari{height:78px;flex:none;background:#1c1c1e;border-top:1px solid #2c2c2e;padding:8px 14px 0;font:13px -apple-system,"Helvetica Neue",Arial,sans-serif}
+.safari span{display:block;background:#2c2c2e;color:#e5e5ea;border-radius:12px;text-align:center;padding:9px 10px}
+.safari i{display:block;width:134px;height:5px;border-radius:3px;background:#fff;margin:14px auto 0;opacity:.85}
+.tastatur{flex:none;background:#2b2b2e;font:17px -apple-system,"Helvetica Neue",Arial,sans-serif;color:#fff;padding-bottom:30px}
+.tastatur .zubehoer{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#1f1f22;border-bottom:1px solid #3a3a3d;color:#0a84ff;font-weight:600;font-size:16px}
+.tastatur .zeile{display:flex;justify-content:center;gap:6px;padding:11px 3px 0}
+.tastatur .zeile b{flex:1;max-width:32px;height:42px;border-radius:5px;background:#6b6b70;display:flex;align-items:center;justify-content:center;font-weight:400;font-size:20px}
+.tastatur .zeile b.w{max-width:44px;background:#47474b;font-size:15px}
+.tastatur .zeile b.lang{max-width:none;flex:5;font-size:15px}
+.tastatur .zeile b.los{max-width:88px;flex:2;background:#0a84ff;font-size:15px}
+
+/* ---------- aus src/stil.css übernommen (Stil C), body-Regeln liegen auf .app ---------- */
+:root{--grund:#0c0e13;--flaeche:#12151c;--knopf:#1c212b;--schrift:#eef0f4;--matt:#a3a9b6;--linie:#262b36;--linie-stark:#3b4252;--gold:#e8bb4f;--gold-schrift:#17120a;--gruen:#2fd98c;--rot:#ff5c6c;--radius:6px}
+*{box-sizing:border-box}
+.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;color-scheme:dark;background:var(--grund);color:var(--schrift);font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.45}
+.app h1,.app h2,.app p{margin:0}
+.app button,.app input,.app textarea{font:inherit;color:inherit}
+.app button{background:var(--knopf);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:9px 16px;cursor:pointer;font-weight:600}
+.app button.haupt{background:var(--gold);border-color:var(--gold);color:var(--gold-schrift)}
+.app button.text{background:none;border:none;color:var(--matt);padding:4px;font-weight:400;text-decoration:underline}
+.app input,.app textarea{background:var(--grund);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:10px 12px;width:100%}
+.app textarea{resize:none;display:block}
+.app label{display:block;color:var(--matt);font-size:14px;margin-bottom:6px}
+.logo{flex:none;color:var(--gold);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:24px}
+.stapel{display:flex;flex-direction:column;gap:18px}
+.reihe{display:flex;gap:12px;align-items:center}
+.ueberschrift{color:var(--matt);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.frage{font-size:30px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.loesung{color:var(--gruen);font-size:26px;font-weight:700}
+.grosszahl{color:var(--gold);font-size:64px;font-weight:800;line-height:1}
+.raumcode{color:var(--gold);font-size:56px;font-weight:800;letter-spacing:.14em}
+.matt{color:var(--matt)}
+.klein{font-size:14px}
+.gold{color:var(--gold);font-weight:700}
+.plus{color:var(--gruen);font-weight:700}
+.minus{color:var(--rot);font-weight:700}
+.punkt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--rot)}
+.punkt.an{background:var(--gruen)}
+.rangliste-zeile{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--linie)}
+.rangliste-zeile.ich{color:var(--gold);font-weight:700}
+.spielidee{display:flex;flex-direction:column;gap:10px}
+.spielidee h1{color:var(--gold);font-size:40px;line-height:1.1}
+.podest{display:flex;gap:16px;align-items:flex-end}
+.podest-platz{flex:1;background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:20px;text-align:center}
+.podest-platz.erster{border-color:var(--gold);padding:36px 20px}
+.podest-platz .chips{color:var(--gold);font-size:28px;font-weight:800}
+.app table{width:100%;border-collapse:collapse}
+.app th{color:var(--matt);font-size:12px;letter-spacing:.08em;text-align:left;text-transform:uppercase}
+.app th,.app td{border-bottom:1px solid var(--linie);padding:12px 10px}
+.app td.zahl,.app th.zahl{text-align:right}
+
+/* ---------- NEU fürs Handy: so könnte @media (max-width: 700px) in stil.css aussehen ---------- */
+.rollen{flex:1;min-height:0;overflow-y:auto;position:relative}
+.rollen::-webkit-scrollbar{display:none}
+.seite{padding:16px}
+.app .kopf{background:var(--flaeche);border-bottom:1px solid var(--linie);padding:8px 16px 9px}
+.kopf .z1{display:flex;align-items:center;gap:12px;min-height:30px}
+.kopf .z1 .rechts{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:14px}
+.kopf .z2{font-size:13px;color:var(--matt);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kopf .z2 strong{color:var(--schrift)}
+.schritt.an{background:var(--gold);color:var(--gold-schrift);border-radius:999px;padding:2px 10px;font-weight:700;font-size:13px}
+.app .frage{font-size:23px}
+.app .karte{padding:16px}
+.app .stapel{gap:14px}
+.spielidee h1{font-size:29px}
+.app button{min-height:44px}
+.app button.voll{width:100%}
+.app button.gross{min-height:52px;font-size:17px}
+.app input{min-height:48px;font-size:17px}            /* ab 16px zoomt iOS beim Antippen nicht hinein */
+.app textarea{font-size:17px;height:96px}
+input.code-feld{font-size:28px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);text-align:center;min-height:58px}
+input.fokus,textarea.fokus{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.caret{display:inline-block;width:2px;height:21px;background:var(--gold);vertical-align:-4px;margin-left:1px}
+.feldwert{display:block;min-height:96px;background:var(--grund);border:1px solid var(--gold);box-shadow:0 0 0 1px var(--gold);border-radius:var(--radius);padding:10px 12px;font-size:17px}
+.einsatz-kopf{display:flex;align-items:baseline;justify-content:center;gap:10px}
+.einsatz-kopf .von{color:var(--matt);font-size:15px}
+.app input[type=range]{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;height:44px;min-height:44px;margin:0}
+.app input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:99px;background:linear-gradient(to right,var(--gold) var(--anteil),var(--knopf) var(--anteil));border:1px solid var(--linie-stark)}
+.app input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-14px;border-radius:50%;background:var(--gold);border:4px dashed var(--gold-schrift);box-shadow:0 0 0 3px var(--gold)}
+.grenzen{display:flex;justify-content:space-between;font-size:13px;color:var(--matt);margin-top:-6px}
+.schnell{display:grid;grid-template-columns:1fr 1fr 1fr 1.5fr;gap:8px}
+.schnell button{padding:0}
+.schnell button.an{border-color:var(--gold);color:var(--gold)}
+.app .rangliste-zeile{padding:11px 0;align-items:center}
+.zustand{font-size:14px;color:var(--matt)}
+.zustand.ok{color:var(--gruen);font-weight:600}
+.aktion{flex:none;background:var(--flaeche);border-top:1px solid var(--linie);padding:12px 16px}
+.aktion .neben{display:block;text-align:center;font-size:13px;color:var(--matt);margin-top:6px}
+.bereit-karte{border-color:var(--gruen)}
+.marke-ok{display:inline-block;background:#0f2a1f;color:var(--gruen);border-radius:99px;padding:1px 10px;font-size:13px;font-weight:600}
+.app .loesung{font-size:24px}
+.frage-klein{font-size:18px;font-weight:700;line-height:1.3}
+.ergebnis{border-color:var(--gold)}
+.ergebnis .zahl-gross{font-size:44px;font-weight:800;line-height:1}
+.erg-zeile{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--linie);align-items:center}
+.erg-zeile .pl{color:var(--matt);font-weight:700;text-align:right}
+.erg-zeile .ant{display:block;font-size:14px;color:var(--matt)}
+.erg-zeile .rechts{text-align:right;line-height:1.25}
+.erg-zeile .rechts small{display:block;font-size:13px}
+.erg-zeile.ich strong{color:var(--gold)}
+.app .raumcode{font-size:52px}
+.app .podest{gap:8px}
+.app .podest-platz{padding:12px 6px}
+.app .podest-platz.erster{padding:26px 6px}
+.app .podest-platz .chips{font-size:24px}
+.sieger{color:var(--gold);font-size:40px;font-weight:800;line-height:1.1}
+.link-zeile{font-size:14px;color:var(--matt);overflow-wrap:anywhere}
+
+/* Variante A: Leiste mit eigenem Platz, klappt die Rangliste auf */
+.app button.rang-leiste{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;width:100%;min-height:48px;border:0;border-bottom:1px solid var(--linie);border-radius:0;background:#171b23;padding:0 16px;font-weight:600;text-align:left}
+.rang-leiste .platz-nr{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--gold-schrift);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}
+.rang-leiste .chips-a{color:var(--gold);font-weight:800;font-size:18px}
+.rang-leiste .auf{margin-left:auto;color:var(--matt);font-size:14px;font-weight:400}
+.rang-leiste.offen{border-bottom-color:var(--gold)}
+.schleier{position:absolute;left:0;right:0;bottom:0;background:rgba(5,6,9,.66);z-index:3}
+.rang-panel{position:absolute;left:0;right:0;z-index:4;background:var(--flaeche);border-bottom:1px solid var(--gold);padding:4px 16px 12px;box-shadow:0 14px 30px rgba(0,0,0,.5)}
+.rang-panel .zu{display:block;margin:8px auto 0;width:100%}
+
+/* Variante B: Reiter unten */
+.reiter{flex:none;display:grid;grid-template-columns:1fr 1fr;background:var(--flaeche);border-top:1px solid var(--linie)}
+.app .reiter button{border:0;border-radius:0;background:none;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--matt);font-size:13px;font-weight:600;padding:6px 0;position:relative}
+.app .reiter button.an{color:var(--gold)}
+.app .reiter button.an::before{content:"";position:absolute;top:-1px;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--gold)}
+.sym-chip{width:20px;height:20px;border-radius:50%;border:3px dashed currentColor}
+.sym-liste{width:20px;height:16px;background:linear-gradient(currentColor 0 0) 0 0/100% 3px no-repeat,linear-gradient(currentColor 0 0) 0 6.5px/75% 3px no-repeat,linear-gradient(currentColor 0 0) 0 13px/50% 3px no-repeat}
+.reiter .zusatz{font-weight:400;font-size:12px}
+.reiter .neu-punkt{position:absolute;top:9px;left:calc(50% + 12px);width:9px;height:9px;border-radius:50%;background:var(--gold)}
+.rang-gross .rangliste-zeile{padding:14px 0;font-size:17px}
+.rang-gross .pl{display:inline-block;width:26px;color:var(--matt);font-weight:700}
+.eigen-kopf{display:flex;justify-content:space-between;align-items:baseline}
+
+/* Mock auf schmalem Bildschirm: Rahmen weg, nur der Bildschirm */
+@media (max-width:430px){
+  .m-kopf,.m-teil{padding-left:8px;padding-right:8px}
+  .m-reihe{padding:14px 7px 6px;gap:22px}
+  .m-zelle{width:376px}
+  .m-zelle .m-satz{min-height:0}
+  .telefon{width:auto;padding:0;background:none;border-radius:0;box-shadow:none}
+  .bildschirm{border-radius:16px;outline:1px solid #9a9ca5}
+}
+</style>
+</head>
+<body>
+
+<div class="m-kopf">
+  <h1>Mock Handy – Spieler-Ansichten von Quiz-Poker</h1>
+  <p>Wegwerf-Entwurf, Bildschirm 375 × 812 px (iPhone 13 mini, schmalste übliche Breite), Stil C aus src/stil.css. Alle Namen, Chips, Fragen und der Raumcode KMRT sind Beispieldaten. Die Knöpfe tun nichts.</p>
+  <p>Beispielpartie: Quiz „Spieleabend bei Jonas“, fünf Spieler, du bist <b>Sophie</b>. Kategorie „Hauptstädte der Welt“, Runde 2 von 3. Vor der Runde: Lena 150, Jonas 120, Sophie 100, Aylin 90, Tim 80 Chips.</p>
+  <p>Oben stehen die Ansichten, die in beiden Varianten gleich sind. Darunter A und B: Sie unterscheiden sich nur darin, wo die Rangliste auf dem Handy wohnt.</p>
+</div>
+
+<div id="inhalt"></div>
+
+<div class="m-ende">Ende des Mocks. Gezeigt sind die Spieler-Ansichten, der Quiz-Master bleibt am Laptop (Desktop-Ansicht unverändert).</div>
+
+<script>
+const R = "KMRT";
+const VOR = [
+  { name: "Lena", chips: 150, an: true, gesetzt: true, bereit: true },
+  { name: "Jonas", chips: 120, an: true, gesetzt: true, bereit: false },
+  { name: "Sophie", chips: 100, an: true, gesetzt: false, bereit: true, ich: true },
+  { name: "Aylin", chips: 90, an: true, gesetzt: true, bereit: true },
+  { name: "Tim", chips: 80, an: false, gesetzt: false, bereit: false },
+];
+const NACH = [
+  { pl: 1, name: "Lena", ant: "Canberra", r: true, e: 60, chips: 210 },
+  { pl: 2, name: "Sophie", ant: "Canberra", r: true, e: 40, chips: 140, ich: true },
+  { pl: 3, name: "Aylin", ant: "canberra", r: true, e: 20, chips: 110 },
+  { pl: 4, name: "Jonas", ant: "Sydney", r: false, e: 50, chips: 70 },
+  { pl: 4, name: "Tim", ant: "Melbourne", r: false, e: 10, chips: 70, aus: true },
+];
+const FRAGE = "Welche Stadt ist die Hauptstadt von Australien?";
+
+function kopf(phase, zeile2 = true) {
+  return `<header class="kopf">
+    <div class="z1"><span class="logo">Quiz-Poker</span>
+      <span class="rechts"><span class="matt">Raum <strong style="color:var(--schrift)">${R}</strong></span>${phase ? `<span class="schritt an">${phase}</span>` : ""}</span></div>
+    ${zeile2 ? `<div class="z2">Hauptstädte der Welt · Runde <strong>2 von 3</strong></div>` : ""}
+  </header>`;
+}
+function kopfStart(rechts) {
+  return `<header class="kopf"><div class="z1"><span class="logo">Quiz-Poker</span><span class="rechts">${rechts}</span></div></header>`;
+}
+function leisteA(platz, chips, offen = false) {
+  return `<button class="rang-leiste${offen ? " offen" : ""}"><span class="platz-nr">${platz}.</span><span>Platz ${platz} von 5</span><span class="chips-a">${chips}</span><span class="matt klein" style="font-weight:400">Chips</span><span class="auf">${offen ? "Zuklappen ▴" : "Rangliste ▾"}</span></button>`;
+}
+function reiterB(aktiv, platz, chips, neu = false) {
+  return `<nav class="reiter">
+    <button class="${aktiv === "runde" ? "an" : ""}"><span class="sym-chip"></span>Runde${neu ? `<span class="neu-punkt"></span>` : ""}</button>
+    <button class="${aktiv === "rang" ? "an" : ""}"><span class="sym-liste"></span>Rangliste <span class="zusatz">Platz ${platz} · ${chips}</span></button>
+  </nav>`;
+}
+function aktion(knopf, neben = "") {
+  return `<div class="aktion">${knopf}${neben ? `<span class="neben">${neben}</span>` : ""}</div>`;
+}
+function rangZeilen(liste, mitPlatz) {
+  const sort = [...liste].sort((a, b) => b.chips - a.chips);
+  return sort.map((s, i) => `<div class="rangliste-zeile${s.ich ? " ich" : ""}"><span>${mitPlatz ? `<span class="pl">${i + 1}.</span>` : ""}<span class="punkt${s.an !== false && !s.aus ? " an" : ""}"></span>${s.name}${s.ich ? ` <span class="matt" style="font-weight:400">(du)</span>` : ""}</span><span class="${s.ich ? "" : "gold"}">${s.chips}</span></div>`).join("");
+}
+const TASTATUR = `<div class="tastatur"><div class="zubehoer"><span>&#8963;&nbsp;&nbsp;&#8964;</span><span>Fertig</span></div>
+  <div class="zeile">${"qwertzuiopü".split("").map(z => `<b>${z}</b>`).join("")}</div>
+  <div class="zeile">${"asdfghjklöä".split("").map(z => `<b>${z}</b>`).join("")}</div>
+  <div class="zeile"><b class="w">&#8679;</b>${"yxcvbnm".split("").map(z => `<b>${z}</b>`).join("")}<b class="w">&#9003;</b></div>
+  <div class="zeile"><b class="w">123</b><b class="lang">Leerzeichen</b><b class="los">Los</b></div></div>`;
+const SAFARI = (pfad) => `<div class="safari"><span>quiz-poker.quiz-poker.workers.dev${pfad}</span><i></i></div>`;
+
+/* ---------- Bildschirm-Inhalte ---------- */
+const EINSATZ = `<main class="seite stapel">
+  <div><p class="ueberschrift">Kategorie</p><p class="frage">Hauptstädte der Welt</p></div>
+  <section class="karte stapel" style="gap:12px">
+    <label style="margin:0;text-align:center">Dein Einsatz (10 bis 100 Chips)</label>
+    <div class="einsatz-kopf"><span class="grosszahl">40</span><span class="von">von 100</span></div>
+    <input type="range" min="10" max="100" value="40" style="--anteil:33%">
+    <div class="grenzen"><span>10</span><span>100</span></div>
+    <div class="schnell"><button>10</button><button>25</button><button>50</button><button>Alle Chips</button></div>
+    <p class="matt klein" style="text-align:center">Bei Richtig hast du <b style="color:var(--gruen)">140</b> Chips, bei Falsch <b style="color:var(--rot)">60</b>.</p>
+  </section>
+  <div><p class="ueberschrift">Wer hat gesetzt</p>
+    ${VOR.map(s => `<div class="rangliste-zeile"><span>${s.name}${s.ich ? ` <span class="matt">(du)</span>` : ""}</span><span class="zustand${s.gesetzt ? " ok" : ""}">${s.gesetzt ? "hat gesetzt" : "wählt noch"}</span></div>`).join("")}
+  </div>
+</main>`;
+const KNOPF_EINSATZ = aktion(`<button class="haupt voll gross">40 Chips setzen</button>`, "Ändern geht, bis die Frage erscheint.");
+
+const ANTWORT = `<main class="seite stapel">
+  <div><p class="ueberschrift">Frage</p><p class="frage">${FRAGE}</p></div>
+  <p class="matt">Dein Einsatz: <span class="gold">40 Chips</span></p>
+  <div><label>Deine Antwort (8 von 200)</label><span class="feldwert">Canberra<span class="caret"></span></span></div>
+  <button class="haupt voll gross ziel">Bereit</button>
+  <div><p class="ueberschrift">Wer ist bereit</p>
+    ${VOR.map(s => `<div class="rangliste-zeile"><span>${s.name}</span><span class="zustand${s.bereit && !s.ich ? " ok" : ""}">${s.bereit && !s.ich ? "bereit" : "antwortet noch"}</span></div>`).join("")}
+  </div>
+</main>`;
+
+const BEREIT = `<main class="seite stapel">
+  <div><p class="ueberschrift">Frage</p><p class="frage">${FRAGE}</p></div>
+  <section class="karte bereit-karte stapel" style="gap:10px">
+    <div class="reihe" style="justify-content:space-between"><span class="ueberschrift">Deine Antwort</span><span class="marke-ok">bereit</span></div>
+    <p style="font-size:22px;font-weight:700">Canberra</p>
+    <p class="matt klein">Einsatz <span class="gold">40 Chips</span>. Ändern geht, bis der Quiz-Master auswertet.</p>
+    <button class="voll">Bereit lösen und ändern</button>
+  </section>
+  <div><p class="ueberschrift">Wer ist bereit (3 von 5)</p>
+    ${VOR.map(s => `<div class="rangliste-zeile"><span>${s.name}${s.ich ? ` <span class="matt">(du)</span>` : ""}</span><span class="zustand${s.bereit ? " ok" : ""}">${s.bereit ? "bereit" : "antwortet noch"}</span></div>`).join("")}
+  </div>
+</main>`;
+
+const AUFLOESUNG = `<main class="seite stapel">
+  <div><p class="ueberschrift">Frage</p><p class="frage-klein">${FRAGE}</p></div>
+  <div class="karte" style="padding:12px 16px"><p class="ueberschrift">Musterlösung</p><p class="loesung">Canberra</p></div>
+  <section class="karte ergebnis">
+    <div class="reihe" style="justify-content:space-between;align-items:flex-end">
+      <div><p class="ueberschrift">Deine Runde</p><p class="plus" style="font-size:20px">Richtig</p></div>
+      <span class="zahl-gross plus">+40</span>
+    </div>
+    <p class="matt" style="margin-top:8px">Jetzt <span class="gold">140 Chips</span>, Platz 2 von 5 (vorher Platz 3)</p>
+  </section>
+  <div><p class="ueberschrift">Alle Antworten</p>
+    ${NACH.map(s => `<div class="erg-zeile${s.ich ? " ich" : ""}"><span class="pl">${s.pl}</span>
+      <span><strong>${s.name}</strong>${s.ich ? ` <span class="matt">(du)</span>` : ""}<span class="ant">„${s.ant}“ · <span class="${s.r ? "plus" : "minus"}" style="font-weight:600">${s.r ? "Richtig" : "Falsch"}</span></span></span>
+      <span class="rechts"><span class="gold">${s.chips}</span><small class="${s.r ? "plus" : "minus"}">${s.r ? "+" : "−"}${s.e}</small></span></div>`).join("")}
+  </div>
+  <p class="matt">Der Quiz-Master schaltet gleich weiter …</p>
+</main>`;
+
+const RANG_SPAETER = [
+  { name: "Lena", chips: 150, an: true }, { name: "Jonas", chips: 120, an: true },
+  { name: "Sophie", chips: 100, an: true, ich: true }, { name: "Aylin", chips: 90, an: true }, { name: "Tim", chips: 80, an: false },
+];
+
+/* ---------- gemeinsam ---------- */
+const START = `<main class="seite stapel">
+  <section class="spielidee"><h1>Setze deine Chips auf dein Wissen.</h1>
+    <p class="matt klein">Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht. Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch kostet ihn.</p></section>
+  <form class="karte stapel" onsubmit="return false">
+    <h2>Spielraum beitreten</h2>
+    <div><label>Raumcode</label><input class="code-feld" value="KMRT" maxlength="4"></div>
+    <div><label>Dein Name</label><input value="Sophie" maxlength="20"></div>
+    <button class="haupt voll gross">Beitreten</button>
+  </form>
+  <section class="karte stapel">
+    <h2>Spielraum eröffnen</h2>
+    <p class="matt klein">Du leitest die Partie als Quiz-Master. Das geht am besten am Laptop.</p>
+    <button class="voll">Beispiel-Quiz spielen</button>
+    <button class="voll">Öffentliche Quizze</button>
+    <button class="voll">Eigenes Quiz erstellen</button>
+  </section>
+</main>`;
+
+const LINK_BEITRETEN = `<main class="seite stapel">
+  <form class="karte stapel" onsubmit="return false">
+    <h2>Spielraum ${R} beitreten</h2>
+    <div><label>Dein Name</label><input class="fokus" value="Sophie" maxlength="20"></div>
+    <button class="haupt voll gross">Beitreten</button>
+  </form>
+</main>`;
+
+const WARTEN = `<main class="seite stapel">
+  <section class="karte stapel" style="gap:10px">
+    <p class="ueberschrift">Raumcode</p>
+    <p class="raumcode">${R}</p>
+    <p class="link-zeile">quiz-poker.quiz-poker.workers.dev/raum/${R}</p>
+    <button class="voll">Link kopieren</button>
+    <p class="matt">Quiz: <strong style="color:var(--schrift)">Spieleabend bei Jonas</strong></p>
+    <p class="matt">Warten auf den Quiz-Master …</p>
+  </section>
+  <section class="karte" style="padding-top:12px;padding-bottom:4px">
+    <p class="ueberschrift">Spieler (5 von 8)</p>
+    ${[["Jonas", 1], ["Lena", 1], ["Sophie", 1], ["Aylin", 1], ["Tim", 0]].map(([n, a]) => `<div class="rangliste-zeile"><span><span class="punkt${a ? " an" : ""}"></span>${n}</span><span class="gold">100</span></div>`).join("")}
+  </section>
+</main>`;
+
+const ENDE = `<main class="seite stapel">
+  <div><p class="ueberschrift">Gewonnen hat</p><p class="sieger">Lena</p></div>
+  <section class="podest">
+    <div class="podest-platz erster"><p class="ueberschrift">Platz 1</p><p><strong>Lena</strong></p><p class="chips">260</p></div>
+    <div class="podest-platz"><p class="ueberschrift">Platz 2</p><p><strong>Sophie</strong></p><p class="chips">230</p></div>
+    <div class="podest-platz"><p class="ueberschrift">Platz 3</p><p><strong>Aylin</strong></p><p class="chips">150</p></div>
+  </section>
+  <table><thead><tr><th class="zahl">Platz</th><th>Spieler</th><th class="zahl">Chips</th></tr></thead><tbody>
+    ${[[1, "Lena", 260], [2, "Sophie (du)", 230], [3, "Aylin", 150], [4, "Jonas", 40], [5, "Tim", 20]].map(([p, n, c]) => `<tr><td class="zahl">${p}</td><td><strong>${n}</strong></td><td class="zahl gold">${c}</td></tr>`).join("")}
+  </tbody></table>
+  <p class="matt klein">Danke fürs Mitspielen. Der Quiz-Master kann eine neue Partie eröffnen.</p>
+</main>`;
+
+/* ---------- Telefon zusammensetzen ---------- */
+function telefon({ titel, satz, oben = "", inhalt, nachInhalt = "", unten = "", tastatur = false, pfad = "/raum/" + R, ueberlage = "", scrollZuZiel = false }) {
+  return `<div class="m-zelle"><h3>${titel}</h3><p class="m-satz">${satz}</p>
+  <div class="telefon"><div class="bildschirm">
+    <div class="status"><span>21:14</span><small>5G &nbsp;78 %</small></div>
+    <div class="app">
+      <div class="rollen${scrollZuZiel ? " zum-ziel" : ""}">${oben}${inhalt}${nachInhalt}</div>
+      ${ueberlage}
+      ${unten}
+    </div>
+    ${tastatur ? TASTATUR : SAFARI(pfad)}
+  </div></div></div>`;
+}
+function teil(ab, titel, text, telefone) {
+  return `<section class="m-teil"><h2>${ab ? `<span class="m-ab">${ab}</span>` : ""}${titel}</h2><p>${text}</p></section><div class="m-reihe">${telefone.join("")}</div>`;
+}
+
+const gemeinsam = teil("", "Gemeinsam in beiden Varianten", "Beitreten, Warten und Ende brauchen keinen eigenen Platz für die Rangliste: Vor der Partie ist die Spielerliste der Inhalt, am Ende die Rangliste selbst.", [
+  telefon({ titel: "1 · Startseite: Raumcode und Name", satz: "Auf dem Handy steht Beitreten vor „Spielraum eröffnen“, denn am Tisch treten fast alle bei. Der Raumcode ist groß und in Gold.", oben: kopfStart(`<button class="text">Anmelden</button>`), inhalt: START, pfad: "/" }),
+  telefon({ titel: "1b · Über den Link, Tastatur offen", satz: "Wer den Link bekommt, tippt nur den Namen. Der Beitreten-Knopf bleibt über der Tastatur sichtbar.", oben: kopfStart(""), inhalt: LINK_BEITRETEN, tastatur: true }),
+  telefon({ titel: "2 · Warten auf den Start", satz: "Raumcode, Link und Spielerliste untereinander statt in zwei Spalten.", oben: kopf("", false), inhalt: WARTEN }),
+  telefon({ titel: "6 · Ende", satz: "Sieger groß in Gold, Podest in drei schmalen Spalten, darunter der Endstand.", oben: kopf("Ende", false), inhalt: ENDE }),
+]);
+
+const OVERLAY_A = `<div class="schleier" style="top:118px"></div><div class="rang-panel" style="top:118px">${rangZeilen(RANG_SPAETER, false)}<button class="zu voll">Zuklappen</button></div>`;
+
+const varianteA = teil("A", "Leiste oben mit eigenem Platz und Chips", "Eine schmale Leiste unter dem Kopf zeigt immer deinen Platz und deine Chips. Ein Tipp klappt die ganze Rangliste über dem Inhalt auf. Der Hauptknopf jeder Phase sitzt unten im Daumenbereich.", [
+  telefon({ titel: "3 · Runde: Einsatz setzen", satz: "Kategorie, große Einsatzzahl, Regler mit großem Griff und Schnellwahl. „Setzen“ steht fest unten.", oben: kopf("Einsatz") + leisteA(3, 100), inhalt: EINSATZ, unten: KNOPF_EINSATZ }),
+  telefon({ titel: "3b · Rangliste aufgeklappt", satz: "Während des Setzens die Chips der anderen sehen: Die Liste legt sich über den Inhalt und klappt mit einem Tipp wieder zu.", oben: kopf("Einsatz") + leisteA(3, 100, true), inhalt: EINSATZ, unten: KNOPF_EINSATZ, ueberlage: OVERLAY_A }),
+  telefon({ titel: "4 · Runde: Antwort eingeben", satz: "Tastatur offen: Die Seite rollt bis zum Bereit-Knopf, die Leiste bleibt oben stehen.", oben: kopf("Antwort") + leisteA(3, 100), inhalt: ANTWORT, tastatur: true, scrollZuZiel: true }),
+  telefon({ titel: "4b · Runde: bereit", satz: "Die eigene Antwort steht in einer grün gerahmten Karte, darunter wer noch antwortet.", oben: kopf("Antwort") + leisteA(3, 100), inhalt: BEREIT }),
+  telefon({ titel: "5 · Auflösung", satz: "Musterlösung, dein Ergebnis groß, dann alle Antworten als zweizeilige Liste statt Tabelle. Die Leiste zeigt schon den neuen Platz.", oben: kopf("Auflösung") + leisteA(2, 140), inhalt: AUFLOESUNG }),
+]);
+
+const RANG_B = `<main class="seite stapel">
+  <div class="eigen-kopf"><p class="ueberschrift">Rangliste</p><span class="matt klein">Runde 2 von 3</span></div>
+  <section class="karte" style="padding:16px 16px 6px">
+    <div class="eigen-kopf"><span class="matt">Du</span><span class="matt klein">Platz 3 von 5</span></div>
+    <div class="einsatz-kopf" style="justify-content:flex-start;margin:4px 0 6px"><span class="grosszahl" style="font-size:48px">100</span><span class="von">Chips</span></div>
+  </section>
+  <div class="rang-gross">${rangZeilen(RANG_SPAETER, true)}</div>
+  <p class="matt klein">Der Punkt zeigt, wer gerade verbunden ist. Tim ist offline.</p>
+</main>`;
+
+const varianteB = teil("B", "Eigener Reiter „Rangliste“ unten", "Unten zwei Reiter wie in einer App: „Runde“ und „Rangliste“. Der Reiter verrät Platz und Chips, die ganze Liste bekommt einen eigenen Bildschirm. Der Hauptknopf sitzt direkt über den Reitern.", [
+  telefon({ titel: "3 · Runde: Einsatz setzen", satz: "Gleicher Inhalt wie A, oben ohne Leiste. Platz und Chips stehen klein im Reiter.", oben: kopf("Einsatz"), inhalt: EINSATZ, unten: KNOPF_EINSATZ + reiterB("runde", 3, 100) }),
+  telefon({ titel: "3b · Reiter Rangliste", satz: "Die Liste füllt den Bildschirm, mit großer eigener Chipzahl. Der Punkt am Reiter „Runde“ meldet, dass dort gesetzt werden muss.", oben: kopf("Einsatz"), inhalt: RANG_B, unten: reiterB("rang", 3, 100, true) }),
+  telefon({ titel: "4 · Runde: Antwort eingeben", satz: "Tastatur offen: Die Reiter verschwinden hinter der Tastatur, es bleibt mehr Platz für Frage und Antwort.", oben: kopf("Antwort"), inhalt: ANTWORT, tastatur: true, scrollZuZiel: true }),
+  telefon({ titel: "4b · Runde: bereit", satz: "Wie in A, die Reiter stehen unten.", oben: kopf("Antwort"), inhalt: BEREIT, unten: reiterB("runde", 3, 100) }),
+  telefon({ titel: "5 · Auflösung", satz: "Wie in A. Der Reiter zeigt schon den neuen Platz 2 mit 140 Chips.", oben: kopf("Auflösung"), inhalt: AUFLOESUNG, unten: reiterB("runde", 2, 140) }),
+]);
+
+document.getElementById("inhalt").innerHTML = gemeinsam + varianteA + varianteB;
+
+// Bei offener Tastatur rollt der Browser zum Feld: Bereit-Knopf an den unteren Rand holen.
+document.querySelectorAll(".zum-ziel").forEach((rolle) => {
+  const ziel = rolle.querySelector(".ziel");
+  rolle.scrollTop = ziel.offsetTop + ziel.offsetHeight - rolle.clientHeight + 14;
+});
+</script>
+</body>
+</html>

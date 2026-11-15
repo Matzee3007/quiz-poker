@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { Aktion } from "../protokoll";
-  import type { QuizMasterAnsicht, SpielerAnsicht } from "../regeln/ansicht";
+  import {
+    platzVon,
+    type QuizMasterAnsicht,
+    type SpielerAnsicht,
+  } from "../regeln/ansicht";
   import EntfernenKnopf from "./EntfernenKnopf.svelte";
 
   interface Props {
@@ -14,10 +18,6 @@
   const reihenfolge = $derived(
     [...ansicht.spieler].sort((links, rechts) => rechts.chips - links.chips),
   );
-
-  function platzVon(chips: number): number {
-    return reihenfolge.findIndex((spieler) => spieler.chips === chips) + 1;
-  }
 </script>
 
 <main class="seite stapel">
@@ -32,7 +32,7 @@
     </div>
   </section>
 
-  <table>
+  <table class="ergebnisse">
     <thead>
       <tr>
         <th class="zahl">Platz</th>
@@ -51,31 +51,33 @@
       {#each reihenfolge as spieler (spieler.id)}
         {@const einsatz = spieler.einsatz ?? 0}
         <tr>
-          <td class="zahl">{platzVon(spieler.chips)}</td>
-          <td>
+          <td class="zahl platz">{platzVon(ansicht.spieler, spieler.chips)}</td>
+          <td class="name">
             <strong>{spieler.name}</strong>
             {#if spieler.id === ichId}<span class="matt">(du)</span>{/if}
           </td>
           {#if spieler.spieltMit}
-            <td class="zahl gold">{einsatz}</td>
-            <td>{spieler.antwort ?? "keine Antwort"}</td>
-            <td class={spieler.richtig ? "plus" : "minus"}>
+            <td class="zahl gold einsatz">{einsatz}</td>
+            <td class="antwort">{spieler.antwort ?? "keine Antwort"}</td>
+            <td class="ergebnis {spieler.richtig ? 'plus' : 'minus'}">
               {spieler.richtig ? "Richtig" : "Falsch"}
             </td>
             <td
-              class="zahl"
+              class="zahl aenderung"
               class:plus={spieler.richtig && einsatz > 0}
               class:minus={!spieler.richtig && einsatz > 0}
             >
               {einsatz === 0 ? "" : spieler.richtig ? "+" : "−"}{einsatz}
             </td>
           {:else}
-            <td class="zahl matt">–</td>
-            <td class="matt" colspan="3">spielt ab der nächsten Runde mit</td>
+            <td class="zahl matt einsatz">–</td>
+            <td class="matt antwort" colspan="3"
+              >spielt ab der nächsten Runde mit</td
+            >
           {/if}
-          <td class="zahl gold">{spieler.chips}</td>
+          <td class="zahl gold chips">{spieler.chips}</td>
           {#if ansicht.rolle === "quiz-master"}
-            <td>
+            <td class="entfernen">
               <EntfernenKnopf id={spieler.id} name={spieler.name} {senden} />
             </td>
           {/if}

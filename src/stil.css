@@ -18,6 +18,13 @@
   box-sizing: border-box;
 }
 
+/* Über 700 px sieht die Seite aus wie vor dem Handy-Layout, darunter gilt der Block am Ende */
+@media (min-width: 701px) {
+  body {
+    min-width: 1100px;
+  }
+}
+
 body {
   margin: 0;
   background: var(--grund);
@@ -25,7 +32,6 @@ body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
   line-height: 1.45;
-  min-width: 1100px;
 }
 
 h1,
@@ -1004,4 +1010,297 @@ button.schalter {
 .notiz button.text {
   padding: 0;
   margin-top: 6px;
+}
+
+/* Ranglisten-Leiste der Spieler: nur auf dem Handy, siehe unten. */
+.rang-leiste-rahmen {
+  display: none;
+}
+
+/* Handy: Spieler sitzen mit dem Handy am Tisch (Mock 2026-11-09-handy.html, Plan 2026-11-09-handy-layout). */
+@media (max-width: 700px) {
+  .kopf {
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding: 8px 16px;
+  }
+
+  .kopf .rest {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Nur die aktive Phase, alle fünf passen nicht in die Breite. */
+  .schritt:not(.an) {
+    display: none;
+  }
+
+  .seite {
+    padding: 16px;
+  }
+
+  .karte {
+    padding: 16px;
+  }
+
+  .stapel {
+    gap: 14px;
+  }
+
+  .zwei-spalten,
+  .frage-loesung,
+  .wege,
+  .wege.drei {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .reihe {
+    flex-wrap: wrap;
+  }
+
+  .reihe > .matt {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Am Tisch treten fast alle bei, nur einer eröffnet. */
+  .beitreten {
+    order: -1;
+  }
+
+  .spielidee h1 {
+    font-size: 29px;
+  }
+
+  .frage {
+    font-size: 23px;
+  }
+
+  .loesung {
+    font-size: 24px;
+  }
+
+  .raumcode {
+    font-size: 52px;
+  }
+
+  button {
+    min-height: 44px;
+  }
+
+  button.haupt {
+    width: 100%;
+    min-height: 52px;
+    font-size: 17px;
+  }
+
+  /* Unter 16 px zoomt Safari beim Antippen in das Feld. */
+  input,
+  textarea {
+    font-size: 17px;
+    min-height: 48px;
+  }
+
+  textarea {
+    height: 96px;
+  }
+
+  .rang-leiste-rahmen {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  button.rang-leiste {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    border: 0;
+    border-bottom: 1px solid var(--linie);
+    border-radius: 0;
+    background: var(--knopf);
+    padding: 0 16px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  button.rang-leiste.offen {
+    border-bottom-color: var(--gold);
+  }
+
+  .rang-leiste .platz-nr {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--gold-schrift);
+    font-weight: 800;
+  }
+
+  .rang-leiste .chips {
+    color: var(--gold);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .rang-leiste .auf {
+    margin-left: auto;
+    color: var(--matt);
+    font-weight: 400;
+  }
+
+  .rang-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - 60px);
+    overflow-y: auto;
+    border-bottom: 1px solid var(--gold);
+    box-shadow: 0 14px 30px rgb(0 0 0 / 50%);
+  }
+
+  .rang-panel .karte {
+    border: 0;
+    border-radius: 0;
+  }
+
+  /* Die Rangliste daneben ersetzt auf dem Handy die Leiste oben. */
+  .spieler-runde > aside {
+    display: none;
+  }
+
+  /* Hauptknopf ans Ende der Karte, er klebt beim Scrollen unten. */
+  .einsatz-reihe {
+    display: contents;
+  }
+
+  .spieler-runde .aktion {
+    order: 1;
+    position: sticky;
+    bottom: 0;
+    margin: 0 -16px -16px;
+    padding: 12px 16px;
+    background: var(--flaeche);
+    border-top: 1px solid var(--linie);
+  }
+
+  .schnellwahl {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.5fr;
+  }
+
+  .schnellwahl > :last-child {
+    grid-column: 4;
+  }
+
+  /* Größerer Griff und Trefferfläche für den Daumen. */
+  input[type="range"] {
+    appearance: none;
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--knopf);
+    border: 1px solid var(--linie-stark);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 34px;
+    height: 34px;
+    margin-top: -14px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  /* Auflösung: jede Zeile der Tabelle als kleiner Block in drei Zeilen. */
+  .ergebnisse,
+  .ergebnisse tbody {
+    display: block;
+  }
+
+  .ergebnisse thead,
+  .ergebnisse .einsatz {
+    display: none;
+  }
+
+  .ergebnisse tr {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "platz name chips"
+      ". antwort antwort"
+      ". ergebnis aenderung";
+    gap: 2px 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .ergebnisse td {
+    padding: 0;
+    border: 0;
+  }
+
+  .ergebnisse .platz {
+    grid-area: platz;
+  }
+
+  .ergebnisse .entfernen {
+    grid-row: 4;
+    grid-column: 2 / -1;
+  }
+
+  .ergebnisse .name {
+    grid-area: name;
+  }
+
+  .ergebnisse .chips {
+    grid-area: chips;
+  }
+
+  .ergebnisse .antwort {
+    grid-area: antwort;
+    overflow-wrap: anywhere;
+  }
+
+  .ergebnisse .ergebnis {
+    grid-area: ergebnis;
+  }
+
+  .ergebnisse .aenderung {
+    grid-area: aenderung;
+  }
+
+  .podest {
+    gap: 8px;
+  }
+
+  .podest-platz {
+    min-width: 0;
+    padding: 12px 6px;
+    font-size: 15px;
+  }
+
+  .podest-platz.erster {
+    padding: 26px 6px;
+  }
+
+  .podest-platz .chips {
+    font-size: 24px;
+  }
 }

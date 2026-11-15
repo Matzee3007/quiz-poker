@@ -3,6 +3,7 @@
   import { mindesteinsatzFuer } from "../regeln/chips";
   import type { SpielerAnsicht } from "../regeln/ansicht";
   import Rangliste from "./Rangliste.svelte";
+  import RanglisteLeiste from "./RanglisteLeiste.svelte";
 
   interface Props {
     ansicht: SpielerAnsicht;
@@ -29,7 +30,9 @@
   );
 </script>
 
-<main class="seite zwei-spalten">
+<RanglisteLeiste spieler={ansicht.spieler} ichId={ansicht.ichId} />
+
+<main class="seite zwei-spalten spieler-runde">
   <section class="karte stapel">
     {#if !spieltMit}
       <p class="hinweis">Du spielst ab der nächsten Runde mit.</p>
@@ -51,13 +54,15 @@
             einsatzEingabe = Number(ereignis.currentTarget.value);
           }}
         />
-        <div class="reihe">
-          <button
-            class="haupt"
-            onclick={() => senden({ typ: "einsatz-setzen", einsatz })}
-          >
-            {ich?.hatGesetzt ? "Einsatz ändern" : "Einsatz setzen"}
-          </button>
+        <div class="reihe einsatz-reihe">
+          <div class="aktion">
+            <button
+              class="haupt"
+              onclick={() => senden({ typ: "einsatz-setzen", einsatz })}
+            >
+              {ich?.hatGesetzt ? "Einsatz ändern" : "Einsatz setzen"}
+            </button>
+          </div>
           <div class="schnellwahl">
             {#each schnellwahl as wert (wert)}
               <button onclick={() => (einsatzEingabe = wert)}>{wert}</button>
@@ -98,7 +103,7 @@
             <textarea id="antwort" bind:value={antwort} maxlength="200"
             ></textarea>
           </div>
-          <div>
+          <div class="aktion">
             <button
               class="haupt"
               disabled={antwort.trim() === ""}

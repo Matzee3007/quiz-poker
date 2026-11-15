@@ -144,7 +144,7 @@
     {/if}
 
     <form
-      class="karte stapel"
+      class="karte stapel beitreten"
       onsubmit={(ereignis) => {
         ereignis.preventDefault();
         void namensAnfrage("spieler");
