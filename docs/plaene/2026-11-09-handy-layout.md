@@ -1,6 +1,6 @@
 ---
 titel: "Plan: Handy-Layout für Spieler"
-status: aktiv
+status: abgeschlossen
 erstellt: 2026-11-09
 tags: [plan, phase-4, handy, oberflaeche]
 ---

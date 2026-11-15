@@ -112,6 +112,9 @@ npm run cron-pruefen               # Prüfen, ob der tägliche Lauf stattfand, s
 
 Vor jedem Commit: `npm run check` (Linter, Format, Typen, Tests und Build)
 
+Vor `npm run test:browser`: `.dev.vars` enthält `RAEUME_PRO_STUNDE=1000`, und `npx playwright install chromium webkit` hat
+die Browser zur festen Version geladen.
+
 ## Dokumentation
 
 Allgemeine Konventionen (ADRs, Lernjournale, Tool-Notizen, Skills, Tools für später) stehen in

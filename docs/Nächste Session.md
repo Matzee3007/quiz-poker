@@ -1,17 +1,17 @@
 ---
 titel: Nächste Session
 status: aktiv
-erstellt: 2026-11-07
+erstellt: 2026-11-15
 tags: [session, übergabe]
 ---
 
 # Nächste Session
 
-Stand vom 2026-11-07. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 3 - AGENTS und Playwright|Lernjournal Phase 3 - AGENTS und Playwright]].
+Stand vom 2026-11-15. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 4 - Betrieb und Handy|Lernjournal Phase 4 - Betrieb und Handy]].
 
 ## Stand bei Sessionende
 
-- **Branch:** `main` (nach dem Merge von PR #27)
+- **Branch:** `main` (nach dem Merge von PR #33)
 - **Offene PRs:** keine
 - **Nicht committet:** nichts
 
@@ -26,56 +26,45 @@ Stand vom 2026-11-07. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
 
 ## Womit es weitergeht
 
-**Phase 3 – Quiz-Sammlung ist abgeschlossen.** Seit 2026-11-07 sind öffentliche Quizze, Kopien und die Sammlung online
-([[projects/quiz-poker/docs/plaene/2026-11-07-oeffentliche-quizze|Plan]], PR #25 und #26, Messung im Abschnitt
-„Veröffentlichung“ des Plans).
+**Phase 4 – Spieleabend läuft.** Erledigt sind die Absicherung des Betriebs (PR #31,
+[[projects/quiz-poker/docs/adr/0009-sicherungen-und-loeschfristen|ADR 0009]]) und das Handy-Layout für Spieler (PR #32,
+[[projects/quiz-poker/docs/plaene/2026-11-09-handy-layout|Plan]], [[projects/quiz-poker/docs/adr/0010-webkit-fuer-handy-durchlauf|ADR 0010]]).
+Beides ist online (Version `db060a61`).
 
-**Die nächste Session beginnt mit Phase 4 – Spieleabend** (echter Test mit Freunden, Feinschliff z. B. fürs Handy,
-siehe Roadmap in der Projektvision). **Claude fragt vorher, ob zuerst etwas anderes ansteht** (neue Ideen, Skills, Tools,
-Restpunkte), und prüft danach `docs/Tools für später.md` für Phase 4 (bisher nur Magic Link, braucht eine eigene Domain).
+**Claude fragt zuerst, ob der Spieleabend schon stattgefunden hat.**
 
-Hinweise für Phase 4:
+1. **Hat er stattgefunden:** Beobachtungen auswerten und für den Feinschliff sammeln. Danach entscheidet der
+   Entwickler, was gebaut wird. Vorher mit `plan-schreiben` einen Plan schreiben.
+2. **Noch nicht:** Vorbereitung anbieten, z. B. ein eigenes Quiz anlegen. Oder einen Restpunkt unten angehen.
 
-- **Handy:** `src/stil.css` setzt `body { min-width: 1100px }`, die App ist auf dem Handy heute nicht angepasst. Der Mock
-  `docs/mocks/2026-11-07-sammlung.html` hat erste Regeln für schmale Bildschirme (`@media (max-width: 700px)`).
-- **Browser:** Der Durchlauf prüft nur Chromium. Für Handys (Safari) ist laut
-  [[projects/quiz-poker/docs/adr/0007-browser-durchlauf-mit-playwright|ADR 0007]] neu zu prüfen, ob WebKit dazukommt.
-- Vor jedem PR, der die Oberfläche ändert: `npm run test:browser` (von Hand, nicht in der CI).
+Offene Hinweise aus dieser Session:
 
-Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 ms CPU (am 2026-11-07 bis 38 ms), bisher
-ohne Abbruch (Nachmessungen in [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]). Treten
-Fehler 1102 auf, zuerst `session.cookieCache` von Better Auth prüfen.
+- Ansichten des Quiz-Masters, Editor und Konto sind am Handy nicht angepasst (bewusst außerhalb des Plans).
+- Die Rangliste mit mehr als 10 Spielern am Handy ist nicht im Browser gesehen. Das Panel scrollt laut CSS selbst.
+- `worker/auth.test.ts` lief einmal in den Timeout von 5 Sekunden, beim zweiten Lauf grün. Tritt das wieder auf,
+  mit `fehler-diagnose` eingrenzen.
+- `RanglisteLeiste.svelte` sucht die eigene Zeile ein zweites Mal (Review-Fund 10, bewusst gelassen).
 
 Restpunkte als Vorschläge:
 
-- **Aus [[Engineering for Vibe Coders - Auswertung]] (2026-11-08), im Code geprüft:**
-  - **IP-Adressen und D1 Time Travel:** Die Datenschutzseite (`src/ansichten/Datenschutz.svelte`) sagt „nach etwa
-    einem Tag automatisch gelöscht“. Laut Cloudflare-Doku (Stand 2026-11-06, geprüft 2026-11-08) ist Time Travel
-    „always on“, kostenlos und hält im kostenlosen Tarif 7 Tage (bezahlt 30) frühere Stände, abschalten oder verkürzen
-    ist dort nicht beschrieben. Gelöschte IP-Adressen sind also bis zu 7 Tage per Zurücksetzen der ganzen Datenbank
-    wiederherstellbar. Entscheiden: Text der Datenschutzseite ergänzen (z. B. „Sicherungen von Cloudflare halten sie
-    bis zu 7 Tage“) und als ADR festhalten (Artikel 111).
-  - **Stiller Ausfall des Lösch-Crons:** `worker/aufraeumen.ts` hält keinen letzten Lauf fest. Fällt der Cron aus,
-    bleiben IP-Adressen unbemerkt länger. Vorschlag: Zeitstempel des letzten Laufs speichern und bei Verzug warnen
-    (Artikel 35, 101).
-  - Ungeprüft: Was sehen Spieler, wenn mitten im Spiel eine Grenze des kostenlosen Tarifs erreicht ist (Artikel 83,
-    102)? Ein Wiederherstellen aus D1 einmal proben (Artikel 24).
-  - Schon in Ordnung: Doppelte Einsätze zählen einmal, keine IP-Adressen in Logs, Anmeldeversuche begrenzt.
-
-- Prüfen, ob der Cron-Trigger gelaufen ist (`npx wrangler tail` oder Dashboard, Zeitplan `17 3 * * *`).
-- `worker/spielraum.ts:234` nimmt den WebSocket vor der Token-Prüfung an (Audit, `needs_validation`).
-- Test, dass ein Spieler vor der Auflösung keine Lösung über den WebSocket bekommt: Eine Anforderung, die man nicht
-  sieht, braucht einen Test aus Sicht des Spielers (aus [[Build with AI - Auswertung]], Artikel 13, 2026-11-08). Passt
-  zum Punkt davor.
+- Ungeprüft: Was sehen Spieler, wenn mitten im Spiel eine Grenze des kostenlosen Tarifs erreicht ist? Ein Wiederherstellen
+  aus D1 einmal proben (aus [[Engineering for Vibe Coders - Auswertung]]).
+- Test, dass ein Spieler vor der Auflösung keine Lösung über den WebSocket bekommt. Der Handy-Test prüft das nur an
+  der Oberfläche (`not.toContainText("Canberra")`), nicht an den Nachrichten des Servers.
 - Noch nicht geprüft aus dem Audit: Größe von Anfragen an Better Auth, Verlängerung der Raumlaufzeit durch wirkungslose
   Aktionen, Gesamtzahl gespeicherter Räume.
 - `anfrage-zu-gross` sagt „Das Quiz ist zu groß“, auch bei Konto-Anfragen.
 - Beim Start mit `/context` unter „Memory files“ nachsehen, ob Claude Code die `AGENTS.md` mitlädt (offen seit 2026-11-07).
 - Ältere Restpunkte: doppelter Code in den Ansichten, Grenzen für Beitritte in einem Raum, `npm audit`, Ubuntu 26 in der
-  CI, Verweis auf den Launcher in der Projektvision, Editor in mehreren Tabs.
+  CI, Verweis auf den Launcher in der Projektvision, Editor in mehreren Tabs, wrangler 4.162 verfügbar (installiert 4.157).
+
+Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 ms CPU (Nachmessungen in
+[[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]). Treten Fehler 1102 auf, zuerst
+`session.cookieCache` von Better Auth prüfen. Die GitHub Action `cron-pruefen` meldet einen ausgefallenen Lösch-Lauf als
+roten Workflow.
 
 ## Passende Skills
 
-- `plan-schreiben`: Plan für Phase 4, sobald klar ist, was zuerst kommt
-- `tdd`: Server- und Regel-Teile von Phase 4 testgetrieben bauen
-- `fertig-pruefen`: vor jeder Meldung „fertig“ die Prüfbefehle frisch ausführen
+- `plan-schreiben`: Feinschliff nach dem Spieleabend planen
+- `tdd`: Änderungen an Regeln und Server testgetrieben bauen
+- `fehler-diagnose`: falls beim Spieleabend etwas kaputt war
