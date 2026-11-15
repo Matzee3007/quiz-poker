@@ -232,8 +232,8 @@ Erwartet: FAIL, `scrollWidth` größer als 375 wegen der Tabelle mit 7 Spalten
 - [x] **Schritt 1: ADR 0010** (Kontext: ADR 0007 hat WebKit für Phase 4 offen gelassen. Entscheidung: Projekt `handy` in WebKit
   nur für `handy.spec.ts`. Alternativen: alle Tests in drei Browsern, oder nur die Breite in Chromium. Konsequenzen: der
   Browser-Cache braucht WebKit 2370, und der Durchlauf dauert länger.) Dazu ein Verweis in ADR 0007 und in der Playwright-Notiz.
-- [ ] **Schritt 2: Lokaler Server im WLAN:** `npx vite --host` macht den Server im eigenen Netz erreichbar. Die Adresse
+- [x] **Schritt 2: Lokaler Server im WLAN:** `npx vite --host` macht den Server im eigenen Netz erreichbar. Die Adresse
   `http://<IP des Mac>:5173` steht in der Ausgabe. So muss nichts Ungemergtes deployt werden.
-- [ ] **Schritt 3: Abnahme am eigenen iPhone:** Der Entwickler eröffnet am Mac einen Raum, tritt mit dem Handy bei, setzt,
+- [x] **Schritt 3: Abnahme am eigenen iPhone:** Der Entwickler eröffnet am Mac einen Raum, tritt mit dem Handy bei, setzt, (2026-11-15: „passt“)
   antwortet bei offener Tastatur und sieht Auflösung und Ende. Was auffällt, wird im selben PR behoben.
 - [ ] **Schritt 4: Committen, PR, `/code-review`, `plan-pruefer`**
