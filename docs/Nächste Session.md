@@ -63,6 +63,10 @@ Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 m
 `session.cookieCache` von Better Auth prüfen. Die GitHub Action `cron-pruefen` meldet einen ausgefallenen Lösch-Lauf als
 roten Workflow.
 
+**Aus dem Ecosystem (2026-11-17): MIT-Lizenz.** Das Repo ist seit 2026-11-16 öffentlich (siehe [[docs/GitHub-Profil|GitHub-Profil]]).
+Eine `LICENSE` mit MIT-Lizenz im Wurzelordner anlegen, als Rechteinhaber `Matzee3007` (kein Klarname, Entscheidung im
+GitHub-Profil), dazu in der README einen kurzen Abschnitt „Lizenz“. Eigener kleiner PR.
+
 ## Passende Skills
 
 - `plan-schreiben`: Feinschliff nach dem Spieleabend planen
