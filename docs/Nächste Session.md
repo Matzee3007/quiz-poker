@@ -1,17 +1,17 @@
 ---
 titel: Nächste Session
 status: aktiv
-erstellt: 2026-11-15
+erstellt: 2026-11-17
 tags: [session, übergabe]
 ---
 
 # Nächste Session
 
-Stand vom 2026-11-15. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 4 - Betrieb und Handy|Lernjournal Phase 4 - Betrieb und Handy]].
+Stand vom 2026-11-17. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projektvision]], letztes Journal: [[projects/quiz-poker/docs/journal/Lernjournal Phase 4 - Startseite als Spieltisch|Lernjournal Phase 4 - Startseite als Spieltisch]].
 
 ## Stand bei Sessionende
 
-- **Branch:** `main` (nach dem Merge von PR #33)
+- **Branch:** `main` (nach dem Merge von PR #37)
 - **Offene PRs:** keine
 - **Nicht committet:** nichts
 
@@ -29,7 +29,8 @@ Stand vom 2026-11-15. Gehört zu [[projects/quiz-poker/docs/Projektvision|Projek
 **Phase 4 – Spieleabend läuft.** Erledigt sind die Absicherung des Betriebs (PR #31,
 [[projects/quiz-poker/docs/adr/0009-sicherungen-und-loeschfristen|ADR 0009]]) und das Handy-Layout für Spieler (PR #32,
 [[projects/quiz-poker/docs/plaene/2026-11-09-handy-layout|Plan]], [[projects/quiz-poker/docs/adr/0010-webkit-fuer-handy-durchlauf|ADR 0010]]).
-Beides ist online (Version `db060a61`).
+Seit 2026-11-17 ist die Startseite ein Spieltisch mit Chips (PR #35, Mock `docs/mocks/2026-11-17-startseite.html`,
+Variante D). Alles ist online (Version `baa8224a`), auf dem iPhone abgenommen.
 
 **Claude fragt zuerst, ob der Spieleabend schon stattgefunden hat.**
 
@@ -37,8 +38,12 @@ Beides ist online (Version `db060a61`).
    Entwickler, was gebaut wird. Vorher mit `plan-schreiben` einen Plan schreiben.
 2. **Noch nicht:** Vorbereitung anbieten, z. B. ein eigenes Quiz anlegen. Oder einen Restpunkt unten angehen.
 
-Offene Hinweise aus dieser Session:
+Anstehende Entscheidungen (aus dem Journal vom 2026-11-17, „ungefragt“): Symbol für „Meine Quizze“ ist ein Lesezeichen;
+neue Klassen `tisch`, `chip-wege`, `weg-chip` statt die geteilten Klassen zu ändern. Kurz bestätigen oder umdrehen.
 
+Offene Hinweise:
+
+- Die Startseite mit Anmeldung (4 Wege im Raster 2 × 2) ist nicht im Browser angesehen.
 - Ansichten des Quiz-Masters, Editor und Konto sind am Handy nicht angepasst (bewusst außerhalb des Plans).
 - Die Rangliste mit mehr als 10 Spielern am Handy ist nicht im Browser gesehen. Das Panel scrollt laut CSS selbst.
 - `worker/auth.test.ts` lief einmal in den Timeout von 5 Sekunden, beim zweiten Lauf grün. Tritt das wieder auf,
@@ -47,6 +52,7 @@ Offene Hinweise aus dieser Session:
 
 Restpunkte als Vorschläge:
 
+- **`checks.sh` anlegen** (aus dem Ecosystem, 2026-11-17, dort ADR 0024): alle Prüfbefehle aus „Befehle“ der `CLAUDE.md` in eine `checks.sh` im Wurzelordner (Vorlage: `~/claude-ecosystem/vorlagen/projekt/checks.sh`), einmal auf `main` grün laufen lassen und „Vor jedem Commit“ in der `CLAUDE.md` auf `bash checks.sh` umstellen. Ab dann läuft sie vor jedem `/code-review`. Kleiner eigener PR vor der nächsten Aufgabe; hat das Projekt noch keine Prüfbefehle, entfällt der Punkt.
 - Ungeprüft: Was sehen Spieler, wenn mitten im Spiel eine Grenze des kostenlosen Tarifs erreicht ist? Ein Wiederherstellen
   aus D1 einmal proben (aus [[Engineering for Vibe Coders - Auswertung]]).
 - Test, dass ein Spieler vor der Auflösung keine Lösung über den WebSocket bekommt. Der Handy-Test prüft das nur an
@@ -56,13 +62,12 @@ Restpunkte als Vorschläge:
 - `anfrage-zu-gross` sagt „Das Quiz ist zu groß“, auch bei Konto-Anfragen.
 - Beim Start mit `/context` unter „Memory files“ nachsehen, ob Claude Code die `AGENTS.md` mitlädt (offen seit 2026-11-07).
 - Ältere Restpunkte: doppelter Code in den Ansichten, Grenzen für Beitritte in einem Raum, `npm audit`, Ubuntu 26 in der
-  CI, Verweis auf den Launcher in der Projektvision, Editor in mehreren Tabs, wrangler 4.162 verfügbar (installiert 4.157).
+  CI, Verweis auf den Launcher in der Projektvision, Editor in mehreren Tabs, wrangler 4.164 verfügbar (installiert 4.157).
 
 Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 ms CPU (Nachmessungen in
 [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]). Treten Fehler 1102 auf, zuerst
 `session.cookieCache` von Better Auth prüfen. Die GitHub Action `cron-pruefen` meldet einen ausgefallenen Lösch-Lauf als
 roten Workflow.
-- **`checks.sh` anlegen** (aus dem Ecosystem, 2026-11-17, dort ADR 0024): alle Prüfbefehle aus „Befehle“ der `CLAUDE.md` in eine `checks.sh` im Wurzelordner (Vorlage: `~/claude-ecosystem/vorlagen/projekt/checks.sh`), einmal auf `main` grün laufen lassen und „Vor jedem Commit“ in der `CLAUDE.md` auf `bash checks.sh` umstellen. Ab dann läuft sie vor jedem `/code-review`. Kleiner eigener PR vor der nächsten Aufgabe; hat das Projekt noch keine Prüfbefehle, entfällt der Punkt.
 
 **Aus dem Ecosystem (2026-11-17): MIT-Lizenz.** Das Repo ist seit 2026-11-16 öffentlich (siehe [[docs/GitHub-Profil|GitHub-Profil]]).
 Eine `LICENSE` mit MIT-Lizenz im Wurzelordner anlegen, als Rechteinhaber `Matzee3007` (kein Klarname, Entscheidung im
