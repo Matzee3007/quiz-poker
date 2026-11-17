@@ -62,6 +62,7 @@ Im Blick behalten: Die Sitzungsabfrage braucht im Betrieb zum Teil mehr als 10 m
 [[projects/quiz-poker/docs/adr/0005-konten-mit-einladung-ohne-e-mail|ADR 0005]]). Treten Fehler 1102 auf, zuerst
 `session.cookieCache` von Better Auth prüfen. Die GitHub Action `cron-pruefen` meldet einen ausgefallenen Lösch-Lauf als
 roten Workflow.
+- **`checks.sh` anlegen** (aus dem Ecosystem, 2026-11-17, dort ADR 0024): alle Prüfbefehle aus „Befehle“ der `CLAUDE.md` in eine `checks.sh` im Wurzelordner (Vorlage: `~/claude-ecosystem/vorlagen/projekt/checks.sh`), einmal auf `main` grün laufen lassen und „Vor jedem Commit“ in der `CLAUDE.md` auf `bash checks.sh` umstellen. Ab dann läuft sie vor jedem `/code-review`. Kleiner eigener PR vor der nächsten Aufgabe; hat das Projekt noch keine Prüfbefehle, entfällt der Punkt.
 
 **Aus dem Ecosystem (2026-11-17): MIT-Lizenz.** Das Repo ist seit 2026-11-16 öffentlich (siehe [[docs/GitHub-Profil|GitHub-Profil]]).
 Eine `LICENSE` mit MIT-Lizenz im Wurzelordner anlegen, als Rechteinhaber `Matzee3007` (kein Klarname, Entscheidung im
