@@ -32,6 +32,48 @@
 
   const code = $derived((raumcode ?? eingabeCode).trim().toUpperCase());
 
+  // Deko auf dem Spieltisch: Chip-Stapel von der Seite (Mock 2026-11-17-startseite.html, Variante D).
+  const GOLD = "#e8bb4f";
+  const ROT = "#ff5c6c";
+  const GRUEN = "#2fd98c";
+  const WEISS = "#dfe3ea";
+  const DUNKEL: Record<string, string> = {
+    [GOLD]: "#a9822b",
+    [ROT]: "#b23443",
+    [GRUEN]: "#1c8f5b",
+    [WEISS]: "#9096a3",
+  };
+  const DICKE = 8;
+
+  function chipStapel(farbe: string, anzahl: number, breite: number) {
+    const rx = breite / 2 - 2;
+    const ry = rx * 0.34;
+    const hoehe = ry * 2 + DICKE * anzahl + 4;
+    const kante = farbe === WEISS ? "#3b4252" : "#fff6df";
+    const lagen = Array.from({ length: anzahl }, (_, i) => {
+      const cx = breite / 2 + [0, 1.5, -1, 2, -1.5, 0.5, -2][i % 7];
+      const y = hoehe - ry - 2 - DICKE * (i + 1);
+      const streifen = [-0.62, 0, 0.62].map((p) => ({
+        x: cx + p * rx - rx * 0.09,
+        y: y + ry * Math.sqrt(1 - p * p) - 0.5,
+      }));
+      return { cx, y, streifen };
+    });
+    return {
+      breite,
+      hoehe,
+      rx,
+      ry,
+      farbe,
+      dunkel: DUNKEL[farbe],
+      kante,
+      lagen,
+    };
+  }
+
+  const stapelLinks = [chipStapel(GOLD, 7, 64), chipStapel(ROT, 4, 54)];
+  const stapelRechts = [chipStapel(GRUEN, 3, 54), chipStapel(WEISS, 6, 64)];
+
   async function eroeffnen() {
     fehler = null;
     eroeffnetGerade = true;
@@ -77,15 +119,61 @@
   }
 </script>
 
+{#snippet stapelBild(s: ReturnType<typeof chipStapel>)}
+  <svg
+    width={s.breite + 6}
+    height={s.hoehe}
+    viewBox="-3 0 {s.breite + 6} {s.hoehe}"
+  >
+    {#each s.lagen as lage, i (i)}
+      <path
+        d="M{lage.cx - s.rx},{lage.y} v{DICKE} a{s.rx},{s.ry} 0 0 0 {2 *
+          s.rx},0 v-{DICKE} z"
+        fill={s.dunkel}
+      />
+      {#each lage.streifen as streifen, j (j)}
+        <rect
+          x={streifen.x}
+          y={streifen.y}
+          width={s.rx * 0.18}
+          height={DICKE}
+          fill={s.kante}
+          opacity="0.85"
+        />
+      {/each}
+      <ellipse cx={lage.cx} cy={lage.y} rx={s.rx} ry={s.ry} fill={s.farbe} />
+      {#if i === s.lagen.length - 1}
+        <ellipse
+          cx={lage.cx}
+          cy={lage.y}
+          rx={s.rx * 0.62}
+          ry={s.ry * 0.62}
+          fill="none"
+          stroke={s.kante}
+          stroke-width="1.6"
+          stroke-dasharray="4 3"
+          opacity="0.8"
+        />
+      {/if}
+    {/each}
+  </svg>
+{/snippet}
+
 <main class="seite stapel">
   {#if !raumcode}
-    <section class="spielidee">
+    <section class="spielidee tisch">
       <h1>Setze deine Chips auf dein Wissen.</h1>
-      <p class="matt">
+      <p>
         Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht.
         Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch
         kostet ihn. Am Ende gewinnt, wer die meisten Chips hat.
       </p>
+      <span class="deko links" aria-hidden="true">
+        {#each stapelLinks as s, i (i)}{@render stapelBild(s)}{/each}
+      </span>
+      <span class="deko rechts" aria-hidden="true">
+        {#each stapelRechts as s, i (i)}{@render stapelBild(s)}{/each}
+      </span>
     </section>
   {/if}
   {#if meldung}
@@ -103,14 +191,24 @@
           Du leitest die Partie als Quiz-Master und spielst nicht mit.
         </p>
         <!-- Ohne Konto drei Wege nebeneinander, mit Konto vier im Raster 2×2: oben fertige Quizze, unten eigene. -->
-        <div class="wege" class:drei={!angemeldet}>
-          <div class="weg">
+        <div class="wege chip-wege" class:drei={!angemeldet}>
+          <div class="weg erster">
+            <span class="chip" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            </span>
             <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
               >Beispiel-Quiz spielen</button
             >
             <p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p>
           </div>
           <div class="weg">
+            <span class="chip gruen" aria-hidden="true">
+              <svg viewBox="0 0 24 24"
+                ><path
+                  d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.2 6.6L12 17.4l-5.8 3.2 1.2-6.6L2.5 9.4l6.6-.8z"
+                /></svg
+              >
+            </span>
             <button disabled={eroeffnetGerade} onclick={onSammlung}
               >Öffentliche Quizze</button
             >
@@ -120,6 +218,11 @@
           </div>
           {#if angemeldet}
             <div class="weg">
+              <span class="chip weiss" aria-hidden="true">
+                <svg viewBox="0 0 24 24"
+                  ><path d="M6 3h12v18l-6-4.2L6 21z" /></svg
+                >
+              </span>
               <button disabled={eroeffnetGerade} onclick={onMeineQuizze}
                 >Meine Quizze</button
               >
@@ -129,6 +232,13 @@
             </div>
           {/if}
           <div class="weg">
+            <span class="chip rot" aria-hidden="true">
+              <svg viewBox="0 0 24 24"
+                ><path
+                  d="M4 17.3V20h2.7L17.6 9.1l-2.7-2.7zM19.7 7a1 1 0 000-1.4l-1.3-1.3a1 1 0 00-1.4 0l-1.1 1.1 2.7 2.7z"
+                /></svg
+              >
+            </span>
             <button disabled={eroeffnetGerade} onclick={onEditor}
               >{angemeldet
                 ? "Einmal-Quiz erstellen"
@@ -158,6 +268,7 @@
           <label for="code">Raumcode</label>
           <input
             id="code"
+            class="code-feld"
             bind:value={eingabeCode}
             oninput={() => (rueckkehrAnbieten = false)}
             maxlength="4"

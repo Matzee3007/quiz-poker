@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Startseite mit Poker-Gefühl – Quiz-Poker</title>
+<style>
+/* ---------- Rahmen des Mocks, gehört nicht zur App ---------- */
+body{margin:0;background:#e9e9ec;color:#1c1f26;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+.m-kopf{background:#fff;border-bottom:1px solid #cfd0d6;padding:14px 24px}
+.m-kopf h1{font-size:20px;margin:0 0 4px}
+.m-kopf p{margin:2px 0 0;color:#3f4450;font-size:13.5px;max-width:1150px}
+.m-teil{padding:40px 24px 4px}
+.m-teil h2{font-size:25px;margin:0}
+.m-teil p{margin:3px 0 0;color:#3f4450;max-width:1150px}
+.m-ab{display:inline-block;background:#1c1f26;color:#fff;border-radius:6px;padding:0 8px;margin-right:8px}
+.m-zustand{padding:20px 24px 8px}
+.m-zustand h3{font-size:16px;margin:0}
+.m-zustand p{margin:1px 0 0;color:#3f4450;font-size:13.5px;max-width:1150px}
+.m-desk-huelle{margin:0 24px;max-width:1182px;overflow:hidden;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.m-desk{width:1180px;transform-origin:0 0;border:1px solid #9a9ca5;border-radius:10px;overflow:hidden}
+.m-browser{background:#d5d6db;padding:7px 12px;font-size:12.5px;color:#444955;display:flex;gap:8px;align-items:center}
+.m-browser i{width:10px;height:10px;border-radius:50%;background:#a9abb3;display:inline-block;flex:none}
+.m-browser span{background:#fff;border-radius:6px;padding:2px 12px;margin-left:8px;flex:1}
+.m-reihe{display:flex;flex-wrap:wrap;gap:26px 24px;padding:6px 24px 10px;align-items:flex-start}
+.telefon{width:395px;padding:10px;border-radius:48px;background:#08090b;box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.bildschirm{width:375px;border-radius:38px;overflow:hidden;display:flex;flex-direction:column;position:relative;background:var(--grund)}
+.status{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 32px;font:600 15px -apple-system,"Helvetica Neue",Arial,sans-serif;color:#fff;background:var(--flaeche)}
+.status small{font-size:12px}
+.falz{position:absolute;left:0;right:0;top:734px;border-top:2px dashed #ff9f1c;z-index:20;pointer-events:none}
+.falz span{position:absolute;right:8px;top:-22px;background:#ff9f1c;color:#111;font:600 11px -apple-system,Arial,sans-serif;padding:2px 7px;border-radius:4px}
+.m-ende{padding:30px 24px 44px;color:#555a66;font-size:13.5px}
+
+/* ---------- aus src/stil.css übernommen (Stil C), body-Regeln liegen auf .app ---------- */
+:root{--grund:#0c0e13;--flaeche:#12151c;--knopf:#1c212b;--schrift:#eef0f4;--matt:#a3a9b6;--linie:#262b36;--linie-stark:#3b4252;--gold:#e8bb4f;--gold-schrift:#17120a;--gruen:#2fd98c;--rot:#ff5c6c;--radius:6px}
+*{box-sizing:border-box}
+.app{color-scheme:dark;background:var(--grund);color:var(--schrift);font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.45}
+.app h1,.app h2,.app p{margin:0}
+.app button,.app input{font:inherit;color:inherit}
+.app button{background:var(--knopf);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:9px 16px;cursor:pointer;font-weight:600}
+.app button:hover{border-color:var(--gold)}
+.app button.haupt{background:var(--gold);border-color:var(--gold);color:var(--gold-schrift)}
+.app button.text{background:none;border:none;color:var(--matt);padding:4px;font-weight:400;text-decoration:underline}
+.app input{background:var(--grund);border:1px solid var(--linie-stark);border-radius:var(--radius);padding:10px 12px;width:100%}
+.app label{display:block;color:var(--matt);font-size:14px;margin-bottom:6px}
+.kopf{display:flex;align-items:center;gap:24px;background:var(--flaeche);border-bottom:1px solid var(--linie);padding:14px 32px}
+.logo{flex:none;color:var(--gold);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.kopf .rest{margin-left:auto;display:flex;gap:20px;align-items:center;color:var(--matt);font-size:14px}
+.seite{padding:32px}
+.zwei-spalten{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+.karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--radius);padding:24px}
+.stapel{display:flex;flex-direction:column;gap:18px}
+.spielidee{display:flex;flex-direction:column;gap:10px}
+.spielidee h1{color:var(--gold);font-size:40px;line-height:1.1}
+.wege{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wege.drei{grid-template-columns:repeat(3,1fr)}
+.weg{display:flex;flex-direction:column;gap:8px}
+.weg button{width:100%}
+.matt{color:var(--matt)}
+.klein{font-size:14px}
+.seiten-fuss{padding:0 32px 18px;font-size:13px}
+
+/* Handy: @media (max-width: 700px) aus stil.css, hier auf .handy */
+.handy .kopf{flex-wrap:wrap;gap:6px 16px;padding:8px 16px}
+.handy .kopf .rest{gap:12px}
+.handy .seite{padding:16px}
+.handy .karte{padding:16px}
+.handy .stapel{gap:14px}
+.handy .zwei-spalten,.handy .wege,.handy .wege.drei{grid-template-columns:minmax(0,1fr);gap:16px}
+.handy .beitreten{order:-1}
+.handy .spielidee h1{font-size:29px}
+.handy button{min-height:44px}
+.handy button.haupt{width:100%;min-height:52px;font-size:17px}
+.handy input{font-size:17px;min-height:48px}
+.handy .seiten-fuss{padding:0 16px 18px}
+
+/* ---------- gemeinsam NEU: Chip von oben, nur CSS ---------- */
+.chip{--c:var(--gold);--k:#fff6df;--t:var(--gold-schrift);position:relative;flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;
+  background:radial-gradient(circle,var(--c) 0 55%,transparent 56%),repeating-conic-gradient(var(--c) 0 22.5deg,var(--k) 22.5deg 45deg);
+  box-shadow:inset 0 0 0 3px rgba(0,0,0,.22),0 3px 0 rgba(0,0,0,.5),0 8px 16px rgba(0,0,0,.45);color:var(--t);font-weight:800;font-size:20px;line-height:1}
+.chip::after{content:"";position:absolute;inset:21%;border-radius:50%;border:2px dashed rgba(0,0,0,.28)}
+.chip.gruen{--c:var(--gruen);--t:#06140d}
+.chip.rot{--c:var(--rot);--t:#1a0508}
+.chip.weiss{--c:#dfe3ea;--k:#3b4252;--t:#12151c}
+.app input.code-feld{font-size:26px;font-weight:800;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);text-align:center}
+
+/* ================= Variante A: Spieltisch ================= */
+.va,.vd{background:radial-gradient(ellipse 90% 60% at 50% 0,#10241b 0,var(--grund) 70%)}
+.va .kopf,.vd .kopf{background:rgba(18,21,28,.85)}
+.va .spielidee,.vd .spielidee{position:relative;align-items:center;text-align:center;padding:46px 210px 50px;border-radius:999px;
+  background:radial-gradient(ellipse at 50% 38%,#1d8257 0,#12603f 45%,#0b3d28 100%);
+  border:14px solid #2a1d13;
+  box-shadow:inset 0 0 0 2px rgba(232,187,79,.65),inset 0 0 0 7px rgba(0,0,0,.25),inset 0 0 60px rgba(0,0,0,.55),0 0 0 1px #4a3420,0 16px 36px rgba(0,0,0,.65)}
+.va .spielidee::before,.vd .spielidee::before{content:"";position:absolute;inset:18px 60px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);pointer-events:none}
+.va .spielidee h1,.vd .spielidee h1{font-size:46px;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.va .spielidee p,.vd .spielidee p{color:#d3e6da;max-width:600px}
+.va .deko,.vd .deko{position:absolute;bottom:34px;pointer-events:none}
+.va .deko.links,.vd .deko.links{left:64px}
+.va .deko.rechts,.vd .deko.rechts{right:64px}
+.va .karte,.vd .karte{border-radius:12px}
+.va .wege{gap:14px}
+.va .weg{position:relative;border:2px dashed rgba(232,187,79,.3);border-radius:14px;padding:14px;background:rgba(18,96,63,.12)}
+.va .weg.erster{border-style:solid;border-color:rgba(232,187,79,.75);background:rgba(18,96,63,.28)}
+.va .weg .chip{position:absolute;top:-13px;right:-13px;width:30px;height:30px;font-size:0}
+.va .beitreten,.vd .beitreten{border-top:4px solid #12603f}
+.handy.va .spielidee,.handy.vd .spielidee{padding:24px 18px 100px;border-radius:44px;border-width:9px}
+.handy.va .spielidee::before,.handy.vd .spielidee::before{inset:10px;border-radius:34px}
+.handy.va .spielidee h1,.handy.vd .spielidee h1{font-size:29px}
+.handy.va .spielidee p,.handy.vd .spielidee p{font-size:15px}
+.handy.va .deko,.handy.vd .deko{bottom:18px}
+.handy.va .deko.links,.handy.vd .deko.links{left:calc(50% - 96px)}
+.handy.va .deko.rechts,.handy.vd .deko.rechts{right:calc(50% - 96px)}
+
+/* ================= Variante B: Chips ================= */
+.vb .logo{display:flex;align-items:center;gap:9px}
+.vb .logo::before{content:"";width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,var(--gold) 0 50%,transparent 51%),repeating-conic-gradient(var(--gold) 0 30deg,#fff6df 30deg 60deg)}
+.vb .spielidee{display:grid;grid-template-columns:minmax(0,1fr) 330px;align-items:center;gap:10px 40px;padding:8px 0 6px}
+.vb .spielidee .text{display:flex;flex-direction:column;gap:12px}
+.vb .spielidee h1{font-size:52px;line-height:1.05}
+.vb .spielidee p{font-size:17px;max-width:620px}
+.vb .tisch{position:relative;height:210px}
+.vb .tisch .schatten{position:absolute;left:20px;right:20px;bottom:4px;height:30px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,187,79,.18),transparent 70%)}
+.vb .schwebe{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;gap:4px;animation:schweben 3.6s ease-in-out infinite alternate}
+.vb .lose{position:absolute;right:6px;top:12px;width:70px;height:70px;font-size:15px;animation:drehen 18s linear infinite}
+@keyframes schweben{from{transform:translateY(0)}to{transform:translateY(-7px)}}
+@keyframes drehen{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.vb .schwebe,.vb .lose{animation:none}}
+.vb .karte{border-radius:14px}
+.vb .wege,.vd .wege{gap:14px}
+.vb .weg,.vd .weg{align-items:center;text-align:center;gap:12px;background:var(--grund);border:1px solid var(--linie);border-radius:14px;padding:20px 14px 16px}
+.vb .weg.erster,.vd .weg.erster{border-color:rgba(232,187,79,.6);box-shadow:0 0 0 1px rgba(232,187,79,.25),0 0 30px rgba(232,187,79,.08)}
+.vb .weg .chip,.vd .weg .chip{width:64px;height:64px;margin-bottom:2px}
+.vb .weg button,.vd .weg button{border-radius:999px}
+.vb .beitreten{border-radius:14px;position:relative;overflow:hidden}
+.vb .beitreten > .chip{position:absolute;bottom:-24px;right:-24px;width:84px;height:84px;font-size:0;opacity:.85}
+.handy.vb .beitreten > .chip{display:none}
+.vb .beitreten button.haupt{border-radius:999px;box-shadow:0 0 0 3px var(--grund),0 0 0 5px rgba(232,187,79,.55)}
+.handy.vb .spielidee{grid-template-columns:minmax(0,1fr) 92px;gap:10px 8px}
+.handy.vb .spielidee .text{display:contents}
+.handy.vb .spielidee h1{font-size:30px;grid-column:1}
+.handy.vb .spielidee p{font-size:15px;grid-column:1/-1;grid-row:2}
+.handy.vb .tisch{height:110px;grid-column:2;grid-row:1}
+.handy.vb .lose{width:40px;height:40px;font-size:0;right:-4px;top:-6px}
+.handy.vb .weg,.handy.vd .weg{display:grid;grid-template-columns:48px minmax(0,1fr);text-align:left;gap:6px 14px;padding:14px;align-items:center}
+.handy.vb .weg .chip,.handy.vd .weg .chip{width:48px;height:48px;font-size:16px;grid-row:1/3;margin:0}
+
+/* ================= Variante C: Spielkarten ================= */
+.vc{--papier:#f4efe3;--tinte:#1b1d22;--kartenrot:#c42f41}
+.vc .spielidee{display:grid;grid-template-columns:minmax(0,1fr) 330px;align-items:center;gap:40px}
+.vc .spielidee .text{display:flex;flex-direction:column;gap:12px}
+.vc .spielidee h1{font-size:48px}
+.vc .spielidee p{font-size:17px;max-width:620px}
+.vc .hand{position:relative;height:200px}
+.vc .hand .blatt{position:absolute;left:50%;bottom:0;width:96px;height:136px;margin-left:-48px;border-radius:10px;background:var(--papier);color:var(--tinte);
+  box-shadow:0 6px 16px rgba(0,0,0,.55);transform-origin:50% 120%;display:grid;place-items:center;font-size:44px;font-weight:800}
+.vc .hand .blatt .ecke{position:absolute;left:8px;top:6px;font-size:16px;line-height:1;text-align:center;font-weight:800}
+.vc .hand .blatt.r{color:var(--kartenrot)}
+.vc .hand .blatt.g{background:var(--gold)}
+.vc .karte{border-radius:12px}
+.vc .wege{gap:16px}
+.vc button.spielkarte{position:relative;display:flex;flex-direction:column;justify-content:center;gap:8px;min-height:236px;padding:44px 20px;text-align:left;
+  background:var(--papier);color:var(--tinte);border:0;border-radius:12px;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 8px 20px rgba(0,0,0,.55);transition:transform .15s}
+.vc button.spielkarte:hover{transform:translateY(-6px) rotate(-1deg)}
+.vc .spielkarte.r .ecke{color:var(--kartenrot)}
+.vc .spielkarte.erster{background:var(--gold)}
+.vc .spielkarte b{font-size:19px;line-height:1.2}
+.vc .spielkarte span.erkl{font-weight:400;font-size:14px;color:#4b505c;line-height:1.4}
+.vc .spielkarte.erster span.erkl{color:#3b2e10}
+.vc .spielkarte .ecke{position:absolute;left:12px;top:10px;font-size:18px;line-height:1;text-align:center;font-weight:800}
+.vc .spielkarte .ecke small{display:block;font-size:17px;margin-top:2px}
+.vc .spielkarte .ecke.unten{left:auto;top:auto;right:12px;bottom:10px;transform:rotate(180deg)}
+.vc .spielkarte .los{margin-top:4px;font-size:14px;font-weight:700}
+.vc .wege.vier{grid-template-columns:repeat(4,1fr);gap:14px}
+.vc .wege.vier .spielkarte{min-height:270px;padding:44px 16px}
+.vc .wege.vier .spielkarte b{font-size:17px}
+.vc .wege.vier .spielkarte span.erkl{font-size:13.5px}
+.vc .code-karten{display:flex;gap:10px}
+.vc .code-karten span{flex:1;height:68px;border-radius:8px;display:grid;place-items:center;font-size:30px;font-weight:800;position:relative;
+  background:var(--papier);color:var(--tinte);box-shadow:0 4px 10px rgba(0,0,0,.45)}
+.vc .code-karten span::before{content:attr(data-farbe);position:absolute;left:5px;top:3px;font-size:11px;line-height:1}
+.vc .code-karten span.r::before{color:var(--kartenrot)}
+.vc .code-karten span.leer{background:none;border:2px dashed var(--linie-stark);box-shadow:none}
+.vc .code-karten span.fokus{border-color:var(--gold)}
+.vc .code-karten span.fokus::after{content:"";width:2px;height:30px;background:var(--gold)}
+.handy.vc .spielidee{grid-template-columns:minmax(0,1fr) 96px;gap:10px 6px}
+.handy.vc .spielidee .text{display:contents}
+.handy.vc .spielidee h1{font-size:29px}
+.handy.vc .spielidee p{font-size:15px;grid-column:1/-1;grid-row:2}
+.handy.vc .hand{height:104px;grid-column:2;grid-row:1}
+.handy.vc .hand .blatt{width:48px;height:68px;margin-left:-24px;font-size:22px;border-radius:6px}
+.handy.vc .hand .blatt .ecke{font-size:10px;left:4px;top:3px}
+.handy.vc button.spielkarte{min-height:0;padding:16px 46px 16px 54px;gap:4px}
+.handy.vc .spielkarte b{font-size:17px}
+.handy.vc .spielkarte .ecke{left:12px;top:14px}
+.handy.vc .spielkarte .ecke.unten{left:auto;top:auto;right:12px;bottom:14px}
+.handy.vc .code-karten span{height:62px}
+
+/* ================= Variante D: Tisch aus A, Wege aus B, Beitreten aus A ================= */
+.vd .weg .chip svg{position:relative;z-index:1;width:26px;height:26px;fill:currentColor}
+.handy.vd .weg .chip svg{width:20px;height:20px}
+
+/* Mock auf schmalem Bildschirm: Rahmen weg */
+@media (max-width:430px){
+  .m-kopf,.m-teil,.m-zustand{padding-left:8px;padding-right:8px}
+  .m-desk-huelle{margin:0 8px}
+  .m-reihe{padding:6px 7px 6px}
+  .telefon{width:auto;padding:0;background:none;border-radius:0;box-shadow:none}
+  .bildschirm{border-radius:16px;outline:1px solid #9a9ca5}
+}
+</style>
+</head>
+<body>
+
+<div class="m-kopf">
+  <h1>Mock Startseite – mehr Poker-Gefühl</h1>
+  <p>Wegwerf-Entwurf, Stil C aus src/stil.css (Farben unverändert, dazu wenige neue Töne für Filz, Holz und Kartenpapier). Texte, Reihenfolge und Funktionen wie heute in src/ansichten/Start.svelte, nur das Aussehen ändert sich. Die Knöpfe tun nichts.</p>
+  <p>Beispieldaten: Raumcode <b>KMRT</b> und Name <b>Sophie</b> stehen schon in den Feldern. Desktop-Fenster 1180 px breit (über 700 px gilt min-width 1100 px), Handy 375 × 812 px (iPhone 13 mini). Die orange Linie im Handy zeigt, wo der erste Bildschirm endet.</p>
+  <p>Ganz oben D, die gewählte Mischung. A, B und C unterscheiden sich darin, welches Poker-Bild die Seite trägt: der <b>Spieltisch</b>, die <b>Chips</b> oder die <b>Spielkarten</b>.</p>
+</div>
+
+<div id="inhalt"></div>
+
+<div class="m-ende">Ende des Mocks.</div>
+
+<script>
+const IDEE = "Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht. Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch kostet ihn. Am Ende gewinnt, wer die meisten Chips hat.";
+
+function wegeListe(angemeldet) {
+  const w = [
+    { t: "Beispiel-Quiz spielen", d: "Sofort los mit dem fest eingebauten Quiz.", haupt: true, farbe: "", sym: "▶", rang: "A", satz: "♠" },
+    { t: "Öffentliche Quizze", d: "Fertige Quizze anderer Quiz-Master spielen, ohne Konto.", farbe: "gruen", sym: "★", rang: "K", satz: "♥" },
+  ];
+  if (angemeldet) w.push({ t: "Meine Quizze", d: "Gespeicherte Quizze spielen oder weiterschreiben.", farbe: "weiss", sym: "♥", rang: "Q", satz: "♦" });
+  w.push({ t: angemeldet ? "Einmal-Quiz erstellen" : "Eigenes Quiz erstellen", d: "Kategorien und Fragen selbst schreiben, ohne Konto. Das Einmal-Quiz gilt nur für diesen Spielraum.", farbe: "rot", sym: "✎", rang: angemeldet ? "J" : "Q", satz: angemeldet ? "♣" : "♦" });
+  return w;
+}
+
+/* Seitenansicht eines Chip-Stapels als SVG */
+function stapelSvg(farben, breite = 62, dicke = 8) {
+  const rx = breite / 2 - 2, ry = rx * 0.34, h = ry * 2 + dicke * farben.length + 4;
+  const dunkler = { "#e8bb4f": "#a9822b", "#ff5c6c": "#b23443", "#2fd98c": "#1c8f5b", "#dfe3ea": "#9096a3", "#2a3140": "#161a23" };
+  const kante = { "#dfe3ea": "#3b4252", "#2a3140": "#e8bb4f" };
+  let s = "";
+  farben.forEach((f, i) => {
+    const dx = [0, 1.5, -1, 2, -1.5, 0.5, -2, 1, 0][i % 9];
+    const cx = breite / 2 + dx, y = h - ry - 2 - dicke * (i + 1);
+    const d = dunkler[f] || f, k = kante[f] || "#fff6df";
+    s += `<path d="M${cx - rx},${y} v${dicke} a${rx},${ry} 0 0 0 ${2 * rx},0 v-${dicke} z" fill="${d}"/>`;
+    [-0.62, 0, 0.62].forEach(p => s += `<rect x="${cx + p * rx - rx * 0.09}" y="${y + ry * Math.sqrt(1 - p * p) - 0.5}" width="${rx * 0.18}" height="${dicke}" fill="${k}" opacity=".85"/>`);
+    s += `<ellipse cx="${cx}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}"/>`;
+    if (i === farben.length - 1) s += `<ellipse cx="${cx}" cy="${y}" rx="${rx * 0.62}" ry="${ry * 0.62}" fill="none" stroke="${k}" stroke-width="1.6" stroke-dasharray="4 3" opacity=".8"/>`;
+  });
+  return `<svg width="${breite + 6}" height="${h}" viewBox="-3 0 ${breite + 6} ${h}" aria-hidden="true">${s}</svg>`;
+}
+const G = "#e8bb4f", RO = "#ff5c6c", GR = "#2fd98c", W = "#dfe3ea", D = "#2a3140";
+
+function kopfLeiste(angemeldet) {
+  return `<header class="kopf"><span class="logo">Quiz-Poker</span><div class="rest">${angemeldet
+    ? `<button class="text">Meine Quizze</button><button class="text">Konto</button>`
+    : `<span>Spielen geht ohne Konto</span><button class="text">Anmelden</button>`}</div></header>`;
+}
+const fuss = `<footer class="seiten-fuss"><button class="text">Datenschutz</button></footer>`;
+
+function beitretenStandard(extra = "") {
+  return `<form class="karte stapel beitreten" onsubmit="return false">
+    ${extra}<h2>Spielraum beitreten</h2>
+    <div><label>Raumcode</label><input class="code-feld" value="KMRT" maxlength="4"></div>
+    <div><label>Dein Name</label><input value="Sophie" maxlength="20"></div>
+    <div><button class="haupt">Beitreten</button></div>
+  </form>`;
+}
+
+/* ---------- Variante A ---------- */
+function seiteA(angemeldet, handy) {
+  const w = wegeListe(angemeldet);
+  const gross = handy ? 46 : 64, klein = handy ? 40 : 54;
+  return `<div class="app va${handy ? " handy" : ""}">${kopfLeiste(angemeldet)}
+  <main class="seite stapel">
+    <section class="spielidee">
+      <h1>Setze deine Chips auf dein Wissen.</h1>
+      <p>${IDEE}</p>
+      <span class="deko links">${stapelSvg([G, G, G, G, G, G, G], gross)}${stapelSvg([RO, RO, RO, RO], klein)}</span>
+      <span class="deko rechts">${stapelSvg([GR, GR, GR], klein)}${stapelSvg([W, W, W, W, W, W], gross)}</span>
+    </section>
+    <div class="zwei-spalten">
+      <section class="karte stapel">
+        <h2>Spielraum eröffnen</h2>
+        <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+        <div class="wege${angemeldet ? "" : " drei"}">
+          ${w.map(x => `<div class="weg${x.haupt ? " erster" : ""}"><span class="chip ${x.farbe}" aria-hidden="true"></span><button class="${x.haupt ? "haupt" : ""}">${x.t}</button><p class="matt klein">${x.d}</p></div>`).join("")}
+        </div>
+      </section>
+      ${beitretenStandard()}
+    </div>
+  </main>${fuss}</div>`;
+}
+
+/* ---------- Variante B ---------- */
+function seiteB(angemeldet, handy) {
+  const w = wegeListe(angemeldet);
+  const b = handy ? 40 : 84, d = handy ? 6 : 10;
+  return `<div class="app vb${handy ? " handy" : ""}">${kopfLeiste(angemeldet)}
+  <main class="seite stapel">
+    <section class="spielidee">
+      <div class="text"><h1>Setze deine Chips auf dein Wissen.</h1><p class="matt">${IDEE}</p></div>
+      <div class="tisch" aria-hidden="true"><div class="schatten"></div>
+        <div class="schwebe">${stapelSvg([RO, RO, RO, RO, RO], b, d)}${stapelSvg([G, G, G, G, G, G, G, G, G], b, d)}${handy ? "" : stapelSvg([GR, GR, GR], b, d)}</div>
+        <span class="chip lose">100</span>
+      </div>
+    </section>
+    <div class="zwei-spalten">
+      <section class="karte stapel">
+        <h2>Spielraum eröffnen</h2>
+        <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+        <div class="wege${angemeldet ? "" : " drei"}">
+          ${w.map(x => `<div class="weg${x.haupt ? " erster" : ""}"><span class="chip ${x.farbe}" aria-hidden="true">${x.sym}</span><button class="${x.haupt ? "haupt" : ""}">${x.t}</button><p class="matt klein">${x.d}</p></div>`).join("")}
+        </div>
+      </section>
+      ${beitretenStandard(`<span class="chip" aria-hidden="true"></span>`)}
+    </div>
+  </main>${fuss}</div>`;
+}
+
+/* ---------- Variante C ---------- */
+function seiteC(angemeldet, handy, code = "KMRT") {
+  const w = wegeListe(angemeldet);
+  const rot = s => s === "♥" || s === "♦";
+  const fach = ["♠", "♥", "♣", "♦"];
+  const felder = [0, 1, 2, 3].map(i => {
+    const z = code[i];
+    if (z) return `<span class="${rot(fach[i]) ? "r" : ""}" data-farbe="${fach[i]}">${z}</span>`;
+    return `<span class="leer${i === code.length ? " fokus" : ""}"></span>`;
+  }).join("");
+  const blatt = [["A", "♠", -24, "g"], ["K", "♥", -8, "r"], ["Q", "♦", 8, "r"], ["J", "♣", 24, ""]];
+  return `<div class="app vc${handy ? " handy" : ""}">${kopfLeiste(angemeldet)}
+  <main class="seite stapel">
+    <section class="spielidee">
+      <div class="text"><h1>Setze deine Chips auf dein Wissen.</h1><p class="matt">${IDEE}</p></div>
+      <div class="hand" aria-hidden="true">${blatt.map(([r, s, g, k]) => `<div class="blatt ${k}" style="transform:rotate(${g}deg)"><span class="ecke">${r}<br>${s}</span>${s}</div>`).join("")}</div>
+    </section>
+    <div class="zwei-spalten">
+      <section class="karte stapel">
+        <h2>Spielraum eröffnen</h2>
+        <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+        <div class="wege ${angemeldet ? "vier" : "drei"}">
+          ${w.map(x => `<button class="spielkarte${x.haupt ? " erster" : ""}${rot(x.satz) ? " r" : ""}">
+            <span class="ecke">${x.rang}<small>${x.satz}</small></span>
+            <b>${x.t}</b><span class="erkl">${x.d}</span>
+            <span class="ecke unten">${x.rang}<small>${x.satz}</small></span></button>`).join("")}
+        </div>
+      </section>
+      <form class="karte stapel beitreten" onsubmit="return false">
+        <h2>Spielraum beitreten</h2>
+        <div><label>Raumcode</label><div class="code-karten">${felder}</div></div>
+        <div><label>Dein Name</label><input value="Sophie" maxlength="20"></div>
+        <div><button class="haupt">Beitreten</button></div>
+      </form>
+    </div>
+  </main>${fuss}</div>`;
+}
+
+/* ---------- Variante D ---------- */
+const SYM = {
+  "Beispiel": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>',
+  "Öffentlich": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.2 6.6L12 17.4l-5.8 3.2 1.2-6.6L2.5 9.4l6.6-.8z"/></svg>',
+  "Meine": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4.2L6 21z"/></svg>',
+  "Eigen": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.3V20h2.7L17.6 9.1l-2.7-2.7zM19.7 7a1 1 0 000-1.4l-1.3-1.3a1 1 0 00-1.4 0l-1.1 1.1 2.7 2.7z"/></svg>',
+};
+function symbolFuer(t) {
+  if (t.startsWith("Beispiel")) return SYM.Beispiel;
+  if (t.startsWith("Öffentlich")) return SYM["Öffentlich"];
+  if (t.startsWith("Meine")) return SYM.Meine;
+  return SYM.Eigen;
+}
+function seiteD(angemeldet, handy) {
+  const w = wegeListe(angemeldet);
+  const gross = handy ? 46 : 64, klein = handy ? 40 : 54;
+  return `<div class="app vd${handy ? " handy" : ""}">${kopfLeiste(angemeldet)}
+  <main class="seite stapel">
+    <section class="spielidee">
+      <h1>Setze deine Chips auf dein Wissen.</h1>
+      <p>${IDEE}</p>
+      <span class="deko links">${stapelSvg([G, G, G, G, G, G, G], gross)}${stapelSvg([RO, RO, RO, RO], klein)}</span>
+      <span class="deko rechts">${stapelSvg([GR, GR, GR], klein)}${stapelSvg([W, W, W, W, W, W], gross)}</span>
+    </section>
+    <div class="zwei-spalten">
+      <section class="karte stapel">
+        <h2>Spielraum eröffnen</h2>
+        <p class="matt">Du leitest die Partie als Quiz-Master und spielst nicht mit.</p>
+        <div class="wege${angemeldet ? "" : " drei"}">
+          ${w.map(x => `<div class="weg${x.haupt ? " erster" : ""}"><span class="chip ${x.farbe}" aria-hidden="true">${symbolFuer(x.t)}</span><button class="${x.haupt ? "haupt" : ""}">${x.t}</button><p class="matt klein">${x.d}</p></div>`).join("")}
+        </div>
+      </section>
+      ${beitretenStandard()}
+    </div>
+  </main>${fuss}</div>`;
+}
+
+/* ---------- Rahmen ---------- */
+function desktop(titel, satz, app) {
+  return `<div class="m-zustand"><h3>${titel}</h3><p>${satz}</p></div>
+  <div class="m-desk-huelle"><div class="m-desk"><div class="m-browser"><i></i><i></i><i></i><span>quiz-poker.quiz-poker.workers.dev</span></div>${app}</div></div>`;
+}
+function telefon(app) {
+  return `<div class="telefon"><div class="bildschirm"><div class="status"><span>21:14</span><small>5G &nbsp;78 %</small></div>${app}<div class="falz"><span>Ende erster Bildschirm</span></div></div></div>`;
+}
+function handyTeil(titel, satz, telefone) {
+  return `<div class="m-zustand"><h3>${titel}</h3><p>${satz}</p></div><div class="m-reihe">${telefone.join("")}</div>`;
+}
+function teil(ab, titel, text, inhalt) {
+  return `<section class="m-teil"><h2><span class="m-ab">${ab}</span>${titel}</h2><p>${text}</p></section>${inhalt}`;
+}
+
+document.getElementById("inhalt").innerHTML =
+  teil("D", "Mischung: Tisch, Chips, Tisch-Karte", "Gewählte Mischung. Kopf als Spieltisch aus A (Filz, Holzrand, Goldlinie, Chip-Stapel). Die Karte „Spielraum eröffnen“ aus B: großer farbiger Chip je Weg mit kleinem SVG-Symbol und runde Knöpfe, ohne drehenden Chip. „Spielraum beitreten“ aus A mit grüner Kante und Raumcode groß in Gold.",
+    desktop("D · Desktop, ohne Konto", "Tisch über die ganze Breite, darunter drei Chip-Felder und die Beitreten-Karte.", seiteD(false, false)) +
+    desktop("D · Desktop, angemeldet (vier Wege)", "Vier Chip-Felder im Raster 2 × 2 wie heute: oben fertige Quizze, unten eigene. Kopfzeile mit „Meine Quizze“ und „Konto“.", seiteD(true, false)) +
+    handyTeil("D · Handy, ohne Konto", "Tisch mit runden Ecken und Stapeln unter dem Text, Beitreten zuerst, die Wege als Zeilen mit Chip links.", [telefon(seiteD(false, true))])) +
+  teil("A", "Spieltisch", "Der Kopf wird zum ovalen Pokertisch mit grünem Filz, dunklem Rand und goldener Linie, links und rechts stehen Chip-Stapel. Die Wege liegen wie Setzfelder mit gestrichelter Linie da, an jedem Feld liegt ein Chip als Einsatz.",
+    desktop("A · Desktop, ohne Konto", "Der Tisch nimmt die ganze Breite ein, darunter die beiden Karten wie heute.", seiteA(false, false)) +
+    handyTeil("A · Handy, ohne Konto", "Tisch mit runden Ecken statt Oval, die Stapel stehen unter dem Text. Beitreten bleibt wie heute vor „Spielraum eröffnen“.", [telefon(seiteA(false, true))])) +
+  teil("B", "Chips als Gestaltungselement", "Rechts im Kopf schwebt ein großer Chip-Stapel (sanft auf und ab, ein loser Chip dreht sich, bei „Bewegung reduzieren“ steht alles still). Jeder Weg bekommt einen großen Chip in eigener Farbe: Gold für das Beispiel-Quiz, Grün für Öffentliche, Weiß für Meine Quizze, Rot fürs Selbst-Schreiben.",
+    desktop("B · Desktop, ohne Konto", "Größere Überschrift, Wege als Felder mit Chip oben und runden Knöpfen.", seiteB(false, false)) +
+    handyTeil("B · Handy, ohne Konto", "Kleiner Stapel neben der Überschrift, die Wege als Zeilen mit Chip links.", [telefon(seiteB(false, true))])) +
+  teil("C", "Spielkarten", "Ein aufgefächertes Blatt (Ass, König, Dame, Bube) im Kopf. Jeder Weg ist eine ganze Spielkarte mit Ecken-Zeichen und als Ganzes klickbar, das Beispiel-Quiz ist das goldene Ass. Der Raumcode erscheint als vier Karten, die sich beim Tippen füllen.",
+    desktop("C · Desktop, ohne Konto", "Drei Karten nebeneinander: Ass, König, Dame.", seiteC(false, false)) +
+    desktop("C · Desktop, angemeldet (vier Wege)", "Mit Konto vier Karten in einer Reihe statt 2 × 2, damit sie wie ein Blatt wirken. Kopfzeile mit „Meine Quizze“ und „Konto“.", seiteC(true, false)) +
+    handyTeil("C · Handy, ohne Konto", "Karten liegen quer als Zeilen, die Ecken bleiben. Im Raumcode sind erst zwei Zeichen getippt, so sieht man auch die leeren Felder.", [telefon(seiteC(false, true, "KM"))]));
+
+/* Desktop-Fenster auf schmalem Bildschirm verkleinern */
+function skalieren() {
+  document.querySelectorAll(".m-desk-huelle").forEach(h => {
+    const d = h.firstElementChild, f = Math.min(1, h.clientWidth / 1182);
+    d.style.transform = `scale(${f})`;
+    h.style.height = d.offsetHeight * f + "px";
+  });
+}
+skalieren();
+addEventListener("resize", skalieren);
+</script>
+</body>
+</html>
