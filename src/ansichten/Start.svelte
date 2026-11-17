@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ChipStapel from "./ChipStapel.svelte";
   import { meldungFuer } from "../meldungen";
   import { fehlercodeLesen, raumEroeffnen } from "../raumEroeffnen";
   import { istGueltigerRaumcode } from "../regeln/raumcode";
@@ -79,13 +80,22 @@
 
 <main class="seite stapel">
   {#if !raumcode}
-    <section class="spielidee">
+    <section class="spielidee tisch">
       <h1>Setze deine Chips auf dein Wissen.</h1>
-      <p class="matt">
+      <p>
         Alle starten mit 100 Chips und setzen, sobald die Kategorie feststeht.
         Erst danach kommt die Frage. Richtig bringt den Einsatz dazu, falsch
         kostet ihn. Am Ende gewinnt, wer die meisten Chips hat.
       </p>
+      <!-- Chip-Stapel als Deko (Mock 2026-11-17-startseite.html, Variante D) -->
+      <span class="deko links">
+        <ChipStapel farbe="gold" anzahl={7} breite={64} />
+        <ChipStapel farbe="rot" anzahl={4} breite={54} />
+      </span>
+      <span class="deko rechts">
+        <ChipStapel farbe="gruen" anzahl={3} breite={54} />
+        <ChipStapel farbe="weiss" anzahl={6} breite={64} />
+      </span>
     </section>
   {/if}
   {#if meldung}
@@ -103,14 +113,24 @@
           Du leitest die Partie als Quiz-Master und spielst nicht mit.
         </p>
         <!-- Ohne Konto drei Wege nebeneinander, mit Konto vier im Raster 2×2: oben fertige Quizze, unten eigene. -->
-        <div class="wege" class:drei={!angemeldet}>
-          <div class="weg">
+        <div class="wege chip-wege" class:drei={!angemeldet}>
+          <div class="weg erster">
+            <span class="weg-chip" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            </span>
             <button class="haupt" disabled={eroeffnetGerade} onclick={eroeffnen}
               >Beispiel-Quiz spielen</button
             >
             <p class="matt klein">Sofort los mit dem fest eingebauten Quiz.</p>
           </div>
           <div class="weg">
+            <span class="weg-chip gruen" aria-hidden="true">
+              <svg viewBox="0 0 24 24"
+                ><path
+                  d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.2 6.6L12 17.4l-5.8 3.2 1.2-6.6L2.5 9.4l6.6-.8z"
+                /></svg
+              >
+            </span>
             <button disabled={eroeffnetGerade} onclick={onSammlung}
               >Öffentliche Quizze</button
             >
@@ -120,6 +140,11 @@
           </div>
           {#if angemeldet}
             <div class="weg">
+              <span class="weg-chip weiss" aria-hidden="true">
+                <svg viewBox="0 0 24 24"
+                  ><path d="M6 3h12v18l-6-4.2L6 21z" /></svg
+                >
+              </span>
               <button disabled={eroeffnetGerade} onclick={onMeineQuizze}
                 >Meine Quizze</button
               >
@@ -129,6 +154,13 @@
             </div>
           {/if}
           <div class="weg">
+            <span class="weg-chip rot" aria-hidden="true">
+              <svg viewBox="0 0 24 24"
+                ><path
+                  d="M4 17.3V20h2.7L17.6 9.1l-2.7-2.7zM19.7 7a1 1 0 000-1.4l-1.3-1.3a1 1 0 00-1.4 0l-1.1 1.1 2.7 2.7z"
+                /></svg
+              >
+            </span>
             <button disabled={eroeffnetGerade} onclick={onEditor}
               >{angemeldet
                 ? "Einmal-Quiz erstellen"
@@ -158,6 +190,7 @@
           <label for="code">Raumcode</label>
           <input
             id="code"
+            class="code-feld"
             bind:value={eingabeCode}
             oninput={() => (rueckkehrAnbieten = false)}
             maxlength="4"

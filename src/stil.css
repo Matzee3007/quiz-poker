@@ -10,6 +10,19 @@
   --gold-schrift: #17120a;
   --gruen: #2fd98c;
   --rot: #ff5c6c;
+  /* Spieltisch und Chips auf der Startseite */
+  --filz-hell: #1d8257;
+  --filz: #12603f;
+  --filz-dunkel: #0b3d28;
+  --filz-schrift: #d3e6da;
+  --holz: #2a1d13;
+  --holz-kante: #4a3420;
+  --chip-kante: #fff6df;
+  --chip-weiss: #dfe3ea;
+  --gold-dunkel: #a9822b;
+  --rot-dunkel: #b23443;
+  --gruen-dunkel: #1c8f5b;
+  --chip-weiss-dunkel: #9096a3;
   --radius: 6px;
   color-scheme: dark;
 }
@@ -391,6 +404,201 @@ th.zahl {
 
 .weg button {
   width: 100%;
+}
+
+/* Startseite als Spieltisch (Mock 2026-11-17-startseite.html, Variante D). */
+.tisch {
+  position: relative;
+  align-items: center;
+  text-align: center;
+  padding: 46px 210px 50px;
+  border-radius: 999px;
+  background: radial-gradient(
+    ellipse at 50% 38%,
+    var(--filz-hell) 0,
+    var(--filz) 45%,
+    var(--filz-dunkel) 100%
+  );
+  border: 14px solid var(--holz);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent),
+    inset 0 0 0 7px rgb(0 0 0 / 25%),
+    inset 0 0 60px rgb(0 0 0 / 55%),
+    0 0 0 1px var(--holz-kante),
+    0 16px 36px rgb(0 0 0 / 65%);
+}
+
+.tisch::before {
+  content: "";
+  position: absolute;
+  inset: 18px 60px;
+  border-radius: 999px;
+  border: 1.5px solid rgb(255 255 255 / 12%);
+  pointer-events: none;
+}
+
+.tisch h1 {
+  font-size: 46px;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 45%);
+}
+
+.tisch p {
+  color: var(--filz-schrift);
+  max-width: 600px;
+}
+
+.tisch .deko {
+  position: absolute;
+  bottom: 34px;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.tisch .deko.links {
+  left: 64px;
+}
+
+.tisch .deko.rechts {
+  right: 64px;
+}
+
+/* Chip von oben, nur CSS. Farbe über --c, Kante über --k, Symbol über --t. */
+.weg-chip {
+  --c: var(--gold);
+  --k: var(--chip-kante);
+  --t: var(--gold-schrift);
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--c) 0 55%, transparent 56%),
+    repeating-conic-gradient(var(--c) 0 22.5deg, var(--k) 22.5deg 45deg);
+  box-shadow:
+    inset 0 0 0 3px rgb(0 0 0 / 22%),
+    0 3px 0 rgb(0 0 0 / 50%),
+    0 8px 16px rgb(0 0 0 / 45%);
+  color: var(--t);
+}
+
+.weg-chip::after {
+  content: "";
+  position: absolute;
+  inset: 21%;
+  border-radius: 50%;
+  border: 2px dashed rgb(0 0 0 / 28%);
+}
+
+.weg-chip svg {
+  position: relative;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  fill: currentcolor;
+}
+
+.weg-chip.gruen {
+  --c: var(--gruen);
+  --t: #06140d;
+}
+
+.weg-chip.rot {
+  --c: var(--rot);
+  --t: #1a0508;
+}
+
+.weg-chip.weiss {
+  --c: var(--chip-weiss);
+  --k: var(--linie-stark);
+  --t: var(--flaeche);
+}
+
+.chip-wege {
+  gap: 14px;
+}
+
+.chip-wege .weg {
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  background: var(--grund);
+  border: 1px solid var(--linie);
+  border-radius: 14px;
+  padding: 20px 14px 16px;
+}
+
+.chip-wege .weg.erster {
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--gold) 25%, transparent),
+    0 0 30px color-mix(in srgb, var(--gold) 8%, transparent);
+}
+
+.chip-wege .weg button {
+  border-radius: 999px;
+}
+
+.beitreten {
+  border-top: 4px solid var(--filz);
+}
+
+input.code-feld {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: center;
+  /* letter-spacing steht auch hinter dem letzten Zeichen, das gleicht text-indent aus. */
+  text-indent: 0.32em;
+}
+
+/* Chip-Stapel von der Seite (ChipStapel.svelte). */
+.chip-stapel {
+  --c: var(--gold);
+  --d: var(--gold-dunkel);
+  --k: var(--chip-kante);
+}
+
+.chip-stapel.rot {
+  --c: var(--rot);
+  --d: var(--rot-dunkel);
+}
+
+.chip-stapel.gruen {
+  --c: var(--gruen);
+  --d: var(--gruen-dunkel);
+}
+
+.chip-stapel.weiss {
+  --c: var(--chip-weiss);
+  --d: var(--chip-weiss-dunkel);
+  --k: var(--linie-stark);
+}
+
+.chip-stapel .seite {
+  fill: var(--d);
+}
+
+.chip-stapel .streifen {
+  fill: var(--k);
+  opacity: 0.85;
+}
+
+.chip-stapel .oben {
+  fill: var(--c);
+}
+
+.chip-stapel .ring {
+  fill: none;
+  stroke: var(--k);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 3;
+  opacity: 0.8;
 }
 
 .klein {
@@ -1071,6 +1279,58 @@ button.schalter {
 
   .spielidee h1 {
     font-size: 29px;
+  }
+
+  /* Tisch mit runden Ecken statt Oval, Stapel mittig unter dem Text. */
+  .tisch {
+    padding: 24px 18px 100px;
+    border-radius: 44px;
+    border-width: 9px;
+  }
+
+  .tisch::before {
+    inset: 10px;
+    border-radius: 34px;
+  }
+
+  .tisch p {
+    font-size: 15px;
+  }
+
+  .tisch .deko {
+    bottom: 18px;
+    transform: scale(0.72);
+  }
+
+  .tisch .deko.links {
+    left: calc(50% - 96px);
+    transform-origin: bottom left;
+  }
+
+  .tisch .deko.rechts {
+    right: calc(50% - 96px);
+    transform-origin: bottom right;
+  }
+
+  /* Wege als Zeilen, Chip links. */
+  .chip-wege .weg {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px 14px;
+    padding: 14px;
+    text-align: left;
+  }
+
+  .chip-wege .weg-chip {
+    grid-row: 1 / 3;
+    width: 48px;
+    height: 48px;
+  }
+
+  .chip-wege .weg-chip svg {
+    width: 20px;
+    height: 20px;
   }
 
   .frage {
